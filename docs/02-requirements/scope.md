@@ -30,8 +30,8 @@ KHÔNG chứa: cách hiện thực, ngưỡng phi chức năng (-> nfr.md), lý 
 | FR-08 | Lịch sử nước đi | US-03 | chưa |
 | FR-09 | Xem lại ván (chỉ đọc) | US-03 | chưa |
 | FR-10 | Gợi ý nước đi | US-01 | chưa |
-| FR-11 | Lưu và tiếp tục ván đang chơi | US-02 | chưa |
-| FR-12 | Thống kê thắng / thua / bỏ ván theo từng mức | US-01 · US-04 | chưa |
+| FR-11 | Lưu và tiếp tục ván đang chơi | US-02 | xong |
+| FR-12 | Thống kê thắng / thua / bỏ ván theo từng mức | US-01 · US-04 | xong |
 | FR-13 | Bỏ ván | US-04 | xong |
 | FR-14 | Âm thanh tổng hợp bằng WebAudio, không file | US-01 | chưa |
 | FR-15 | Con trỏ bàn phím và vùng `aria-live` | US-01 | chưa |

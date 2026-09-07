@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { Level, Side } from '@/game/core/types';
+import { totalGames, type StatsByLevel } from '@/game/storage/types';
 import { strings } from '@/lib/strings';
 
 const LEVELS: readonly { readonly id: Level; readonly label: string }[] = [
@@ -50,16 +51,37 @@ function FieldLabel({ children }: { children: string }) {
   );
 }
 
+/** Một dòng tổng cho mức đang chọn — đủ để thấy mình đang đứng đâu, không thành bảng. */
+function StatsLine({ stats, level }: { stats: StatsByLevel; level: Level }) {
+  const forLevel = stats[level];
+  if (totalGames(forLevel) === 0) return null;
+  return (
+    <p className="mt-4 border-t border-edge pt-3 font-mono text-xs text-ink-muted">
+      {forLevel.wins} {strings.statsWinShort} · {forLevel.losses} {strings.statsLossShort} ·{' '}
+      {forLevel.resigns} {strings.statsResignShort}
+    </p>
+  );
+}
+
 export function StartOverlay({
+  stats,
   onStart,
+  onClearAll,
 }: {
+  stats: StatsByLevel;
   onStart(options: { first: Side; level: Level }): void;
+  onClearAll(): void;
 }) {
   const [level, setLevel] = useState<Level>('normal');
   const [first, setFirst] = useState<Side>('human');
+  const [confirmingClear, setConfirmingClear] = useState(false);
+
+  const hasAnyData = (['easy', 'normal', 'hard'] as const).some(
+    (id) => totalGames(stats[id]) > 0,
+  );
 
   return (
-    <div className="absolute inset-0 z-10 flex items-center justify-center bg-paper/85 p-4">
+    <div className="absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-paper/85 p-4">
       <div className="w-full max-w-sm rounded-[10px] border border-edge bg-raised p-6 shadow-panel">
         <p className="mb-4 text-sm leading-6 text-ink-muted">{strings.appTagline}</p>
 
@@ -111,6 +133,46 @@ export function StartOverlay({
         >
           {strings.start}
         </button>
+
+        <StatsLine stats={stats} level={level} />
+
+        {/*
+          Xoá dữ liệu là không hoàn lại được và không có bản sao nào (NFR-DATA-03),
+          nên nó cần hai bước — và bước hai nói rõ hậu quả, không chỉ hỏi "chắc chưa".
+        */}
+        {hasAnyData &&
+          (confirmingClear ? (
+            <div className="mt-3 rounded-md border border-danger p-3">
+              <p className="mb-3 text-xs leading-5 text-ink">{strings.clearAllWarning}</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClearAll();
+                    setConfirmingClear(false);
+                  }}
+                  className="min-h-11 flex-1 cursor-pointer rounded-md border border-danger text-sm font-semibold text-danger"
+                >
+                  {strings.clearAllConfirm}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingClear(false)}
+                  className="min-h-11 flex-1 cursor-pointer rounded-md border border-edge text-sm font-semibold text-ink"
+                >
+                  {strings.cancel}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmingClear(true)}
+              className="mt-3 min-h-11 w-full cursor-pointer rounded-md text-xs text-ink-muted hover:bg-paper"
+            >
+              {strings.clearAll}
+            </button>
+          ))}
       </div>
     </div>
   );

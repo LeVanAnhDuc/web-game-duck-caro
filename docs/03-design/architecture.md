@@ -59,7 +59,7 @@ lần nghĩ nó nhận cả danh sách nước đi và dựng lại bàn, nên n
 | `game/core` | Luật chơi và máy trạng thái ván: bàn thưa, đoạn cực đại, phát hiện thắng, apply/undo | không gì (thuần TS) | `render` · `ai` · `storage` · React · DOM |
 | `game/ai` | Lượng giá thế bàn và tìm nước đi; entry của Worker | `game/core` | `render` · `storage` · React · DOM |
 | `game/render` | Vẽ một khung lên canvas và đổi toạ độ bàn ↔ màn hình | `game/core` · `render/palette` | `ai` · `storage` · React |
-| `game/storage` | Bọc `localStorage` và định nghĩa ranh giới repository | `game/core` (chỉ kiểu dữ liệu) | `render` · `ai` · React |
+| `game/storage` | Bọc `localStorage`, kiểm hình dạng dữ liệu đọc ra, và định nghĩa ranh giới repository. **Không biết luật chơi** — ván lưu sai luật do `hooks` bắt qua `core/game.replay` | `game/core` (chỉ kiểu dữ liệu) | `render` · `ai` · React |
 | `hooks` | Cầu nối React ↔ game: giữ state, nói chuyện với Worker, gọi repository | tất cả module `game/*` | — |
 | `views` | Bố cục và các lớp phủ | `hooks` · `render` · `lib/strings` | `game/core` · `ai` · `storage` trực tiếp |
 | `lib/strings` | Toàn bộ chuỗi hiển thị, tiếng Việt | không gì | — |
