@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { describe, expect, it, vi } from 'vitest';
 import { useGame, type UseGame } from './useGame';
 import type { Engine } from '@/game/ai/Engine';
-import type { Point, Side } from '@/game/core/types';
+import type { Move, Point, Side } from '@/game/core/types';
+import type { SavedGame } from '@/game/storage/types';
 
 /**
  * Gắn hook vào một cây React thật rồi trả ref tới giá trị mới nhất của nó.
@@ -135,5 +136,89 @@ describe('useGame', () => {
     });
     expect(ref.current?.thinking).toBe(false);
     expect(ref.current?.notice).toBe('Máy không trả lời kịp — thử đánh lại một nước');
+  });
+});
+
+describe('useGame — tiếp tục ván đã lưu', () => {
+  const savedWith = (moves: readonly Move[], first: Side = 'human'): SavedGame => ({
+    moves,
+    first,
+    level: 'hard',
+    savedAt: '2026-09-04T00:00:00.000Z',
+  });
+
+  it('dựng lại đúng số nước và đúng lượt đi', async () => {
+    const ref = mountHook(engineThatPlays({ x: 9, y: 9 }));
+    const saved = savedWith([
+      { at: { x: 0, y: 0 }, side: 'human' },
+      { at: { x: 1, y: 1 }, side: 'ai' },
+      { at: { x: 2, y: 0 }, side: 'human' },
+      { at: { x: 3, y: 3 }, side: 'ai' },
+    ]);
+    let ok = false;
+    await act(async () => {
+      ok = ref.current?.resume(saved) ?? false;
+    });
+    expect(ok).toBe(true);
+    expect(ref.current?.state.moves).toHaveLength(4);
+    expect(ref.current?.state.toMove).toBe('human');
+  });
+
+  it('ván lưu HỎNG thì trả false và không làm vỡ app (NFR-REL-04)', async () => {
+    const ref = mountHook(engineThatPlays({ x: 9, y: 9 }));
+    // Hai nước cùng một ô: đúng kiểu dữ liệu nhưng không phải ván hợp lệ.
+    const broken = savedWith([
+      { at: { x: 0, y: 0 }, side: 'human' },
+      { at: { x: 0, y: 0 }, side: 'ai' },
+    ]);
+    let ok = true;
+    await act(async () => {
+      ok = ref.current?.resume(broken) ?? true;
+    });
+    expect(ok).toBe(false);
+    expect(ref.current?.state.moves).toHaveLength(0);
+  });
+
+  it('hai nước liền của cùng một bên cũng bị từ chối', async () => {
+    const ref = mountHook(engineThatPlays({ x: 9, y: 9 }));
+    const broken = savedWith([
+      { at: { x: 0, y: 0 }, side: 'human' },
+      { at: { x: 1, y: 1 }, side: 'human' },
+    ]);
+    let ok = true;
+    await act(async () => {
+      ok = ref.current?.resume(broken) ?? true;
+    });
+    expect(ok).toBe(false);
+  });
+
+  it('rời đi đúng lượt máy thì vào lại máy nghĩ tiếp', async () => {
+    const ref = mountHook(engineThatPlays({ x: 5, y: 5 }));
+    const saved = savedWith([{ at: { x: 0, y: 0 }, side: 'human' }]);
+    await act(async () => {
+      ref.current?.resume(saved);
+    });
+    expect(ref.current?.state.moves).toHaveLength(2);
+    expect(ref.current?.state.moves[1]?.at).toEqual({ x: 5, y: 5 });
+  });
+
+  it('kết quả engine từ ván TRƯỚC bị bỏ khi resume chen vào (bất biến 7)', async () => {
+    const { engine, play } = deferredEngine();
+    const ref = mountHook(engine);
+    await act(async () => {
+      ref.current?.place({ x: 0, y: 0 });
+    });
+    const saved = savedWith([
+      { at: { x: 7, y: 7 }, side: 'human' },
+      { at: { x: 8, y: 8 }, side: 'ai' },
+    ]);
+    await act(async () => {
+      ref.current?.resume(saved);
+    });
+    await act(async () => {
+      play({ x: 1, y: 1 });
+    });
+    expect(ref.current?.state.moves).toHaveLength(2);
+    expect(ref.current?.state.moves[0]?.at).toEqual({ x: 7, y: 7 });
   });
 });

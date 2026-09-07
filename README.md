@@ -6,7 +6,7 @@ is drawn in code on a canvas: no sprite sheet, no image files. No server, no sig
 
 **Play**: <https://levananhduc.github.io/web-game-gomoku/>
 
-**Status:** milestones 1 to 3 of 7 are done — the game is playable and the opponent is
+**Status:** milestones 1 to 4 of 7 are done — the game is playable and the opponent is
 real. See [`docs/04-state/backlog.md`](docs/04-state/backlog.md).
 
 Releases and the Pages deploy are automated from `main`; the version comes from
@@ -64,8 +64,19 @@ Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
   - With a mouse, a click places directly, because a misclick almost never happens
   - Dragging out and back counts as a drag, not a tap
 
+- **It remembers where you were**
+
+  - Close the tab mid-game and the position is waiting when you come back — same moves,
+    same turn, same difficulty
+  - Leave while the machine is thinking and it resumes thinking when you return
+  - Win, loss and resign counts are kept **per difficulty**, so a run of easy games
+    cannot flatter your record on hard
+  - Everything can be erased from inside the game, behind a two-step confirmation that
+    says plainly there is no copy anywhere
+
 - **No sign-in, no server, nothing leaves the browser**
   - No account, no analytics, no telemetry, no external font
+  - Saved games and stats live in this browser's own storage and nowhere else
   - Infrastructure ceiling for this project is 0đ, and that is what rules out online play
 
 ## Tech Stack
@@ -73,7 +84,7 @@ Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
 - **Framework**: Next.js 15 (App Router, `output: 'export'`), React 19, TypeScript strict
 - **Rendering**: Canvas 2D, drawn procedurally — no asset files
 - **Styling**: Tailwind CSS v3, lucide-react icons, self-hosted fonts via `next/font`
-- **Testing**: vitest + happy-dom (130 unit tests, including 25 tactical positions for the engine)
+- **Testing**: vitest + happy-dom (160 unit tests, including 25 tactical positions for the engine)
 - **Hosting**: static, intended for GitHub Pages
 
 ## Commands

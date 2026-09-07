@@ -18,32 +18,31 @@ KHÔNG chứa: tính năng ngoài phạm vi (-> 01-product/overview.md §Non-Goa
 
 ## Đang làm
 
-**Mốc 3 đã xong** (2026-09-04). Máy đánh bằng minimax + alpha-beta trong Web Worker, ba
-mức khó **thật sự khác nhau**, và `src/game/ai/greedy.ts` **đã bị xoá** — không cờ bật/tắt,
-không nhánh chết. `Engine` không đổi một dòng nào, đúng như ADR-0004 đã mua bằng việc để
-interface async từ mốc 2. 130 unit test xanh; `typecheck` · `lint` · `build` đều qua; đã
-chơi thử trên app đang chạy và máy chặn đúng.
+**Mốc 4 đã xong** (2026-09-04). Ván dở sống qua một lần tải lại trang, và thống kê tách
+riêng theo từng mức khó. 160 unit test xanh; `typecheck` · `lint` · `build` đều qua; đã
+thử tay đủ sáu luồng trên app đang chạy, kể cả hai luồng dễ bị bỏ sót:
 
-Ba thứ **phép đo và bộ test ép phải đổi**, chứ không phải thiết kế nghĩ ra:
+- **Ván lưu đang ở lượt máy** → mở lại trang thì máy tự nghĩ và đánh tiếp (3 → 4 nước).
+- **Ván lưu hỏng** (hai nước cùng một ô — đúng kiểu dữ liệu, sai luật chơi) → app còn
+  sống, ván đó bị xoá để lần sau không thử lại. Khoá version cũ (`v0`) bị bỏ qua hoàn
+  toàn, không migrate (ADR-0006).
 
-1. **Điểm gốc bị tính sai hẳn.** Ban đầu `score = -negamax(con)`, tức chỉ đo nước đáp
-   của địch tệ đến đâu và **vứt mất giá trị nước của chính mình**. Hệ quả nghịch lý:
-   tạo bốn hở làm điểm TỤT, vì nó buộc địch chặn và nước chặn ấy đáng giá. Ba thế bàn
-   trong bộ chiến thuật bắt được. Đúng phải là `value − negamax(con)`, với cửa sổ
-   alpha-beta dịch theo `value`.
-2. **Điều kiện kích hoạt transposition table của ADR-0004 đã nổ, và phép đo bác bỏ cách
-   chữa đó** — chi phí nằm ở xếp hạng ứng viên mỗi nút, không ở thế bàn trùng lặp.
-   Thu hẹp 16/8 → 10/5 cho độ sâu 6 trong 1221ms, vừa sâu hơn vừa nhanh hơn (ADR-0014).
-3. **Cơ chế làm-yếu mức Dễ của ADR-0005 vô tác dụng** như đã mô tả: bỏ bước chặn nhanh
-   không ngăn search tự tìm lại nước chặn qua phần phòng thủ. Nay lượt mù bỏ luôn phần
-   phòng thủ khỏi hàm lượng giá (ADR-0015). Nó nằm trong tài liệu bốn ngày trước khi có
-   một test chứng minh nó sai.
+Hai thứ tự quyết trong lát này, cả hai đều là chỗ **sai âm thầm**:
 
-Cũng sửa trong lượt này: trang bị **khoá cuộn** (`overflow: hidden`) — `100dvh` sinh ra
-vòng luẩn quẩn thanh cuộn, một thanh xuất hiện là ăn 16px làm chiều kia tràn, kéo theo
-thanh còn lại. Bàn cờ mới là thứ cuộn, và nó cuộn bằng camera.
+1. **`game/storage` cố ý KHÔNG biết luật chơi.** Nó chỉ kiểm hình dạng dữ liệu; ván sai
+   luật do `hooks` bắt qua `core/game.replay`, vốn ném. `resume` trả `false` chứ không
+   ném tiếp — ván lưu hỏng được phép làm mất ván đó, không được phép làm vỡ app.
+2. **Ghi thống kê có khoá chống đếm trùng.** `useEffect` theo `status` chạy lại mỗi lần
+   render có `status` mới, và một ván kết thúc còn render nhiều lần nữa khi người chơi
+   resize hoặc kéo bàn. Không có khoá thì một ván thắng đếm thành ba — vẫn ra số, chỉ là
+   số sai. Đã thử: 8 lượt resize + kéo sau khi kết ván, thống kê vẫn đúng 1.
 
-**Dừng ở bước:** tiếp theo là mốc 4 — storage, resume, thống kê.
+Cũng sửa trong lượt này, lỗi tìm ra bằng cách **bấm thật**: "Chơi lại" chỉ mở lại màn
+chọn mức mà không dọn `status`, nên cột phải hiện đồng thời màn chọn mức VÀ khối "Bạn đã
+bỏ ván · nước 6 · Chơi lại" của ván trước. Thêm `resetToMenu()`.
+
+**Dừng ở bước:** tiếp theo là mốc 5 — lịch sử nước đi, xem lại ván, gợi ý. Chỗ trống
+chờ sẵn trong cột phải đã có từ mốc 3.
 
 **Đang chặn:** không có gì.
 
@@ -52,8 +51,7 @@ thanh còn lại. Bàn cờ mới là thứ cuộn, và nó cuộn bằng camera
 | Việc | Liên quan | Ưu tiên | Vì sao ưu tiên đó |
 | --- | --- | --- | --- |
 | Đo `NFR-PERF-05` và `NFR-PERF-07` trên một điện thoại thật | NFR-PERF-05 · NFR-PERF-07 | cao | Bàn vô hạn là rủi ro hiệu năng lớn nhất. `NFR-PERF-07` giờ cũng đo được: worker đã chạy thật, còn thiếu một lần mở Performance panel xác nhận không có long task |
-| **Mốc 4** — storage: repository, resume, thống kê | FR-11 · FR-12 | cao | Cần cho US-02 và US-04. Cũng là chỗ đặt seam Ducker ID |
-| Mốc 5 — lịch sử nước đi, xem lại ván, gợi ý | FR-08 · FR-09 · FR-10 | trung bình | Đều đi trên `moves` đã có từ mốc 1. Danh sách nước đi có chỗ trống chờ sẵn trong cột phải |
+| **Mốc 5** — lịch sử nước đi, xem lại ván, gợi ý | FR-08 · FR-09 · FR-10 | cao | Đều đi trên `moves` đã có từ mốc 1. Danh sách nước đi có chỗ trống chờ sẵn trong cột phải |
 | Mốc 6 — con trỏ bàn phím + `aria-live` đầy đủ, âm thanh, cài đặt | FR-14 · FR-15 · FR-16 | trung bình | `NFR-A11Y-02` không đạt tới khi mốc này xong. `drawCursorRing` đã có, chưa ai gọi |
 | Mốc 7 — E2E Playwright và đo `NFR-PERF-09` | NFR-PERF-09 | trung bình | Workflow deploy đã có (ADR-0010); còn thiếu E2E và một lần chạy Lighthouse. E2E cần RNG seed được, đã có từ mốc 2 |
 | Xem chế độ tối tận mắt ở cả bốn khổ | NFR-A11Y-01 | thấp | Token đã đúng; còn thiếu một lần nhìn |

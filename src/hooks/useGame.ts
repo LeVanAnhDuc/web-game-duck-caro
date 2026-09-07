@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Engine } from '@/game/ai/Engine';
-import { applyMove, createGame, resign, undo } from '@/game/core/game';
+import { applyMove, createGame, replay, resign, undo } from '@/game/core/game';
 import type { GameState, Level, Point, Side } from '@/game/core/types';
+import type { SavedGame } from '@/game/storage/types';
 import { strings } from '@/lib/strings';
 
 /** Hết hạn thì ván vẫn đi tiếp, không treo ở "máy đang nghĩ" (NFR-REL-01 · NFR-REL-03). */
@@ -17,6 +18,10 @@ export type UseGame = {
   undoMove(): void;
   giveUp(): void;
   restart(opts: { first: Side; level: Level }): void;
+  /** Về ván trống, KHÔNG cho máy đi trước — dùng khi quay lại màn chọn mức. */
+  resetToMenu(): void;
+  /** `false` nghĩa là ván lưu không dựng lại được; người gọi nên xoá nó đi. */
+  resume(saved: SavedGame): boolean;
 };
 
 export function useGame(engine: Engine, opts: { first: Side; level: Level }): UseGame {
@@ -123,6 +128,50 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
     [askEngine],
   );
 
+  /**
+   * Về ván trống mà KHÔNG khởi động máy.
+   *
+   * Khác `restart`: `restart` bắt đầu một ván mới và có thể cho máy đi ngay, còn hàm
+   * này chỉ dọn — dùng khi người chơi quay lại màn chọn mức và chưa chọn gì.
+   */
+  const resetToMenu = useCallback(() => {
+    requestId.current += 1;
+    setThinking(false);
+    setNotice(null);
+    setState(createGame(first));
+  }, [first]);
+
+  /**
+   * Dựng lại một ván đã lưu.
+   *
+   * `replay` NÉM khi danh sách nước đi không hợp lệ — hai nước cùng ô, hai nước liền
+   * của cùng một bên. `game/storage` cố ý không biết luật chơi (ranh giới module ở
+   * `architecture.md` §3), nên chỗ bắt là đây. Trả `false` chứ không ném tiếp: một
+   * ván lưu hỏng được phép làm người chơi MẤT ván đó, không được phép làm app vỡ
+   * (NFR-REL-04).
+   */
+  const resume = useCallback(
+    (saved: SavedGame): boolean => {
+      let restored: GameState;
+      try {
+        restored = replay(saved.moves, saved.first);
+      } catch {
+        return false;
+      }
+      requestId.current += 1;
+      setThinking(false);
+      setNotice(null);
+      setFirst(saved.first);
+      setLevel(saved.level);
+      levelRef.current = saved.level;
+      setState(restored);
+      // Rời đi đúng lúc máy đang nghĩ thì nước đó chưa được lưu — vào lại, máy nghĩ lại.
+      if (restored.status.kind === 'playing' && restored.toMove === 'ai') askEngine(restored);
+      return true;
+    },
+    [askEngine],
+  );
+
   // Máy đi trước ngay từ lúc khởi tạo thì nó phải tự đánh. Chạy đúng một lần.
   const mounted = useRef(false);
   useEffect(() => {
@@ -132,5 +181,5 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { state, thinking, notice, place, undoMove, giveUp, restart };
+  return { state, thinking, notice, place, undoMove, giveUp, restart, resetToMenu, resume };
 }

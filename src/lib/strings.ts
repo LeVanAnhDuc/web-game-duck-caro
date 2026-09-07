@@ -38,6 +38,18 @@ export const strings = {
   aiGaveUpThinking: 'Máy không trả lời kịp — thử đánh lại một nước',
   dragHint: 'Kéo để di chuyển bàn · lăn chuột để thu phóng',
 
+  statsTitle: 'Thành tích',
+  statsWinShort: 'thắng',
+  statsLossShort: 'thua',
+  statsResignShort: 'bỏ',
+  statsNoGames: 'chưa chơi',
+  resumed: 'Đã tiếp tục ván đang dở',
+  clearAll: 'Xoá toàn bộ dữ liệu',
+  clearAllWarning:
+    'Xoá ván đang dở và toàn bộ thành tích. Dữ liệu chỉ nằm trên máy này và không có bản sao nào — xoá là mất hẳn.',
+  clearAllConfirm: 'Xoá hẳn',
+  cancel: 'Thôi',
+
   soundOff: 'Tắt âm thanh',
   settings: 'Cài đặt',
   boardLabel: 'Bàn caro — kéo để di chuyển, lăn chuột để thu phóng',
