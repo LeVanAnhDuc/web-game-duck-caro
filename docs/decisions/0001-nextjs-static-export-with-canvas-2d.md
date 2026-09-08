@@ -14,7 +14,7 @@ playwright / `deploy.yml`.
 
 ## 2. Quyết định
 
-Next.js 15 App Router với `output: 'export'` và `basePath: '/web-game-gomoku'`; bàn vẽ
+Next.js 15 App Router với `output: 'export'` và `basePath: '/web-game-duck-caro'`; bàn vẽ
 trên một `<canvas>` 2D với một phép biến đổi camera. Toolchain bê từ flappy-bird sang.
 Không SSR, không route động, không API route — chỉ một trang tĩnh.
 

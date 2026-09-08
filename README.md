@@ -1,16 +1,16 @@
-# ⭕✖️ Caro vô hạn — caro against the machine on a board with no edges
+# ⭕✖️ Duck Caro — caro against the machine on a board with no edges
 
-[![CI](https://github.com/LeVanAnhDuc/web-game-gomoku/actions/workflows/ci.yml/badge.svg)](https://github.com/LeVanAnhDuc/web-game-gomoku/actions/workflows/ci.yml)
-[![Deploy](https://github.com/LeVanAnhDuc/web-game-gomoku/actions/workflows/deploy.yml/badge.svg)](https://github.com/LeVanAnhDuc/web-game-gomoku/actions/workflows/deploy.yml)
-[![Release](https://img.shields.io/github/v/release/LeVanAnhDuc/web-game-gomoku?sort=semver)](https://github.com/LeVanAnhDuc/web-game-gomoku/releases)
+[![CI](https://github.com/LeVanAnhDuc/web-game-duck-caro/actions/workflows/ci.yml/badge.svg)](https://github.com/LeVanAnhDuc/web-game-duck-caro/actions/workflows/ci.yml)
+[![Deploy](https://github.com/LeVanAnhDuc/web-game-duck-caro/actions/workflows/deploy.yml/badge.svg)](https://github.com/LeVanAnhDuc/web-game-duck-caro/actions/workflows/deploy.yml)
+[![Release](https://img.shields.io/github/v/release/LeVanAnhDuc/web-game-duck-caro?sort=semver)](https://github.com/LeVanAnhDuc/web-game-duck-caro/releases)
 
 A Vietnamese-rules caro (gomoku) game you play against the machine, on a board that
 never ends. Five in a row wins — unless your opponent has blocked both ends. Everything
 is drawn in code on a canvas: no sprite sheet, no image files. No server, no sign-in.
 
-**Play**: https://levananhduc.github.io/web-game-gomoku/
+**Play**: https://levananhduc.github.io/web-game-duck-caro/
 
-![Caro vô hạn gameplay](docs/assets/screenshot.png)
+![Duck Caro gameplay](docs/assets/screenshot.png)
 
 **Status:** all 7 milestones are done. The game is playable, the opponent is real, a finished
 game replays move by move, a whole game can be played with the keyboard alone, and the load

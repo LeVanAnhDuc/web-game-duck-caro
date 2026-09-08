@@ -1,9 +1,9 @@
-# Design System Master File — Gomoku (Caro vô hạn)
+# Design System Master File — Duck Caro (caro vô hạn)
 
 > **LOGIC:** When building a specific page, first check `pages/[page-name].md`.
 > If that file exists, its rules **override** this Master file. If not, follow this file.
 
-**Project:** Gomoku · **Slug:** `gomoku` · **Category:** Board game (2D, canvas)
+**Project:** Duck Caro · **Slug:** `duck-caro` · **Category:** Board game (2D, canvas)
 **Step 1 (`ui-ux-pro-max`) run:** 2026-09-03 · **Step 2 (`frontend-design`) decided:** 2026-09-03
 **Decision record:** ADR-0008
 

@@ -12,7 +12,7 @@ export type WorkerEngine = Engine & { dispose(): void };
  * Đã kiểm bằng bản thăm dò dùng một lần (2026-09-04) rằng
  * `new Worker(new URL('./engine.worker.ts', import.meta.url))` sống qua
  * `output: 'export'`: webpack biên dịch worker thành một chunk riêng và dựng URL từ
- * `publicPath`, vốn mang đúng `basePath` — `/web-game-gomoku/_next/` khi deploy,
+ * `publicPath`, vốn mang đúng `basePath` — `/web-game-duck-caro/_next/` khi deploy,
  * `/_next/` khi chạy local.
  *
  * Trình duyệt không có Worker thì rơi về `createLocalEngine`, tức vẫn engine thật.

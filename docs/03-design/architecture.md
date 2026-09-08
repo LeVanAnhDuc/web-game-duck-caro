@@ -23,7 +23,7 @@ schema chi tiết (-> file schema của ORM), danh sách chức năng (-> 02-req
 
 ```mermaid
 graph LR
-  User[Người chơi] --> App[Caro vô hạn<br/>trang tĩnh chạy trong browser]
+  User[Người chơi] --> App[Duck Caro<br/>trang tĩnh chạy trong browser]
   App --> LS[(localStorage<br/>trên máy người chơi)]
   Pages[GitHub Pages] -. phục vụ file tĩnh .-> App
   App -. chưa nối - roadmap .-> Ducker[Ducker ID<br/>IdP của ecosystem]
