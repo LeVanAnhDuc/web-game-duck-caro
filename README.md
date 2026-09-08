@@ -1,10 +1,16 @@
 # ⭕✖️ Caro vô hạn — caro against the machine on a board with no edges
 
+[![CI](https://github.com/LeVanAnhDuc/web-game-gomoku/actions/workflows/ci.yml/badge.svg)](https://github.com/LeVanAnhDuc/web-game-gomoku/actions/workflows/ci.yml)
+[![Deploy](https://github.com/LeVanAnhDuc/web-game-gomoku/actions/workflows/deploy.yml/badge.svg)](https://github.com/LeVanAnhDuc/web-game-gomoku/actions/workflows/deploy.yml)
+[![Release](https://img.shields.io/github/v/release/LeVanAnhDuc/web-game-gomoku?sort=semver)](https://github.com/LeVanAnhDuc/web-game-gomoku/releases)
+
 A Vietnamese-rules caro (gomoku) game you play against the machine, on a board that
 never ends. Five in a row wins — unless your opponent has blocked both ends. Everything
 is drawn in code on a canvas: no sprite sheet, no image files. No server, no sign-in.
 
-**Play**: <https://levananhduc.github.io/web-game-gomoku/>
+**Play**: https://levananhduc.github.io/web-game-gomoku/
+
+![Caro vô hạn gameplay](docs/assets/screenshot.png)
 
 **Status:** milestones 1 to 4 of 7 are done — the game is playable and the opponent is
 real. See [`docs/04-state/backlog.md`](docs/04-state/backlog.md).
@@ -79,13 +85,16 @@ Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
   - Saved games and stats live in this browser's own storage and nowhere else
   - Infrastructure ceiling for this project is 0đ, and that is what rules out online play
 
-## Tech Stack
+## Controls
 
-- **Framework**: Next.js 15 (App Router, `output: 'export'`), React 19, TypeScript strict
-- **Rendering**: Canvas 2D, drawn procedurally — no asset files
-- **Styling**: Tailwind CSS v3, lucide-react icons, self-hosted fonts via `next/font`
-- **Testing**: vitest + happy-dom (160 unit tests, including 25 tactical positions for the engine)
-- **Hosting**: static, intended for GitHub Pages
+The board has no edges, so moving around it is part of playing it.
+
+| Action | Mouse / touch | Notes |
+| ------ | ------------- | ----- |
+| Place a stone | Click or tap an intersection | Your move, then the machine answers |
+| Move the board | Press and drag | The board is unbounded — there is always more of it |
+| Zoom | Mouse wheel | Zoom is anchored at the pointer, not at the centre |
+| Undo · Hint · Centre · Resign | Buttons in the right-hand panel | Centre snaps the camera back to the opening stone |
 
 ## Commands
 
@@ -100,6 +109,33 @@ yarn build        # static export into out/
 
 No environment variables are needed — see [`.env.example`](.env.example), which says so
 explicitly rather than leaving the question open.
+
+## How it is put together
+
+- **Framework**: Next.js 15 (App Router, `output: 'export'`), React 19, TypeScript strict
+- **Rendering**: Canvas 2D, drawn procedurally — no asset files
+- **Styling**: Tailwind CSS v3, lucide-react icons, self-hosted fonts via `next/font`
+- **Testing**: vitest + happy-dom (160 unit tests, including 25 tactical positions for the engine)
+- **Hosting**: static, intended for GitHub Pages
+
+## Releases and versioning
+
+Every push to `main` publishes a GitHub Release and redeploys Pages, with no manual
+step in between:
+
+| Workflow | Runs on | Does |
+| --- | --- | --- |
+| [`ci.yml`](.github/workflows/ci.yml) | pull requests | Lint, typecheck and the unit suite |
+| [`deploy.yml`](.github/workflows/deploy.yml) | push to `main` | Static export, published to GitHub Pages |
+| [`release.yml`](.github/workflows/release.yml) | push to `main` | Works out the version and publishes the release |
+
+The version is read from the Conventional Commit prefixes across the whole range
+since the previous tag: `feat:` bumps the minor, everything else the patch. While the
+major is `0`, a breaking change bumps the minor too — nothing is stable before 1.0.
+The full contract is in [`CLAUDE.md`](CLAUDE.md).
+
+**The README is not automated.** A `feat:` that changes what a player can do updates
+`## Features` above in the same branch; a README-only sync uses `docs:`.
 
 ## Documentation
 
