@@ -15,3 +15,8 @@ next-env.d.ts
 
 # Playwright MCP artefacts (anh chup, snapshot) — khong thuoc repo
 /.playwright-mcp/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
