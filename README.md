@@ -12,8 +12,9 @@ is drawn in code on a canvas: no sprite sheet, no image files. No server, no sig
 
 ![Caro vô hạn gameplay](docs/assets/screenshot.png)
 
-**Status:** milestones 1 to 6 of 7 are done — the game is playable, the opponent is real, a
-finished game replays move by move, and a whole game can be played with the keyboard alone. See [`docs/04-state/backlog.md`](docs/04-state/backlog.md).
+**Status:** all 7 milestones are done. The game is playable, the opponent is real, a finished
+game replays move by move, a whole game can be played with the keyboard alone, and the load
+budget is measured rather than guessed — LCP 1.0s on a throttled 4G phone profile. See [`docs/04-state/backlog.md`](docs/04-state/backlog.md).
 
 Releases and the Pages deploy are automated from `main`; the version comes from
 Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
@@ -145,6 +146,7 @@ The board has no edges, so moving around it is part of playing it.
 yarn install
 yarn dev          # http://localhost:3000
 yarn test         # unit tests
+yarn e2e          # end-to-end, against the static build
 yarn typecheck
 yarn lint
 yarn build        # static export into out/
@@ -158,7 +160,9 @@ explicitly rather than leaving the question open.
 - **Framework**: Next.js 15 (App Router, `output: 'export'`), React 19, TypeScript strict
 - **Rendering**: Canvas 2D, drawn procedurally — no asset files
 - **Styling**: Tailwind CSS v3, lucide-react icons, self-hosted fonts via `next/font`
-- **Testing**: vitest + happy-dom (253 unit tests, including 25 tactical positions for the engine)
+- **Testing**: vitest + happy-dom (253 unit tests, including 25 tactical positions for the
+  engine) and Playwright (19 end-to-end tests, run against the static export — not the dev
+  server, whose dev overlay sits in the tab order and would measure the wrong focus tree)
 - **Hosting**: static, intended for GitHub Pages
 
 ## Releases and versioning

@@ -1,7 +1,7 @@
 # Yêu cầu phi chức năng
 
 > **Trả lời:** Ngưỡng nào áp cho **mọi** feature, để không phải nhắc lại từng lần?
-> **Trạng thái:** 🟢 đủ — trừ NFR-PERF-09 ghi rõ "chưa đo"
+> **Trạng thái:** 🟢 đủ — mọi ngưỡng đã có số đo, trừ NFR-PERF-05 và NFR-PERF-07 còn thiếu một lần đo trên điện thoại THẬT
 > **Cập nhật:** 2026-09-08 · commit —
 > **Cập nhật khi:** thêm loại tài nguyên mới · thêm nhóm người dùng · sau sự cố sinh ra ngưỡng mới
 
@@ -34,11 +34,21 @@ tái dùng một ID cũ cho một ý nghĩa mới, vì `grep` sẽ trả về c�
 | NFR-PERF-06 | AI trả nước trong ngân sách của mức (Dễ 200ms · Thường 600ms · Khó 1500ms) ở ≥ 95% số nước. Đo 2026-09-04 trên thế bàn trung cuộc, 7 lượt mỗi mức: Dễ **8ms**/độ sâu 2 · Thường **118ms**/độ sâu 4 · Khó **1221ms**/độ sâu 6 (max 1616ms, vượt ~7% vì hạn giờ chỉ kiểm mỗi 128 nút — ADR-0014) | `stats.ms` worker trả về · bench chạy tay trên `search` |
 | NFR-PERF-07 | AI không chiếm main thread quá một frame (16ms) liên tục — mọi việc nặng nằm trong Worker | Performance panel: không có long task nào trên main thread khi AI đang nghĩ |
 | NFR-PERF-08 | First Load JS ≤ **150 kB**. Đo: mốc 4 **114 kB** · mốc 5 **116 kB** · mốc 6 **118 kB** (2026-09-08) | `next build` rồi đọc cột First Load JS |
-| NFR-PERF-09 | Lần tải đầu trên mạng 4G mô phỏng không vượt ngưỡng — **chưa đo, chưa có ngưỡng** | Lighthouse với throttling 4G; chốt ngưỡng sau lần đo đầu |
+| NFR-PERF-09 | Lần tải đầu trên 4G mô phỏng: **LCP ≤ 2.5s** · **load ≤ 4.5s** · **truyền ≤ 700 kB**. Đo 2026-09-08 (5 lần, lấy trung vị): LCP **1.00s** · load **3.17s** · **526 kB**, và lần nào cũng chơi được ngay | `node e2e/measure-load.mjs --runs 5` trên bản build tĩnh (ADR-0022) |
 
 NFR-PERF-08 đã có số thật từ `next build` (114 kB ở mốc 4, 116 kB ở mốc 5), và ngưỡng
-150 kB được chọn từ chính con số đó. NFR-PERF-09 vẫn cố ý trống: chưa chạy Lighthouse lần nào, và viết
-một con số nghe hợp lý vào đó là biến file này thành thứ không ai tin.
+150 kB được chọn từ chính con số đó. NFR-PERF-09 giờ đã có số thật, và ngưỡng được chốt **SAU** khi đo chứ không trước —
+đúng thứ tự mà ô này yêu cầu từ đầu. Cấu hình đo, ghi ra để lần sau đo lại được giống
+hệt: preset **Slow 4G** của Lighthouse (1.6 Mbps xuống · 750 Kbps lên · RTT 150ms),
+**CPU chậm 4 lần**, khung nhìn 412×915 ở dpr 2 — tức một điện thoại tầm trung, vì
+`overview.md` §3 nói nhóm chính chơi trên điện thoại.
+
+Ngưỡng LCP 2.5s không phải số tự đặt: đó là biên "good" của Core Web Vitals. Hai
+ngưỡng còn lại lấy từ chính số đo cộng một khoảng dư (~40%).
+
+**526 kB truyền so với 118 kB First Load JS** không phải mâu thuẫn: phần chênh gần như
+toàn bộ là **tám file woff2** của hai họ font (`MASTER.md` §4). Đây là chỗ đầu tiên nên
+nhìn nếu ngày nào ngưỡng này bị vượt.
 
 ## Security
 
@@ -57,7 +67,7 @@ một con số nghe hợp lý vào đó là biến file này thành thứ không
 | ID | Ngưỡng | Cách kiểm |
 | --- | --- | --- |
 | NFR-A11Y-01 | Tương phản chữ thường ≥ 4.5:1, chữ lớn ≥ 3:1. **Áp cả cho quân với nền bàn** — đây là ràng buộc cho palette, không phải cho chữ | DevTools + kiểm palette trong `MASTER.md` |
-| NFR-A11Y-02 | Mọi hành động thao tác được bằng bàn phím — kể cả **đánh quân và di chuyển bàn** — và focus luôn thấy được. **Đạt 2026-09-08** (mốc 6, ADR-0020): canvas có `tabIndex`, mũi tên dịch con trỏ, Shift + mũi tên kéo bàn, Enter đánh. Đã thử trên **bản build tĩnh**, không phải dev server — overlay dev-tools của Next chen vào thứ tự Tab và làm phép đo sai | Thử tay: chơi trọn một ván không dùng chuột · một test E2E (mốc 7) |
+| NFR-A11Y-02 | ✅ có test E2E từ mốc 7. Mọi hành động thao tác được bằng bàn phím — kể cả **đánh quân và di chuyển bàn** — và focus luôn thấy được. **Đạt 2026-09-08** (mốc 6, ADR-0020): canvas có `tabIndex`, mũi tên dịch con trỏ, Shift + mũi tên kéo bàn, Enter đánh. Đã thử trên **bản build tĩnh**, không phải dev server — overlay dev-tools của Next chen vào thứ tự Tab và làm phép đo sai | `e2e/keyboard.spec.ts` — Tab tới canvas, mũi tên, Enter, Shift+mũi tên, `u`, `h`, tất cả trên bản build tĩnh |
 | NFR-A11Y-03 | **Sửa cho khớp bàn vô hạn (ADR-0007).** Mọi nút thật ≥ 44×44px. Ô trên bàn nhỏ hơn thế và không thể lớn hơn, nên bù bằng: hit-test bắt tâm ô gần nhất trong một bán kính rộng hơn ô, cộng bước xác nhận trên cảm ứng | Review mockup cho các nút · test hit-test ở nhiều mức phóng |
 | NFR-A11Y-04 | Mọi input trong cài đặt có label liên kết; thông báo đọc được bởi screen reader | Review |
 | NFR-A11Y-05 | Tôn trọng `prefers-reduced-motion` — camera nhảy thẳng thay vì trượt, không có animation thắng | Bật thiết lập rồi thử tay |
