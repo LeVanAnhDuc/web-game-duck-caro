@@ -5,6 +5,9 @@
  * (`overview.md` §Non-Goals), nhưng gom về một file nên thêm tiếng Anh sau là thêm
  * một file, không phải một đợt truy tìm chuỗi trong JSX.
  */
+/** Dấu trừ thật U+2212 thay cho dấu gạch bàn phím. */
+const minus = (v: number): string => String(v).replace('-', '−');
+
 export const strings = {
   appName: 'Caro vô hạn',
   appTagline:
@@ -68,7 +71,7 @@ export const strings = {
    * font chữ số đều chiều rộng ở chỗ này. Dấu `-` của bàn phím hẹp hơn nên nó phá cột.
    */
   moveCoord: (x: number, y: number) => {
-    const one = (v: number) => String(v).replace('-', '−').padStart(3, ' ');
+    const one = (v: number) => minus(v).padStart(3, ' ');
     return `${one(x)}, ${one(y)}`;
   },
   hintThinking: 'Đang tìm gợi ý…',
@@ -82,4 +85,25 @@ export const strings = {
   prevMove: 'Nước trước',
   nextMove: 'Nước sau',
   lastMove: 'Tới nước cuối',
+
+  /* --- Mốc 6: bàn phím, âm thanh, cài đặt --- */
+  soundOn: 'Bật âm thanh',
+  settingsTitle: 'Cài đặt',
+  settingsSound: 'Âm thanh',
+  settingsDefaultLevel: 'Mức khó mặc định',
+  settingsClose: 'Đóng',
+  /* Bàn phím phải được DẠY ở đâu đó: Shift + mũi tên là quy ước không ai tự đoán ra
+     (ADR-0020), và màn cài đặt là chỗ duy nhất còn trống để nói. */
+  keyboardTitle: 'Bàn phím',
+  keyboardHelp:
+    'Mũi tên dịch con trỏ · Enter đánh · Shift + mũi tên kéo bàn · + và − thu phóng · Home về giữa',
+  boardKeyboardLabel:
+    'Bàn caro. Mũi tên dịch con trỏ, Enter đánh, Shift và mũi tên kéo bàn, Home về giữa.',
+  /* Dấu trừ thật ở đây không phải chuyện thẩm mỹ: trình đọc màn hình đọc U+2212
+     là "trừ", còn `-` thường bị đọc là "gạch ngang" hoặc bị bỏ hẳn. */
+  cursorEmpty: (x: number, y: number) => `Con trỏ ở ${minus(x)}, ${minus(y)}. Ô trống.`,
+  cursorTakenYou: (x: number, y: number) =>
+    `Con trỏ ở ${minus(x)}, ${minus(y)}. Ô này là quân của bạn.`,
+  cursorTakenAi: (x: number, y: number) =>
+    `Con trỏ ở ${minus(x)}, ${minus(y)}. Ô này là quân của máy.`,
 } as const;

@@ -1,4 +1,4 @@
-import { Settings2, Volume2 } from 'lucide-react';
+import { Settings2, Volume2, VolumeX } from 'lucide-react';
 import { strings } from '@/lib/strings';
 
 /** Wordmark: một `X` mực và một `O` mực — cùng hai hình mang thông tin trên bàn. */
@@ -21,7 +21,17 @@ function Wordmark() {
   );
 }
 
-export function Header({ levelLabel }: { levelLabel: string }) {
+export function Header({
+  levelLabel,
+  soundOn,
+  onToggleSound,
+  onOpenSettings,
+}: {
+  levelLabel: string;
+  soundOn: boolean;
+  onToggleSound(): void;
+  onOpenSettings(): void;
+}) {
   return (
     <header className="flex h-14 flex-none items-center justify-between border-b border-edge bg-raised pl-4 pr-2">
       <Wordmark />
@@ -29,15 +39,27 @@ export function Header({ levelLabel }: { levelLabel: string }) {
         <span className="mr-1 rounded-full border border-edge px-2.5 py-1 font-mono text-xs font-medium">
           {levelLabel}
         </span>
+        {/*
+          Nhãn nói HÀNH ĐỘNG sẽ xảy ra khi bấm, không nói trạng thái hiện tại. Và icon
+          đổi theo trạng thái: một cái loa không gạch chéo trong lúc đang tắt tiếng là
+          thứ người dùng đọc sai mà không bao giờ nghi ngờ.
+        */}
         <button
           type="button"
-          aria-label={strings.soundOff}
+          onClick={onToggleSound}
+          aria-pressed={soundOn}
+          aria-label={soundOn ? strings.soundOff : strings.soundOn}
           className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-md text-ink hover:bg-paper"
         >
-          <Volume2 size={20} aria-hidden="true" />
+          {soundOn ? (
+            <Volume2 size={20} aria-hidden="true" />
+          ) : (
+            <VolumeX size={20} aria-hidden="true" />
+          )}
         </button>
         <button
           type="button"
+          onClick={onOpenSettings}
           aria-label={strings.settings}
           className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-md text-ink hover:bg-paper"
         >

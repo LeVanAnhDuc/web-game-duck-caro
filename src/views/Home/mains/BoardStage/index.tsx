@@ -11,9 +11,13 @@ const CONFIRM_BUTTON = { w: 72, h: 44 };
 export function BoardStage({
   board,
   moves,
+  onHint,
+  onUndo,
 }: {
   board: BoardCanvas;
   moves: readonly Move[];
+  onHint(): void;
+  onUndo(): void;
 }) {
   /*
    * Vị trí nút đi qua `placeConfirmButton` chứ không tính tại chỗ — ADR-0017. Kích
@@ -34,14 +38,35 @@ export function BoardStage({
 
   return (
     <div className="relative min-h-0 flex-1">
+      {/*
+        `tabIndex` là thứ làm cả FR-15 chạy: không có nó, canvas không nhận được focus
+        và mọi phím ở ADR-0020 đều đúng mà không bao giờ được gọi.
+
+        `h` và `u` xử lý Ở ĐÂY chứ không trong `useBoardCanvas`: gợi ý và hoàn nước là
+        việc của ván, không phải của khung nhìn — hook đó cố ý không biết gì về engine.
+      */}
       <canvas
         ref={board.canvasRef}
-        aria-label={strings.boardLabel}
-        className="block h-full w-full cursor-grab touch-none active:cursor-grabbing"
+        tabIndex={0}
+        aria-label={strings.boardKeyboardLabel}
+        className="block h-full w-full cursor-grab touch-none outline-offset-[-3px] active:cursor-grabbing"
         onPointerDown={board.onPointerDown}
         onPointerMove={board.onPointerMove}
         onPointerUp={board.onPointerUp}
         onWheel={board.onWheel}
+        onKeyDown={(e) => {
+          if (e.key === 'h') {
+            e.preventDefault();
+            onHint();
+            return;
+          }
+          if (e.key === 'u') {
+            e.preventDefault();
+            onUndo();
+            return;
+          }
+          board.onKeyDown(e);
+        }}
       />
       {spot !== null && (
         <button
