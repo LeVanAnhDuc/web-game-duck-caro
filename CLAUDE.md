@@ -101,7 +101,7 @@ that command is the fix, not a change to the workflow.
 
 | Workflow | Runs on | Gates |
 | --- | --- | --- |
-| `ci.yml` | pull requests only | **job `check`**: typecheck · lint · test · build · audit (report-only)<br>**job `e2e`**: Playwright trên bản build tĩnh, chỉ Chromium |
+| `ci.yml` | pull requests only | **job `check`**: typecheck · lint · test · build · audit (report-only)<br>**job `e2e`**: Playwright against the static build, Chromium only |
 | `deploy.yml` | push to `main` | typecheck · test, then build and publish |
 | `release.yml` | push to `main` | typecheck · test, then compute the version and tag |
 
