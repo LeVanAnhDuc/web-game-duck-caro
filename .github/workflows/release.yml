@@ -1,4 +1,14 @@
-name: Release on push to main
+# Phat hanh mot GitHub Release moi lan push vao `main` — version va note deu suy
+# ra tu lich su commit, khong ai phai nho lam gi.
+#
+# Merge mot PR vao `main` CUNG LA mot push vao `main`, nen mot trigger phu ca hai
+# luong. git-cliff doc COMMIT chu khong doc pull request, nen note khong bao gio
+# rong chi vi cong viec khong di qua PR.
+#
+# Luat version nam trong `cliff.toml`, khong nam o day. Xem truoc o may:
+#   npm run release:next     -> version ke tiep
+#   npm run release:notes    -> note se noi gi
+name: Release
 
 on:
   push:
@@ -12,126 +22,88 @@ concurrency:
   group: release
   cancel-in-progress: false
 
+env:
+  # Ghim phien ban: mot thay doi hanh vi cua git-cliff khong duoc am tham doi
+  # cach danh version cua repo nay.
+  GIT_CLIFF_VERSION: "2.13.1"
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          # full history + tags so we can find the latest version tag
+          # BAT BUOC. Moc de tinh version la tag git moi nhat; mot shallow clone
+          # khong co tag nao, va git-cliff se tinh tu commit dau tien.
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: yarn
-
-      - name: Install
-        run: yarn install --frozen-lockfile
-
-      # Deliberate difference from web-app-calculate-badminton, which this workflow
-      # is ported from: it tags without running anything, so a commit that fails
-      # its tests still gets a release (only the deploy fails). Two seconds of
-      # tests here is cheaper than a version number pointing at broken code.
-      - name: Gate the tag on the code actually working
-        run: yarn typecheck && yarn test
-
-      - name: Compute next version
-        id: version
+      - name: Work out the version
+        id: v
         run: |
-          # manual markers are only honored in the HEAD commit subject, so
-          # commit bodies that merely mention them (docs, changelogs) don't
-          # trigger; the automatic bump is inferred from Conventional Commit
-          # prefixes across every commit since the previous release
-          subject=$(git log -1 --pretty=%s)
-          if echo "$subject" | grep -qiF '[skip release]'; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if [ -n "$(git tag --points-at HEAD -l 'v*')" ]; then
-            # HEAD is already released (e.g. workflow re-run)
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          latest=$(git tag -l 'v*' --sort=-v:refname | head -1)
-          if [ -z "$latest" ]; then
-            next="v1.0.0"
-          else
-            IFS=. read -r major minor patch <<< "${latest#v}"
-            range="$latest..HEAD"
-            if echo "$subject" | grep -qiF '[release major]'; then
-              bump=major
-            elif echo "$subject" | grep -qiF '[release minor]'; then
-              bump=minor
-            elif git log --pretty=%s "$range" | grep -qE '^[a-z]+(\([^)]*\))?!:' \
-              || git log --pretty=%B "$range" | grep -q 'BREAKING CHANGE'; then
-              bump=major
-            elif git log --pretty=%s "$range" | grep -qE '^feat(\([^)]*\))?:'; then
-              bump=minor
-            else
-              bump=patch
-            fi
-            case "$bump" in
-              major) next="v$((major+1)).0.0" ;;
-              minor) next="v$major.$((minor+1)).0" ;;
-              patch) next="v$major.$minor.$((patch+1))" ;;
-            esac
-          fi
-          echo "skip=false" >> "$GITHUB_OUTPUT"
-          echo "latest=$latest" >> "$GITHUB_OUTPUT"
-          echo "next=$next" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          latest=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          range="${latest:+$latest..}HEAD"
 
-      - name: Create release
-        if: steps.version.outputs.skip == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "${{ steps.version.outputs.next }}" \
-            --target "$GITHUB_SHA" \
-            --title "${{ steps.version.outputs.next }}" \
-            --generate-notes
-
-      # `--generate-notes` lists merged PULL REQUESTS. Land work by merging a branch
-      # locally and pushing, and it lists nothing — v1.0.0 through v1.0.2 came out
-      # holding only a "Full Changelog" link. This step appends a changelog built
-      # from the commit subjects themselves, so the notes say something in either
-      # flow. It never replaces GitHub's part; PRs still get their richer list.
-      - name: Append a changelog built from commit subjects
-        if: steps.version.outputs.skip == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NEXT: ${{ steps.version.outputs.next }}
-          LATEST: ${{ steps.version.outputs.latest }}
-        run: |
-          if [ -n "$LATEST" ]; then range="$LATEST..HEAD"; else range="HEAD"; fi
-          # Merge commits repeat what their branch already says, so skip them.
+          # Marker doc tren CA RANGE, khong phai subject cua HEAD. Trong luong PR
+          # thi HEAD luon la "Merge pull request #N from ..." do GitHub sinh, nen
+          # doc HEAD nghia la marker trong commit that khong bao gio den duoc day.
           subjects=$(git log --no-merges --pretty=%s "$range")
 
-          section() {
-            heading=$1
-            pattern=$2
-            lines=$(printf '%s\n' "$subjects" | grep -E "$pattern" || true)
-            if [ -n "$lines" ]; then
-              printf '### %s\n\n' "$heading"
-              printf '%s\n' "$lines" | sed 's/^/- /'
-              printf '\n'
-            fi
-          }
+          force=""
+          case "$subjects" in
+            *"[skip release]"*)
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              echo "Bo qua: co [skip release] trong $range"
+              exit 0
+              ;;
+            *"[release major]"*) force="--bump major" ;;
+            *"[release minor]"*) force="--bump minor" ;;
+          esac
 
-          {
-            section 'Breaking changes' '^[a-z]+(\([^)]*\))?!:'
-            section 'Features'         '^feat(\([^)]*\))?:'
-            section 'Fixes'            '^fix(\([^)]*\))?:'
-            section 'Everything else'  '^(chore|docs|ci|refactor|test|style|perf|build)(\([^)]*\))?:'
-          } > commit-notes.md
+          next=$(npx --yes "git-cliff@${GIT_CLIFF_VERSION}" --bumped-version $force)
 
-          # Nothing matched (no Conventional Commit subjects in range): leave the
-          # release exactly as GitHub generated it rather than posting an empty block.
-          if [ ! -s commit-notes.md ]; then
-            echo "khong co subject nao khop Conventional Commits — giu nguyen note tu dong"
+          # git-cliff in lai chinh version hien tai khi khong co gi de bump.
+          if [ "$next" = "$latest" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Bo qua: khong co commit nao moi ke tu $latest"
             exit 0
           fi
 
-          gh release view "$NEXT" --json body --jq .body > generated-notes.md
-          cat commit-notes.md generated-notes.md > release-notes.md
-          gh release edit "$NEXT" --notes-file release-notes.md
+          echo "skip=false"        >> "$GITHUB_OUTPUT"
+          echo "next=$next"        >> "$GITHUB_OUTPUT"
+          echo "latest=$latest"    >> "$GITHUB_OUTPUT"
+          echo "$latest -> $next${force:+  (ep boi $force)}"
+
+      - name: Compose the notes
+        if: steps.v.outputs.skip == 'false'
+        env:
+          NEXT: ${{ steps.v.outputs.next }}
+          LATEST: ${{ steps.v.outputs.latest }}
+        run: |
+          set -euo pipefail
+          npx --yes "git-cliff@${GIT_CLIFF_VERSION}" --unreleased --tag "$NEXT" --strip all > NOTES.md
+
+          # Link compare ghep o day chu khong trong template: cho nay biet
+          # GITHUB_REPOSITORY, con cliff.toml thi khong nen phai biet.
+          if [ -n "$LATEST" ]; then
+            printf '\n**Full changelog**: %s/%s/compare/%s...%s\n' \
+              "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$LATEST" "$NEXT" >> NOTES.md
+          else
+            printf '\n**Full changelog**: %s/%s/commits/%s\n' \
+              "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$NEXT" >> NOTES.md
+          fi
+          cat NOTES.md
+
+      - name: Publish
+        if: steps.v.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT: ${{ steps.v.outputs.next }}
+        run: |
+          set -euo pipefail
+          # `gh release create` tu tao tag tai commit nay. Tag do la moc cho lan sau,
+          # nen vong lap tu khep kin: khong co buoc nao phai lam bang tay.
+          gh release create "$NEXT" \
+            --target "$GITHUB_SHA" \
+            --title "$NEXT" \
+            --notes-file NOTES.md
