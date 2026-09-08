@@ -62,6 +62,15 @@ export const strings = {
 
   /* --- Mốc 5: danh sách nước đi, xem lại ván, gợi ý --- */
   moveListTitle: 'Nước đi',
+  /*
+   * Dấu trừ THẬT (U+2212) và căn phải 3 ký tự. Không phải để đẹp: cột toạ độ
+   * trong danh sách phải thẳng hàng, và đó chính là lý do MASTER.md §4 bắt dùng
+   * font chữ số đều chiều rộng ở chỗ này. Dấu `-` của bàn phím hẹp hơn nên nó phá cột.
+   */
+  moveCoord: (x: number, y: number) => {
+    const one = (v: number) => String(v).replace('-', '−').padStart(3, ' ');
+    return `${one(x)}, ${one(y)}`;
+  },
   hintThinking: 'Đang tìm gợi ý…',
   hintAt: (x: number, y: number) => `Gợi ý: đánh ở ${x}, ${y}.`,
   hintFailed: 'Chưa tìm được gợi ý — thử lại một lượt nữa',
