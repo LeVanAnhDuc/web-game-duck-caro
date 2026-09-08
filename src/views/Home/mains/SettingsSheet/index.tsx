@@ -57,7 +57,13 @@ export function SettingsSheet({
       role="dialog"
       aria-modal="true"
       aria-label={strings.settingsTitle}
-      className="absolute inset-x-0 bottom-0 z-10 max-h-[85%] overflow-y-auto rounded-t-[10px] border-t border-edge bg-raised p-6 shadow-sheet lg:inset-y-0 lg:left-auto lg:right-0 lg:w-80 lg:rounded-none lg:border-l lg:border-t-0"
+      /*
+       * Dưới 1024: sheet neo đáy, `absolute` trong khung bàn.
+       * Từ 1024: `fixed` để cắm vào MÉP CỬA SỔ, chồng đúng chỗ của cột phải.
+       * Để `absolute` thì `right-0` neo vào mép khung BÀN, và sheet lơ lửng giữa màn —
+       * không cắm vào đâu cả, không căn giữa. Thấy được bằng mắt, không bằng test.
+       */
+      className="absolute inset-x-0 bottom-0 z-20 max-h-[85%] overflow-y-auto rounded-t-[10px] border-t border-edge bg-raised p-6 shadow-sheet lg:fixed lg:inset-y-0 lg:left-auto lg:right-0 lg:w-80 lg:max-h-none lg:rounded-none lg:border-l lg:border-t-0"
     >
       <div className="mb-5 flex items-start justify-between gap-3">
         <p className="text-xl font-bold leading-7 text-ink-strong">
