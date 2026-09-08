@@ -18,6 +18,15 @@ KHÔNG chứa: tính năng ngoài phạm vi (-> 01-product/overview.md §Non-Goa
 
 ## Đang làm
 
+**Đổi thương hiệu sang `Duck Caro`** (2026-09-08). Repo GitHub đổi từ
+`web-game-gomoku` thành `web-game-duck-caro`; GitHub giữ redirect cho URL repo cũ,
+nhưng **URL Pages cũ thì không** — địa chỉ chơi giờ là
+<https://levananhduc.github.io/web-game-duck-caro/>. **Thư mục local vẫn là**
+`web-game-gomoku` — thương hiệu đổi, đường dẫn không, giống cách đã làm ở
+`web-game-platformer`. Từ "caro"/"gomoku" ở chỗ nói về *thể loại* được giữ nguyên; chỉ
+tên sản phẩm đổi. Khoá `localStorage` (`gomoku:v1:...`) **không** đổi, nếu đổi thì
+người đang chơi mất ván đang dở và thống kê.
+
 **Mốc 7 đã xong — hết 7/7 mốc của v1** (2026-09-08). Không thêm chức năng người dùng nào;
 mốc này **kiểm** sáu mốc trước và điền con số cuối cùng còn trống trong `nfr.md`.
 

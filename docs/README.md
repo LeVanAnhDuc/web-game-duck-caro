@@ -1,4 +1,4 @@
-# Tài liệu dự án `web-game-gomoku`
+# Tài liệu dự án `web-game-duck-caro`
 
 ## Bản đồ
 

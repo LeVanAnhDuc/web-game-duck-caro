@@ -38,7 +38,7 @@ Ba điểm đổi so với badminton:
    vào `main`; để CI chạy ở đó nữa là ba lần cùng một bộ test cho một cú push.
 3. **`basePath` gác theo `GITHUB_PAGES`, không theo `NODE_ENV`.** `next build` ở máy
    nào cũng là production, nên gác theo `NODE_ENV` làm mọi bản build local mang
-   `basePath: '/web-game-gomoku'` và `out/index.html` mở trực tiếp thì hỏng hết đường
+   `basePath: '/web-game-duck-caro'` và `out/index.html` mở trực tiếp thì hỏng hết đường
    dẫn asset. Badminton dùng đúng cờ riêng này; chỗ sai là bản đầu của chính dự án này.
 
 ## 3. Phương án đã loại

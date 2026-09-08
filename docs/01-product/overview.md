@@ -19,7 +19,7 @@ KHÔNG chứa: danh sách tính năng (-> 02-requirements/scope.md), ngưỡng k
 
 ## 1. Một câu định vị
 
-Caro vô hạn là game caro đánh với máy, mở link là chơi được ngay — không đăng nhập,
+Duck Caro là game caro đánh với máy, mở link là chơi được ngay — không đăng nhập,
 không chờ ghép đối thủ, và bàn **không có biên** như đánh trên vở ô li, khác với các
 trang caro online vốn khoá bàn ở 15×15 và bắt tạo tài khoản trước khi vào ván đầu.
 

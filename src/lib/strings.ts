@@ -9,7 +9,7 @@
 const minus = (v: number): string => String(v).replace('-', '−');
 
 export const strings = {
-  appName: 'Caro vô hạn',
+  appName: 'Duck Caro',
   appTagline:
     'Đánh caro với máy trên một bàn không có biên. Năm quân liền là thắng — trừ khi bị chặn cả hai đầu.',
 

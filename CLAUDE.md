@@ -1,4 +1,4 @@
-# CLAUDE.md — `web-game-gomoku`
+# CLAUDE.md — `web-game-duck-caro`
 
 Guidance for Claude Code working in this repository.
 
@@ -27,7 +27,7 @@ yarn build        # static export into out/
 
 `yarn build` locally produces a build with **no** `basePath`, so `out/` opens
 correctly from the filesystem. Only `.github/workflows/deploy.yml` sets
-`GITHUB_PAGES=true`, which is what turns on `basePath: '/web-game-gomoku'`
+`GITHUB_PAGES=true`, which is what turns on `basePath: '/web-game-duck-caro'`
 (ADR-0010). Do not set that variable by hand — see [`.env.example`](.env.example).
 
 ## Commit convention (REQUIRED — releases depend on it)
@@ -84,7 +84,7 @@ pushed together with them.
 push to `main`. It runs `typecheck` and `test` first, so a broken commit does not reach
 the live site.
 
-Live at <https://levananhduc.github.io/web-game-gomoku/>.
+Live at <https://levananhduc.github.io/web-game-duck-caro/>.
 
 Pages itself has to be switched on **once per repository**, with a token that has admin
 rights — the workflow's own `GITHUB_TOKEN` can deploy to an existing Pages site but
