@@ -59,4 +59,18 @@ export const strings = {
   placedAt: (x: number, y: number) => `Bạn đánh ở ${x}, ${y}.`,
   aiPlacedAt: (x: number, y: number) => `Máy đánh ở ${x}, ${y}. Lượt bạn.`,
   wonAt: (x: number, y: number) => `Bạn đánh ở ${x}, ${y} và thắng.`,
+
+  /* --- Mốc 5: danh sách nước đi, xem lại ván, gợi ý --- */
+  moveListTitle: 'Nước đi',
+  hintThinking: 'Đang tìm gợi ý…',
+  hintAt: (x: number, y: number) => `Gợi ý: đánh ở ${x}, ${y}.`,
+  hintFailed: 'Chưa tìm được gợi ý — thử lại một lượt nữa',
+  review: 'Xem lại',
+  reviewing: 'Đang xem lại',
+  exitReview: 'Thoát xem lại',
+  reviewPosition: (n: number, total: number) => `${n} / ${total}`,
+  firstMove: 'Về nước đầu',
+  prevMove: 'Nước trước',
+  nextMove: 'Nước sau',
+  lastMove: 'Tới nước cuối',
 } as const;

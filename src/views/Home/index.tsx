@@ -142,7 +142,7 @@ export function Home() {
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <BoardStage board={board} />
+          <BoardStage board={board} moves={game.state.moves} />
           {!started && (
             <StartOverlay
               stats={persistence.stats}
