@@ -12,8 +12,8 @@ is drawn in code on a canvas: no sprite sheet, no image files. No server, no sig
 
 ![Caro vô hạn gameplay](docs/assets/screenshot.png)
 
-**Status:** milestones 1 to 4 of 7 are done — the game is playable and the opponent is
-real. See [`docs/04-state/backlog.md`](docs/04-state/backlog.md).
+**Status:** milestones 1 to 5 of 7 are done — the game is playable, the opponent is real,
+and a finished game can be replayed move by move. See [`docs/04-state/backlog.md`](docs/04-state/backlog.md).
 
 Releases and the Pages deploy are automated from `main`; the version comes from
 Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
@@ -38,6 +38,16 @@ Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
   - Choose who moves first; the machine answers every move
   - Undo takes back your move **and** the machine's reply
   - Resign closes the game when it is no longer worth finishing
+
+- **Every move is listed, and a finished game replays**
+
+  - The right-hand panel lists every move with its coordinates, the newest always in view
+  - When a game ends, "Xem lại" steps through it one move at a time, or jumps straight to
+    any move in the list — read-only, so a replay can never branch the game
+  - Hint asks the **hard** engine whatever difficulty you are playing: a hint from the
+    deliberately blinded easy engine would be worse than no hint at all
+  - The hint arrives as the same faint preview mark a touch tap makes, so one more click
+    plays it — and the confirm button steps aside instead of covering a neighbouring mark
 
 - **An opponent that actually plays**
 
@@ -95,6 +105,7 @@ The board has no edges, so moving around it is part of playing it.
 | Move the board | Press and drag | The board is unbounded — there is always more of it |
 | Zoom | Mouse wheel | Zoom is anchored at the pointer, not at the centre |
 | Undo · Hint · Centre · Resign | Buttons in the right-hand panel | Centre snaps the camera back to the opening stone |
+| Replay a finished game | ‹ › buttons, or click a move in the list | Read-only — a replay never branches the game |
 
 ## Commands
 
@@ -115,7 +126,7 @@ explicitly rather than leaving the question open.
 - **Framework**: Next.js 15 (App Router, `output: 'export'`), React 19, TypeScript strict
 - **Rendering**: Canvas 2D, drawn procedurally — no asset files
 - **Styling**: Tailwind CSS v3, lucide-react icons, self-hosted fonts via `next/font`
-- **Testing**: vitest + happy-dom (160 unit tests, including 25 tactical positions for the engine)
+- **Testing**: vitest + happy-dom (196 unit tests, including 25 tactical positions for the engine)
 - **Hosting**: static, intended for GitHub Pages
 
 ## Releases and versioning

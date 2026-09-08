@@ -225,12 +225,16 @@ Nền của mọi component là `--paper-raised`, viền `--border`, chữ `--in
   width: 320px; padding: 16px; box-shadow: var(--shadow-panel);
 }
 
-/* Dòng trong danh sách nước đi */
+/* Dòng trong danh sách nước đi.
+   Chiều cao đi theo VAI TRÒ, không theo khổ màn — ADR-0018:
+   32px khi hàng chỉ để ĐỌC (đang chơi), 44px khi hàng là NÚT (chế độ xem lại).
+   §10 bắt mọi nút thật ≥ 44px, và hàng bấm được là một nút thật. */
 .move-row {
-  font-family: var(--font-mono); font-size: 14px;
+  font-family: var(--font-mono); font-size: 14px; text-align: left;
   display: grid; grid-template-columns: 2.5rem 1.25rem 1fr; gap: 8px;
   min-height: 32px; align-items: center;
 }
+.move-row--clickable { min-height: 44px; cursor: pointer; }
 .move-row[aria-current="true"] { background: var(--paper); outline: 1px solid var(--focus); }
 
 /* Input trong cài đặt */
