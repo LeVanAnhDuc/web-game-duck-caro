@@ -33,7 +33,7 @@ tái dùng một ID cũ cho một ý nghĩa mới, vì `grep` sẽ trả về c�
 | NFR-PERF-05 | Kéo và thu phóng bàn giữ 60fps trên máy tầm trung và trên một điện thoại thật | Performance panel của DevTools, ghi lại một lần kéo dài 5s |
 | NFR-PERF-06 | AI trả nước trong ngân sách của mức (Dễ 200ms · Thường 600ms · Khó 1500ms) ở ≥ 95% số nước. Đo 2026-09-04 trên thế bàn trung cuộc, 7 lượt mỗi mức: Dễ **8ms**/độ sâu 2 · Thường **118ms**/độ sâu 4 · Khó **1221ms**/độ sâu 6 (max 1616ms, vượt ~7% vì hạn giờ chỉ kiểm mỗi 128 nút — ADR-0014) | `stats.ms` worker trả về · bench chạy tay trên `search` |
 | NFR-PERF-07 | AI không chiếm main thread quá một frame (16ms) liên tục — mọi việc nặng nằm trong Worker | Performance panel: không có long task nào trên main thread khi AI đang nghĩ |
-| NFR-PERF-08 | First Load JS ≤ **150 kB**. Đo 2026-09-04 sau mốc 4: **114 kB** · đo 2026-09-08 sau mốc 5: **116 kB** | `next build` rồi đọc cột First Load JS |
+| NFR-PERF-08 | First Load JS ≤ **150 kB**. Đo: mốc 4 **114 kB** · mốc 5 **116 kB** · mốc 6 **118 kB** (2026-09-08) | `next build` rồi đọc cột First Load JS |
 | NFR-PERF-09 | Lần tải đầu trên mạng 4G mô phỏng không vượt ngưỡng — **chưa đo, chưa có ngưỡng** | Lighthouse với throttling 4G; chốt ngưỡng sau lần đo đầu |
 
 NFR-PERF-08 đã có số thật từ `next build` (114 kB ở mốc 4, 116 kB ở mốc 5), và ngưỡng
@@ -50,14 +50,14 @@ một con số nghe hợp lý vào đó là biến file này thành thứ không
 | NFR-SEC-04 | Không có secret nào trong repo hay trong bundle. Không hardcode, không commit | `grep` + review `.env.example` so với code |
 | NFR-SEC-05 | Dependency không có lỗ hổng mức high trở lên | `yarn audit` chạy trong CI |
 | NFR-SEC-06 | ~~(bỏ)~~ lỗi trả client không chứa stack trace — không có lỗi từ server | — |
-| NFR-SEC-07 | Sau khi tải xong, trang **không gửi request mạng nào**. Không analytics, không telemetry, không font ngoài | Network panel: mở game, chơi một ván, kiểm không có request nào ngoài lần tải đầu |
+| NFR-SEC-07 | Sau khi tải xong, trang không gửi request nào **ra ngoài origin của chính nó**. Không analytics, không telemetry, không font ngoài. Đo 2026-09-08 trên bản build tĩnh: **0 host ngoài**; font là woff2 tự phục vụ. Một chunk cùng origin (`953.js`) tải **sau** lần đầu, khi Worker khởi động — đó là code của chính app, không phải dữ liệu gửi đi | Network panel: mở game, chơi một ván, kiểm danh sách host |
 
 ## Accessibility
 
 | ID | Ngưỡng | Cách kiểm |
 | --- | --- | --- |
 | NFR-A11Y-01 | Tương phản chữ thường ≥ 4.5:1, chữ lớn ≥ 3:1. **Áp cả cho quân với nền bàn** — đây là ràng buộc cho palette, không phải cho chữ | DevTools + kiểm palette trong `MASTER.md` |
-| NFR-A11Y-02 | Mọi hành động thao tác được bằng bàn phím — kể cả **đánh quân và di chuyển bàn** — và focus luôn thấy được | Thử tay: chơi trọn một ván không dùng chuột · một test E2E |
+| NFR-A11Y-02 | Mọi hành động thao tác được bằng bàn phím — kể cả **đánh quân và di chuyển bàn** — và focus luôn thấy được. **Đạt 2026-09-08** (mốc 6, ADR-0020): canvas có `tabIndex`, mũi tên dịch con trỏ, Shift + mũi tên kéo bàn, Enter đánh. Đã thử trên **bản build tĩnh**, không phải dev server — overlay dev-tools của Next chen vào thứ tự Tab và làm phép đo sai | Thử tay: chơi trọn một ván không dùng chuột · một test E2E (mốc 7) |
 | NFR-A11Y-03 | **Sửa cho khớp bàn vô hạn (ADR-0007).** Mọi nút thật ≥ 44×44px. Ô trên bàn nhỏ hơn thế và không thể lớn hơn, nên bù bằng: hit-test bắt tâm ô gần nhất trong một bán kính rộng hơn ô, cộng bước xác nhận trên cảm ứng | Review mockup cho các nút · test hit-test ở nhiều mức phóng |
 | NFR-A11Y-04 | Mọi input trong cài đặt có label liên kết; thông báo đọc được bởi screen reader | Review |
 | NFR-A11Y-05 | Tôn trọng `prefers-reduced-motion` — camera nhảy thẳng thay vì trượt, không có animation thắng | Bật thiết lập rồi thử tay |

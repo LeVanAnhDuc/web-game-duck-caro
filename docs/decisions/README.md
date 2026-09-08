@@ -26,6 +26,9 @@
 | [ADR-0016](0016-hints-always-use-the-hard-engine.md) | Gợi ý luôn tính bằng engine mức Khó, không theo mức đang chơi | 2026-09-08 | accepted |
 | [ADR-0017](0017-confirm-button-picks-a-free-side.md) | Nút xác nhận đánh tự chọn cạnh trống, không neo cứng bên phải | 2026-09-08 | accepted |
 | [ADR-0018](0018-clickable-move-rows-are-44px.md) | Hàng danh sách nước đi cao 44px khi bấm được, 32px khi chỉ để đọc | 2026-09-08 | accepted |
+| [ADR-0019](0019-settings-live-in-their-own-seam.md) | Cài đặt có seam lưu trữ riêng, không đi qua `GameRepository` | 2026-09-08 | accepted |
+| [ADR-0020](0020-keyboard-cursor-with-shift-to-pan.md) | Mũi tên dịch con trỏ; Shift + mũi tên kéo bàn | 2026-09-08 | accepted |
+| [ADR-0021](0021-sound-is-synthesised-and-silence-is-valid.md) | Âm thanh tổng hợp bằng WebAudio, và im lặng là một trạng thái hợp lệ | 2026-09-08 | accepted |
 <!-- END:auto -->
 
 Trạng thái: `accepted` · `superseded by ADR-00xx` · `deprecated`

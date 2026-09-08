@@ -18,40 +18,46 @@ KHÔNG chứa: tính năng ngoài phạm vi (-> 01-product/overview.md §Non-Goa
 
 ## Đang làm
 
-**Mốc 5 đã xong** (2026-09-08). Danh sách nước đi, xem lại ván đã kết thúc, và gợi ý.
-196 unit test xanh (17 file); `typecheck` · `lint` · `build` đều qua. First Load JS **116 kB**,
-còn dưới ngưỡng 150 kB của NFR-PERF-08.
+**Mốc 6 đã xong** (2026-09-08). Bàn phím, âm thanh, cài đặt. 253 unit test xanh (22 file);
+`typecheck` · `lint` · `build` đều qua. First Load JS **118 kB**, còn dưới ngưỡng 150 kB.
 
-Quyết định chịu lực của mốc này: **xem lại là một PHÉP CHIẾU, không phải một trạng
-thái song song.** Cả chế độ tốn đúng một số — `reviewAt` — và bàn hiển thị là
-`moves.slice(0, reviewAt)`. Không có `GameState` thứ hai, nên không có gì để lệch với
-nguồn đúng (bất biến 1). `game/core` không đổi một dòng nào — đó cũng là phép thử nhanh
-xem thiết kế này còn đúng: task nào cần sửa `core/game.ts` là dấu hiệu đã sai ở đâu đó.
+**`NFR-A11Y-02` ĐẠT LẦN ĐẦU.** Đây là ngưỡng duy nhất trong `nfr.md` mà năm mốc đầu không hề
+đạt: bàn là canvas, và canvas không có gì để tab tới. Tức là tới hết mốc 5, game này
+**không chơi được nếu không có chuột hoặc cảm ứng**.
 
-Ba ADR mới. ADR-0016 (gợi ý luôn hỏi mức Khó) là lựa chọn thiết kế; hai cái còn lại ghi
-**hai lỗi mà mốc 5 làm LỘ RA chứ không tạo ra**:
+Đã thử trên **bản build tĩnh**, không phải dev server — và đó là một bài học: overlay
+dev-tools của Next là một phần tử trong thứ tự Tab, nên đo a11y trên dev server là đo một
+cây focus không tồn tại ở production. Chuỗi đã chạy thật: mũi tên → Shift+mũi tên →
+Enter → Enter → `u` (hoàn) → `h` (gợi ý), và vùng live đọc đúng cả toạ độ lẫn tình
+trạng ô.
 
-- **ADR-0017** — nút "Đánh" đặt cứng ở `left + cell + 8`, tức 8px vào trong ô kế bên, nên
-  ô đó có quân thì nút che mất quân. Trước đây hiếm gặp vì chuột không tạo quân xem
-  trước (ADR-0007); gợi ý làm nó xuất hiện trên mọi thiết bị.
-- **ADR-0018** — `MASTER.md` §8 (32px) và §10 (≥44px) mâu thuẫn ở đúng component vừa trở
-  thành nút lần đầu.
+Ba ADR mới:
 
-Hai lỗi nữa tìm ra bằng cách **bấm thật trên app đang chạy**, không test nào bắt được:
+- **ADR-0019** — cài đặt có seam riêng. `GameRepository.ts` đã ghi từ mốc 4 rằng cài đặt
+  không thuộc về nó, nhưng bất biến 5 lại cấm UI gọi `localStorage`. Hai câu đó chỉ cùng
+  đúng khi có **hai** seam — bất biến 5 đã được viết lại cho khớp, nếu không nó tự thành
+  câu sai.
+- **ADR-0020** — mũi tên dịch con trỏ, Shift + mũi tên kéo bàn. Loại phương án "chế độ
+  kéo bàn riêng": trạng thái ẩn, và trên bàn vô hạn thì không biết mình đang ở chế độ nào
+  nghĩa là mỗi phím mũi tên làm một trong hai việc hoàn toàn khác nhau.
+- **ADR-0021** — âm thanh tổng hợp, và **im lặng là trạng thái hợp lệ**. `AudioContext` sinh
+  ra ở tiếng ĐẦU TIÊN chứ không lúc mount: context tạo trước cử chỉ người dùng nằm ở
+  `suspended` vĩnh viễn ở nhiều trình duyệt — im lặng mãi mãi mà không lỗi nào nổ ra.
 
-1. **Chế độ xem lại ẩn `Controls`, nên nó đã lấy mất van an toàn của một món nợ có ý.**
-   Bảng §Nợ kỹ thuật chấp nhận việc resize đẩy thế trận ra ngoài khung nhìn *vì có nút
-   "Giữa" để thoát*. Đổi 1440 → 375 trong lúc xem lại thì bàn trống trơn và không có
-   đường ra. Đã thêm "Giữa" vào `ReviewBar`, và vào xem lại thì tự đưa khung nhìn về cả ván.
-2. **`<button>` mặc định `text-align: center`, `<div>` thì không** — nên hàng đổi từ chỉ-đọc
-   sang bấm-được làm cả cột toạ độ nhảy sang phải ~70px.
+Hai lỗi tìm ra bằng cách **nhìn thật**, không test nào bắt được:
 
-**Chưa kiểm được trong lát này:** canvas ở chế độ tối. Phần DOM đúng palette §2, nhưng
-canvas chỉ đọc lại palette khi `prefers-color-scheme` **thật** đổi, nên đặt biến CSS
-bằng JS không kích hoạt nó. Việc "xem chế độ tối tận mắt" vẫn còn nguyên ở mục dưới.
+1. **Sheet cài đặt lơ lửng giữa màn ở desktop.** Nó nằm trong khung BÀN, nên `right-0` neo
+   vào mép bàn chứ không mép cửa sổ. Đổi sang `lg:fixed`.
+2. **Trong lúc đo `NFR-SEC-07`**, phát hiện câu chữ của ngưỡng đó quá chặt so với thực
+   tế: chunk của Worker (`953.js`) tải sau lần đầu. Cùng origin, là code của chính app.
+   Đã viết lại ngưỡng thành "không request nào RA NGOÀI origin", và ghi số đo thật.
 
-**Dừng ở bước:** tiếp theo là mốc 6 — con trỏ bàn phím + `aria-live` đầy đủ, âm thanh,
-cài đặt. `drawCursorRing` đã có từ mốc 3, chưa ai gọi.
+**Chưa kiểm được:** nghe thật bốn tiếng bằng tai. Đã xác nhận được **2 oscillator thật**
+sinh ra cho một nước của người cộng một nước của máy, nhưng "nghe có hay không" thì
+không chứng minh được bằng code (ADR-0021 đã ghi sẵn điều này). Canvas ở chế độ tối cũng
+vẫn chưa xem tận mắt.
+
+**Dừng ở bước:** tiếp theo là mốc 7 — E2E Playwright và đo `NFR-PERF-09`.
 
 **Đang chặn:** không có gì.
 
@@ -60,7 +66,6 @@ cài đặt. `drawCursorRing` đã có từ mốc 3, chưa ai gọi.
 | Việc | Liên quan | Ưu tiên | Vì sao ưu tiên đó |
 | --- | --- | --- | --- |
 | Đo `NFR-PERF-05` và `NFR-PERF-07` trên một điện thoại thật | NFR-PERF-05 · NFR-PERF-07 | cao | Bàn vô hạn là rủi ro hiệu năng lớn nhất. `NFR-PERF-07` giờ cũng đo được: worker đã chạy thật, còn thiếu một lần mở Performance panel xác nhận không có long task |
-| Mốc 6 — con trỏ bàn phím + `aria-live` đầy đủ, âm thanh, cài đặt | FR-14 · FR-15 · FR-16 | trung bình | `NFR-A11Y-02` không đạt tới khi mốc này xong. `drawCursorRing` đã có, chưa ai gọi |
 | Mốc 7 — E2E Playwright và đo `NFR-PERF-09` | NFR-PERF-09 | trung bình | Workflow deploy đã có (ADR-0010); còn thiếu E2E và một lần chạy Lighthouse. E2E cần RNG seed được, đã có từ mốc 2 |
 | Xem chế độ tối tận mắt ở cả bốn khổ | NFR-A11Y-01 | thấp | Token đã đúng; còn thiếu một lần nhìn |
 
