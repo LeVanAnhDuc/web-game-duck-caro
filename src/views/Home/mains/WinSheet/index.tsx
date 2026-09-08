@@ -1,3 +1,4 @@
+import { History } from 'lucide-react';
 import type { GameStatus } from '@/game/core/types';
 import { strings } from '@/lib/strings';
 
@@ -18,11 +19,13 @@ export function WinSheet({
   moveCount,
   variant,
   onPlayAgain,
+  onReview,
 }: {
   status: GameStatus;
   moveCount: number;
   variant: 'sheet' | 'panel';
   onPlayAgain(): void;
+  onReview(): void;
 }) {
   if (status.kind === 'playing') return null;
 
@@ -48,13 +51,24 @@ export function WinSheet({
       <p className="mb-4 mt-1.5 font-mono text-sm text-ink-muted">
         {strings.moveCount(moveCount)}
       </p>
-      <button
-        type="button"
-        onClick={onPlayAgain}
-        className="min-h-11 w-full cursor-pointer rounded-md bg-ink-strong text-sm font-semibold text-paper"
-      >
-        {strings.playAgain}
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onPlayAgain}
+          className="min-h-11 flex-1 cursor-pointer rounded-md bg-ink-strong text-sm font-semibold text-paper"
+        >
+          {strings.playAgain}
+        </button>
+        {/* Xem lại chỉ vào được từ đây — US-03, và ván đã kết thúc thì không còn nhánh nào để tạo. */}
+        <button
+          type="button"
+          onClick={onReview}
+          className="flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-edge bg-raised text-sm font-semibold text-ink hover:bg-paper"
+        >
+          <History size={18} aria-hidden="true" />
+          {strings.review}
+        </button>
+      </div>
     </div>
   );
 }

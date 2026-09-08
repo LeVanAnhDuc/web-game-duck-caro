@@ -8,8 +8,10 @@ export type ControlsProps = {
   /** `row` = thanh dưới trên mobile/tablet · `column` = cột phải trên desktop. */
   orientation: 'row' | 'column';
   canUndo: boolean;
+  canHint: boolean;
   canResign: boolean;
   onUndo(): void;
+  onHint(): void;
   onRecenter(): void;
   onResign(): void;
 };
@@ -17,8 +19,10 @@ export type ControlsProps = {
 export function Controls({
   orientation,
   canUndo,
+  canHint,
   canResign,
   onUndo,
+  onHint,
   onRecenter,
   onResign,
 }: ControlsProps) {
@@ -38,8 +42,7 @@ export function Controls({
         {strings.undo}
       </button>
 
-      {/* Gợi ý là FR-10, mốc 5. Hiện nút disabled thay vì đổi bố cục ở mốc sau. */}
-      <button type="button" disabled className={shape}>
+      <button type="button" onClick={onHint} disabled={!canHint} className={shape}>
         <Lightbulb size={18} aria-hidden="true" />
         {strings.hint}
       </button>

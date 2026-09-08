@@ -1,7 +1,7 @@
 import { cellCenterToScreen, cellToScreen, type Camera } from '../camera';
 import type { Palette } from '../palette';
 import { drawMark } from './marks';
-import type { Point, Side } from '@/game/core/types';
+import type { Move, Point, Side } from '@/game/core/types';
 
 const PREVIEW_ALPHA = 0.45;
 const WIN_STROKE_WIDTH = 4;
@@ -92,4 +92,53 @@ export function drawCursorRing(
   ctx.lineWidth = 2;
   ctx.strokeRect(x - 2, y - 2, cam.cell + 4, cam.cell + 4);
   ctx.restore();
+}
+
+/** Khoảng hở giữa nút xác nhận và ô nó đang nói tới. */
+const CONFIRM_GAP_PX = 8;
+/** Nút nhích lên 2px so với mép trên của ô — giữ nguyên căn chỉnh có từ mốc 1. */
+const CONFIRM_RISE_PX = 2;
+
+/**
+ * Chỗ đặt nút "Đánh" cho ô đang xem trước — ADR-0017.
+ *
+ * Đặt cứng bên phải như trước là đặt nút 8px VÀO TRONG ô kế bên, nên ô đó có quân thì
+ * nút che mất quân. Trước mốc 5 chuyện này hiếm vì chuột không tạo quân xem trước
+ * (ADR-0007); gợi ý (FR-10) làm nó xuất hiện trên mọi thiết bị, và che đúng cái quân
+ * mà gợi ý vừa bảo người chơi nhìn.
+ *
+ * Thử phải -> trái -> dưới -> trên, lấy cạnh đầu tiên vừa TRỐNG vừa LỌT khung nhìn.
+ * Không cạnh nào thoả thì về bên phải: một nút đặt chồng vẫn dùng được, còn không trả
+ * gì thì người chơi cụt đường xác nhận.
+ */
+export function placeConfirmButton(
+  cam: Camera,
+  at: Point,
+  moves: readonly Move[],
+  view: { readonly w: number; readonly h: number },
+  btn: { readonly w: number; readonly h: number },
+): { x: number; y: number } {
+  const corner = cellToScreen(cam, at);
+  const top = corner.y - CONFIRM_RISE_PX;
+
+  // Ô đang xem trước tự nó không bao giờ chặn — nó là ô sắp được đánh vào.
+  const taken = new Set(
+    moves
+      .filter((m) => m.at.x !== at.x || m.at.y !== at.y)
+      .map((m) => `${m.at.x},${m.at.y}`),
+  );
+  const free = (dx: number, dy: number) => !taken.has(`${at.x + dx},${at.y + dy}`);
+  const inside = (x: number, y: number) =>
+    x >= 0 && y >= 0 && x + btn.w <= view.w && y + btn.h <= view.h;
+
+  const right = { x: corner.x + cam.cell + CONFIRM_GAP_PX, y: top };
+  const candidates = [
+    { spot: right, open: free(1, 0) },
+    { spot: { x: corner.x - CONFIRM_GAP_PX - btn.w, y: top }, open: free(-1, 0) },
+    { spot: { x: corner.x, y: corner.y + cam.cell + CONFIRM_GAP_PX }, open: free(0, 1) },
+    { spot: { x: corner.x, y: corner.y - CONFIRM_GAP_PX - btn.h }, open: free(0, -1) },
+  ];
+
+  const pick = candidates.find((c) => c.open && inside(c.spot.x, c.spot.y));
+  return pick?.spot ?? right;
 }

@@ -2,7 +2,7 @@
 
 > **Trả lời:** Hệ thống có những chức năng nào, mỗi cái đang ở trạng thái gì?
 > **Trạng thái:** 🟢 đủ
-> **Cập nhật:** 2026-09-03 · commit —
+> **Cập nhật:** 2026-09-08 · commit —
 > **Cập nhật khi:** brainstorm ra chức năng mới (cấp FR mới) · một FR chuyển trạng thái
 
 <!-- CÁCH ĐIỀN
@@ -27,9 +27,9 @@ KHÔNG chứa: cách hiện thực, ngưỡng phi chức năng (-> nfr.md), lý 
 | FR-05 | Ba mức khó | US-01 · US-04 | xong |
 | FR-06 | Chọn quân và chọn ai đi trước | US-01 · US-02 | xong |
 | FR-07 | Hoàn nước | US-03 | xong |
-| FR-08 | Lịch sử nước đi | US-03 | chưa |
-| FR-09 | Xem lại ván (chỉ đọc) | US-03 | chưa |
-| FR-10 | Gợi ý nước đi | US-01 | chưa |
+| FR-08 | Lịch sử nước đi | US-03 | xong |
+| FR-09 | Xem lại ván (chỉ đọc) | US-03 | xong |
+| FR-10 | Gợi ý nước đi | US-01 | xong |
 | FR-11 | Lưu và tiếp tục ván đang chơi | US-02 | xong |
 | FR-12 | Thống kê thắng / thua / bỏ ván theo từng mức | US-01 · US-04 | xong |
 | FR-13 | Bỏ ván | US-04 | xong |

@@ -23,6 +23,9 @@
 | [ADR-0013](0013-release-notes-also-built-from-commit-subjects.md) | Release note dựng thêm từ commit subject, không chỉ từ pull request | 2026-09-04 | accepted |
 | [ADR-0014](0014-narrow-and-deep-instead-of-a-transposition-table.md) | Hẹp mà sâu, thay vì transposition table | 2026-09-04 | accepted |
 | [ADR-0015](0015-deliberate-blindness-must-blind-the-evaluation-too.md) | Mù có chủ đích phải mù cả hàm lượng giá, không chỉ bỏ bước chặn nhanh | 2026-09-04 | accepted |
+| [ADR-0016](0016-hints-always-use-the-hard-engine.md) | Gợi ý luôn tính bằng engine mức Khó, không theo mức đang chơi | 2026-09-08 | accepted |
+| [ADR-0017](0017-confirm-button-picks-a-free-side.md) | Nút xác nhận đánh tự chọn cạnh trống, không neo cứng bên phải | 2026-09-08 | accepted |
+| [ADR-0018](0018-clickable-move-rows-are-44px.md) | Hàng danh sách nước đi cao 44px khi bấm được, 32px khi chỉ để đọc | 2026-09-08 | accepted |
 <!-- END:auto -->
 
 Trạng thái: `accepted` · `superseded by ADR-00xx` · `deprecated`
