@@ -7,6 +7,7 @@ type Props = Parameters<typeof ReviewBar>[0];
 
 function render(props: Partial<Props> = {}) {
   const onGoto = vi.fn();
+  const onRecenter = vi.fn();
   const onExit = vi.fn();
   const host = document.createElement('div');
   document.body.appendChild(host);
@@ -17,6 +18,7 @@ function render(props: Partial<Props> = {}) {
         total: 10,
         variant: 'panel',
         onGoto,
+        onRecenter,
         onExit,
         ...props,
       }),
@@ -29,7 +31,7 @@ function render(props: Partial<Props> = {}) {
         ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
   };
-  return { host, onGoto, onExit, click };
+  return { host, onGoto, onRecenter, onExit, click };
 }
 
 const disabled = (host: HTMLElement, label: string) =>
@@ -90,5 +92,24 @@ describe('ReviewBar', () => {
         (button.textContent ?? '').trim().length > 0;
       expect(named).toBe(true);
     }
+  });
+});
+
+describe('ReviewBar — nút Giữa', () => {
+  /*
+   * Chế độ xem lại ẩn `Controls`, nên nếu thanh này không có "Giữa" thì người chơi
+   * bị đẩy thế trận ra ngoài khung nhìn (nợ đã ghi trong backlog) sẽ mắc kẹt với một
+   * bàn trống, không có đường ra.
+   */
+  it('có nút Giữa, và nó gọi onRecenter', () => {
+    const { host, onRecenter } = render();
+    const recenter = Array.from(host.querySelectorAll('button')).find(
+      (b) => (b.textContent ?? '').includes('Giữa'),
+    );
+    expect(recenter).toBeDefined();
+    act(() => {
+      recenter?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(onRecenter).toHaveBeenCalledTimes(1);
   });
 });

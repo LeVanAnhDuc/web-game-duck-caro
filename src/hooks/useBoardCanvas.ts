@@ -29,6 +29,8 @@ export type BoardCanvas = {
   onWheel(e: React.WheelEvent<HTMLCanvasElement>): void;
   recenter(): void;
   confirmPreview(): void;
+  /** Dùng cho gợi ý (FR-10): đặt quân xem trước từ ngoài vào. */
+  showPreview(at: Point): void;
   clearPreview(): void;
 };
 
@@ -180,6 +182,8 @@ export function useBoardCanvas(args: {
     args.onPlace(at);
   }, [args, preview]);
 
+  const showPreview = useCallback((at: Point) => setPreview(at), []);
+
   const clearPreview = useCallback(() => setPreview(null), []);
 
   return {
@@ -192,6 +196,7 @@ export function useBoardCanvas(args: {
     onWheel,
     recenter,
     confirmPreview,
+    showPreview,
     clearPreview,
   };
 }

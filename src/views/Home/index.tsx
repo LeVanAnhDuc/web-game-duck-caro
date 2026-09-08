@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createWorkerEngine } from '@/game/ai/workerEngine';
 import { makeRng } from '@/game/ai/rng';
-import type { Level, Side } from '@/game/core/types';
+import type { GameStatus, Level, Side } from '@/game/core/types';
 import { createLocalGameRepository } from '@/game/storage/localGameRepository';
 import type { GameResult } from '@/game/storage/types';
 import { useBoardCanvas } from '@/hooks/useBoardCanvas';
@@ -13,6 +13,8 @@ import { strings } from '@/lib/strings';
 import { BoardStage } from './mains/BoardStage';
 import { Controls } from './mains/Controls';
 import { Header } from './mains/Header';
+import { MoveList } from './mains/MoveList';
+import { ReviewBar } from './mains/ReviewBar';
 import { StartOverlay } from './mains/StartOverlay';
 import { StatsPanel } from './mains/StatsPanel';
 import { StatusLine } from './mains/StatusLine';
@@ -26,6 +28,20 @@ const LEVEL_LABEL: Record<Level, string> = {
 
 /** Seed cố định nên một lỗi tìm ra lúc chơi thì tái tạo được. */
 const ENGINE_SEED = 1;
+
+const PLAYING: GameStatus = { kind: 'playing' };
+
+/** Đầu chế độ xem lại — thay chỗ dòng lượt, vì lúc này không có lượt của ai cả. */
+function ReviewHead({ at, total }: { at: number; total: number }) {
+  return (
+    <div className="flex flex-none items-center justify-between gap-2 border-b border-edge p-4">
+      <p className="text-sm font-semibold text-ink-strong">{strings.reviewing}</p>
+      <p className="font-mono text-sm text-ink-muted">
+        {strings.reviewPosition(at, total)}
+      </p>
+    </div>
+  );
+}
 
 export function Home() {
   const [started, setStarted] = useState(false);
@@ -42,13 +58,36 @@ export function Home() {
   const persistence = usePersistence(repository);
 
   const game = useGame(engine, { first: 'human', level });
+
+  const status = game.state.status;
+  const reviewAt = game.reviewAt;
+  const reviewing = reviewAt !== null;
+  const total = game.state.moves.length;
+
+  /*
+   * Xem lại là một PHÉP CHIẾU (design.md §2): bàn nhận `moves.slice(0, reviewAt)`.
+   * Không có bản sao ván nào, nên không có gì để lệch với nguồn đúng (bất biến 1).
+   *
+   * `status` truyền cho bàn bị ép về 'playing' khi đang đứng GIỮA ván — nếu không,
+   * nét gạch chuỗi thắng sẽ vẽ đè lên một thế bàn chưa có chuỗi đó, tức là vẽ một
+   * kết quả chưa xảy ra.
+   */
+  const shownMoves = reviewing ? game.state.moves.slice(0, reviewAt) : game.state.moves;
+  const shownStatus = reviewing && reviewAt < total ? PLAYING : status;
+
   const board = useBoardCanvas({
-    moves: game.state.moves,
-    status: game.state.status,
+    moves: shownMoves,
+    status: shownStatus,
     onPlace: game.place,
   });
 
-  const status = game.state.status;
+  // Gợi ý về thì đẩy vào quân xem trước. `useGame` không biết gì về canvas, và
+  // `useBoardCanvas` không biết gì về engine — chỗ nối hai bên là đúng ở đây.
+  useEffect(() => {
+    if (game.hint !== null) board.showPreview(game.hint);
+    // `board` đổi mỗi render; chỉ `hint` mới là tín hiệu thật.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game.hint]);
 
   /**
    * Tiếp tục ván dở, đúng MỘT lần khi đọc xong.
@@ -84,9 +123,9 @@ export function Home() {
    * Ghi kết quả vào thống kê, đúng MỘT lần mỗi ván.
    *
    * `useEffect` theo `status` chạy lại ở mỗi render có `status` mới, và một ván có
-   * thể render nhiều lần sau khi kết thúc (đổi kích thước cửa sổ, kéo bàn). Không có
-   * cái khoá này thì một ván thắng đếm thành ba, và bảng thống kê sai âm thầm — vẫn
-   * là số, chỉ là số sai.
+   * thể render nhiều lần sau khi kết thúc (đổi kích thước cửa sổ, kéo bàn, và từ mốc
+   * 5 là cả tua qua tua lại trong chế độ xem lại). Không có cái khoá này thì một ván
+   * thắng đếm thành ba, và bảng thống kê sai âm thầm — vẫn là số, chỉ là số sai.
    */
   const recordedFor = useRef<number | null>(null);
   useEffect(() => {
@@ -125,15 +164,42 @@ export function Home() {
     setStarted(false);
   };
 
+  /*
+   * Vào xem lại thì ĐƯA KHUNG NHÌN VỀ toàn bộ ván.
+   *
+   * Khác với lúc đang chơi — nơi tự dịch khung nhìn là giật màn hình của người đang
+   * đánh — ở đây người chơi vừa BẤM để đổi chế độ, nên thấy cả ván là điều họ mong
+   * đợi. Không có dòng này thì ván có thể mở ra với một bàn trống trơn.
+   */
+  const startReview = () => {
+    board.clearPreview();
+    game.enterReview();
+    board.recenter();
+  };
+
   const controlProps = {
     canUndo: game.state.moves.length > 0 && status.kind === 'playing',
+    canHint:
+      started &&
+      status.kind === 'playing' &&
+      game.state.toMove === 'human' &&
+      !game.thinking &&
+      !game.hinting,
     canResign: started && status.kind === 'playing',
     onUndo: () => {
       board.clearPreview();
       game.undoMove();
     },
+    onHint: game.askHint,
     onRecenter: board.recenter,
     onResign: game.giveUp,
+  };
+
+  const winProps = {
+    status,
+    moveCount: total,
+    onPlayAgain: playAgain,
+    onReview: startReview,
   };
 
   return (
@@ -142,7 +208,7 @@ export function Home() {
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <BoardStage board={board} moves={game.state.moves} />
+          <BoardStage board={board} moves={shownMoves} />
           {!started && (
             <StartOverlay
               stats={persistence.stats}
@@ -151,43 +217,86 @@ export function Home() {
             />
           )}
 
-          <div className="lg:hidden">
-            <StatusLine
-              state={game.state}
-              thinking={game.thinking}
-              notice={game.notice}
-              variant="bar"
-            />
-          </div>
+          {/* Sheet xem lại neo ĐÁY, phủ lên bàn — bàn vẫn thấy được nửa trên. */}
+          {reviewing && (
+            <div className="absolute inset-x-0 bottom-0 flex max-h-[52%] flex-col rounded-t-[10px] border-t border-edge bg-raised shadow-sheet lg:hidden">
+              <div className="flex flex-none items-center justify-between gap-2 px-4 pb-2 pt-4">
+                <p className="text-sm font-semibold text-ink-strong">
+                  {strings.reviewing}
+                </p>
+                <p className="font-mono text-sm text-ink-muted">
+                  {strings.reviewPosition(reviewAt, total)}
+                </p>
+              </div>
+              <MoveList
+                moves={game.state.moves}
+                currentAt={reviewAt}
+                variant="sheet"
+                onPick={game.gotoMove}
+              />
+              <ReviewBar
+                at={reviewAt}
+                total={total}
+                variant="sheet"
+                onGoto={game.gotoMove}
+                onRecenter={board.recenter}
+                onExit={game.exitReview}
+              />
+            </div>
+          )}
+
+          {!reviewing && (
+            <div className="lg:hidden">
+              <StatusLine
+                state={game.state}
+                thinking={game.thinking}
+                notice={game.notice}
+                variant="bar"
+              />
+            </div>
+          )}
         </div>
 
-        <div className="lg:hidden">
-          <WinSheet
-            status={status}
-            moveCount={game.state.moves.length}
-            variant="sheet"
-            onPlayAgain={playAgain}
-          />
-          <Controls orientation="row" {...controlProps} />
-        </div>
+        {!reviewing && (
+          <div className="lg:hidden">
+            <WinSheet {...winProps} variant="sheet" />
+            <Controls orientation="row" {...controlProps} />
+          </div>
+        )}
 
         <aside className="hidden w-80 flex-none flex-col border-l border-edge bg-raised shadow-panel lg:flex">
-          <StatusLine
-            state={game.state}
-            thinking={game.thinking}
-            notice={game.notice}
-            variant="panel"
-          />
-          {/* Danh sách nước đi (FR-08) vào chỗ trống này ở mốc 5. */}
-          <div className="min-h-0 flex-1" />
-          <StatsPanel stats={persistence.stats} level={level} />
-          <WinSheet
-            status={status}
-            moveCount={game.state.moves.length}
-            variant="panel"
-            onPlayAgain={playAgain}
-          />
-          <Controls orientation="column" {...controlProps} />
+          {reviewing ? (
+            <>
+              <ReviewHead at={reviewAt} total={total} />
+              <MoveList
+                moves={game.state.moves}
+                currentAt={reviewAt}
+                variant="panel"
+                onPick={game.gotoMove}
+              />
+              <ReviewBar
+                at={reviewAt}
+                total={total}
+                variant="panel"
+                onGoto={game.gotoMove}
+                onRecenter={board.recenter}
+                onExit={game.exitReview}
+              />
+            </>
+          ) : (
+            <>
+              <StatusLine
+                state={game.state}
+                thinking={game.thinking}
+                notice={game.notice}
+                variant="panel"
+              />
+              <MoveList moves={game.state.moves} currentAt={null} variant="panel" />
+              <StatsPanel stats={persistence.stats} level={level} />
+              <WinSheet {...winProps} variant="panel" />
+              <Controls orientation="column" {...controlProps} />
+            </>
+          )}
         </aside>
       </div>
     </main>

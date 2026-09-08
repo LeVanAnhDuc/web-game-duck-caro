@@ -1,6 +1,13 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Crosshair,
+  X,
+} from 'lucide-react';
 import { strings } from '@/lib/strings';
 
 const NAV =
@@ -18,12 +25,14 @@ export function ReviewBar({
   total,
   variant,
   onGoto,
+  onRecenter,
   onExit,
 }: {
   at: number;
   total: number;
   variant: 'panel' | 'sheet';
   onGoto(n: number): void;
+  onRecenter(): void;
   onExit(): void;
 }) {
   const atStart = at <= 0;
@@ -73,14 +82,31 @@ export function ReviewBar({
           <ChevronsRight size={20} aria-hidden="true" />
         </button>
       </div>
-      <button
-        type="button"
-        onClick={onExit}
-        className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-edge bg-raised text-sm font-semibold text-ink hover:bg-paper"
-      >
-        <X size={18} aria-hidden="true" />
-        {strings.exitReview}
-      </button>
+      {/*
+        "Giữa" phải có Ở ĐÂY, không chỉ ở `Controls`.
+        `backlog.md` ghi nhận một món nợ có ý: đổi kích thước cửa sổ có thể đẩy thế trận ra
+        ngoài khung nhìn, và cách thoát là bấm "Giữa". Chế độ xem lại ẩn `Controls`, nên
+        nếu không đặt lại nút này thì người chơi mắc kẹt với bàn trống, không có đường ra.
+        Tìm ra bằng cách đổi khung nhìn 1440 -> 375 trên app đang chạy.
+      */}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onRecenter}
+          className="flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-edge bg-raised text-sm font-semibold text-ink hover:bg-paper"
+        >
+          <Crosshair size={18} aria-hidden="true" />
+          {strings.recenter}
+        </button>
+        <button
+          type="button"
+          onClick={onExit}
+          className="flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-edge bg-raised text-sm font-semibold text-ink hover:bg-paper"
+        >
+          <X size={18} aria-hidden="true" />
+          {strings.exitReview}
+        </button>
+      </div>
     </div>
   );
 }

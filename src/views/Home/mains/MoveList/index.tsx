@@ -30,9 +30,15 @@ function SideGlyph({ side }: { side: Side }) {
   );
 }
 
-/** Lưới `2.5rem 1.25rem 1fr` là spec `.move-row` của MASTER.md §8. */
+/*
+ * Lưới `2.5rem 1.25rem 1fr` là spec `.move-row` của MASTER.md §8.
+ *
+ * `text-left` KHÔNG phải thứ thừa: `<button>` mặc định `text-align: center`, còn
+ * `<div>` thì không — nên khi hàng đổi từ chỉ-đọc sang bấm-được, cả cột toạ độ
+ * nhảy sang phải ~70px. Thấy được bằng mắt khi bấm thật, không thấy được bằng test.
+ */
 const ROW =
-  'grid grid-cols-[2.5rem_1.25rem_1fr] items-center gap-2 rounded-md px-2 font-mono text-sm';
+  'grid grid-cols-[2.5rem_1.25rem_1fr] items-center gap-2 rounded-md px-2 text-left font-mono text-sm';
 
 export type MoveListProps = {
   moves: readonly Move[];
