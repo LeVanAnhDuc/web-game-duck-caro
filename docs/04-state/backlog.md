@@ -18,46 +18,33 @@ KHÔNG chứa: tính năng ngoài phạm vi (-> 01-product/overview.md §Non-Goa
 
 ## Đang làm
 
-**Mốc 6 đã xong** (2026-09-08). Bàn phím, âm thanh, cài đặt. 253 unit test xanh (22 file);
-`typecheck` · `lint` · `build` đều qua. First Load JS **118 kB**, còn dưới ngưỡng 150 kB.
+**Mốc 7 đã xong — hết 7/7 mốc của v1** (2026-09-08). Không thêm chức năng người dùng nào;
+mốc này **kiểm** sáu mốc trước và điền con số cuối cùng còn trống trong `nfr.md`.
 
-**`NFR-A11Y-02` ĐẠT LẦN ĐẦU.** Đây là ngưỡng duy nhất trong `nfr.md` mà năm mốc đầu không hề
-đạt: bàn là canvas, và canvas không có gì để tab tới. Tức là tới hết mốc 5, game này
-**không chơi được nếu không có chuột hoặc cảm ứng**.
+**19 test E2E Playwright**, chạy trên **bản build tĩnh** chứ không trên dev server
+(ADR-0022). Ba thứ 253 unit test không thể thay:
 
-Đã thử trên **bản build tĩnh**, không phải dev server — và đó là một bài học: overlay
-dev-tools của Next là một phần tử trong thứ tự Tab, nên đo a11y trên dev server là đo một
-cây focus không tồn tại ở production. Chuỗi đã chạy thật: mũi tên → Shift+mũi tên →
-Enter → Enter → `u` (hoàn) → `h` (gợi ý), và vùng live đọc đúng cả toạ độ lẫn tình
-trạng ô.
+1. **Worker chạy thật.** Mọi test AI đều tiêm một `Engine` giả, nên chưa cái nào chứng
+   minh `engine.worker.ts` khởi động được và trả nước trong một trình duyệt thật. Gửi
+   sai hình dạng thông điệp thì cả 253 test vẫn xanh và game không đánh được nước nào.
+2. **`localStorage` thật** qua một lần tải lại trang thật.
+3. **Bàn phím trong cây focus thật** — `NFR-A11Y-02` giờ có đúng cái test E2E mà nó đã hứa.
 
-Ba ADR mới:
+**`NFR-PERF-09` đã có số, và ngưỡng được chốt SAU khi đo** — đúng thứ tự mà ô đó yêu cầu
+từ đầu. Slow 4G + CPU×4, khung 412×915, 5 lần lấy trung vị: **LCP 1.00s · load 3.17s ·
+526 kB**, lần nào cũng chơi được ngay. Đo lại được bằng `node e2e/measure-load.mjs --runs 5`.
 
-- **ADR-0019** — cài đặt có seam riêng. `GameRepository.ts` đã ghi từ mốc 4 rằng cài đặt
-  không thuộc về nó, nhưng bất biến 5 lại cấm UI gọi `localStorage`. Hai câu đó chỉ cùng
-  đúng khi có **hai** seam — bất biến 5 đã được viết lại cho khớp, nếu không nó tự thành
-  câu sai.
-- **ADR-0020** — mũi tên dịch con trỏ, Shift + mũi tên kéo bàn. Loại phương án "chế độ
-  kéo bàn riêng": trạng thái ẩn, và trên bàn vô hạn thì không biết mình đang ở chế độ nào
-  nghĩa là mỗi phím mũi tên làm một trong hai việc hoàn toàn khác nhau.
-- **ADR-0021** — âm thanh tổng hợp, và **im lặng là trạng thái hợp lệ**. `AudioContext` sinh
-  ra ở tiếng ĐẦU TIÊN chứ không lúc mount: context tạo trước cử chỉ người dùng nằm ở
-  `suspended` vĩnh viễn ở nhiều trình duyệt — im lặng mãi mãi mà không lỗi nào nổ ra.
+Hai lần tôi tự đo **sai** trong lát này, ghi ra vì cả hai đều là loại sai âm thầm:
 
-Hai lỗi tìm ra bằng cách **nhìn thật**, không test nào bắt được:
+1. **Bắt đầu đếm byte bằng header `content-length`.** Server E2E viết tay không gửi header
+   đó, nên phép đo trả về **0 kB** — một con số sai trông y như một con số đúng. Đã chuyển
+   sang đếm bằng CDP `Network.loadingFinished`, không phụ thuộc server.
+2. **Bắn tất cả phím trong cùng một tick khi thử bàn phím bằng tay** (mốc 6). React batch
+   lại, mọi phím dùng cùng một giá trị `cursor` cũ, và tôi suýt kết luận bàn phím hỏng.
 
-1. **Sheet cài đặt lơ lửng giữa màn ở desktop.** Nó nằm trong khung BÀN, nên `right-0` neo
-   vào mép bàn chứ không mép cửa sổ. Đổi sang `lg:fixed`.
-2. **Trong lúc đo `NFR-SEC-07`**, phát hiện câu chữ của ngưỡng đó quá chặt so với thực
-   tế: chunk của Worker (`953.js`) tải sau lần đầu. Cùng origin, là code của chính app.
-   Đã viết lại ngưỡng thành "không request nào RA NGOÀI origin", và ghi số đo thật.
-
-**Chưa kiểm được:** nghe thật bốn tiếng bằng tai. Đã xác nhận được **2 oscillator thật**
-sinh ra cho một nước của người cộng một nước của máy, nhưng "nghe có hay không" thì
-không chứng minh được bằng code (ADR-0021 đã ghi sẵn điều này). Canvas ở chế độ tối cũng
-vẫn chưa xem tận mắt.
-
-**Dừng ở bước:** tiếp theo là mốc 7 — E2E Playwright và đo `NFR-PERF-09`.
+**Còn lại sau v1** — xem mục dưới. Thứ duy nhất **không làm được ở đây**, chứ không phải
+chưa làm: `NFR-PERF-05` và `NFR-PERF-07` cần một **điện thoại thật**, và không có thiết bị.
+Đo trên máy dev một mình đúng là cái mà `overview.md` §6 chỉ tên là chưa đủ.
 
 **Đang chặn:** không có gì.
 
@@ -66,8 +53,9 @@ vẫn chưa xem tận mắt.
 | Việc | Liên quan | Ưu tiên | Vì sao ưu tiên đó |
 | --- | --- | --- | --- |
 | Đo `NFR-PERF-05` và `NFR-PERF-07` trên một điện thoại thật | NFR-PERF-05 · NFR-PERF-07 | cao | Bàn vô hạn là rủi ro hiệu năng lớn nhất. `NFR-PERF-07` giờ cũng đo được: worker đã chạy thật, còn thiếu một lần mở Performance panel xác nhận không có long task |
-| Mốc 7 — E2E Playwright và đo `NFR-PERF-09` | NFR-PERF-09 | trung bình | Workflow deploy đã có (ADR-0010); còn thiếu E2E và một lần chạy Lighthouse. E2E cần RNG seed được, đã có từ mốc 2 |
 | Xem chế độ tối tận mắt ở cả bốn khổ | NFR-A11Y-01 | thấp | Token đã đúng; còn thiếu một lần nhìn |
+| Nghe thật bốn tiếng bằng tai | FR-14 | thấp | Đếm được oscillator, nhưng "nghe có hợp không" thì không chứng minh được bằng code — ADR-0021 đã ghi sẵn giới hạn này |
+| Tự chơi thử có ghi kết quả để kiểm "mức khó phân tách thật" | overview.md §6 | trung bình | Tiêu chí thành công số 1 của sản phẩm, và chưa ai đo. Cần người chơi thật, không phải test |
 
 ## Nợ kỹ thuật — cố ý làm tạm
 

@@ -29,6 +29,7 @@
 | [ADR-0019](0019-settings-live-in-their-own-seam.md) | Cài đặt có seam lưu trữ riêng, không đi qua `GameRepository` | 2026-09-08 | accepted |
 | [ADR-0020](0020-keyboard-cursor-with-shift-to-pan.md) | Mũi tên dịch con trỏ; Shift + mũi tên kéo bàn | 2026-09-08 | accepted |
 | [ADR-0021](0021-sound-is-synthesised-and-silence-is-valid.md) | Âm thanh tổng hợp bằng WebAudio, và im lặng là một trạng thái hợp lệ | 2026-09-08 | accepted |
+| [ADR-0022](0022-e2e-runs-against-the-static-build.md) | E2E chạy trên bản build tĩnh, không trên dev server | 2026-09-08 | accepted |
 <!-- END:auto -->
 
 Trạng thái: `accepted` · `superseded by ADR-00xx` · `deprecated`

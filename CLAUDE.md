@@ -17,8 +17,9 @@ file that talks about the other files.
 ```bash
 yarn install
 yarn dev          # http://localhost:3000
-yarn test         # vitest, 253 tests
+yarn test         # vitest, 253 unit tests
 yarn test:watch
+yarn e2e          # playwright, 19 tests against the STATIC BUILD (ADR-0022)
 yarn typecheck
 yarn lint
 yarn build        # static export into out/
@@ -100,9 +101,14 @@ that command is the fix, not a change to the workflow.
 
 | Workflow | Runs on | Gates |
 | --- | --- | --- |
-| `ci.yml` | pull requests only | typecheck · lint · test · build · audit (report-only) |
+| `ci.yml` | pull requests only | **job `check`**: typecheck · lint · test · build · audit (report-only)<br>**job `e2e`**: Playwright trên bản build tĩnh, chỉ Chromium |
 | `deploy.yml` | push to `main` | typecheck · test, then build and publish |
 | `release.yml` | push to `main` | typecheck · test, then compute the version and tag |
+
+`yarn e2e` builds first and serves `out/` — never the dev server. Next's dev overlay is a
+real element in the tab order, so an a11y test on `next dev` measures a focus tree that
+does not exist in production (ADR-0022, learned by pressing Tab and landing on
+`NEXTJS-PORTAL`).
 
 `ci.yml` deliberately does **not** run on `main`: the other two already gate that push,
 and a third run would be the same test suite a third time for one push.
