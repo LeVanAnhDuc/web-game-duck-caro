@@ -6,6 +6,7 @@ import {
   CELL_DEFAULT_DESKTOP,
   CELL_DEFAULT_MOBILE,
   clampCell,
+  ensureVisible,
   fitToMoves,
   panBy,
   screenToCell,
@@ -18,15 +19,29 @@ import { advanceGesture, beginGesture, isDrag, type Gesture } from './pointerGes
 
 const MOBILE_MAX_WIDTH = 640;
 const WHEEL_STEP_PX = 2;
+/** Một lần bấm `+` / `-` đổi cạnh ô bấy nhiêu px. Lớn hơn bước lăn chuột vì bấm phím
+ *  là hành động rời rạc, không liên tục. */
+const KEY_ZOOM_STEP_PX = 4;
+
+/** Mũi tên -> hướng trên bàn. `y` tăng xuống dưới, khớp toạ độ màn hình. */
+const ARROWS: Readonly<Record<string, Point>> = {
+  ArrowLeft: { x: -1, y: 0 },
+  ArrowRight: { x: 1, y: 0 },
+  ArrowUp: { x: 0, y: -1 },
+  ArrowDown: { x: 0, y: 1 },
+};
 
 export type BoardCanvas = {
   readonly canvasRef: React.RefObject<HTMLCanvasElement | null>;
   readonly cam: Camera;
   readonly preview: Point | null;
+  /** Ô con trỏ bàn phím đang trỏ tới. `null` = chưa ai dùng bàn phím (ADR-0020). */
+  readonly cursor: Point | null;
   onPointerDown(e: React.PointerEvent<HTMLCanvasElement>): void;
   onPointerMove(e: React.PointerEvent<HTMLCanvasElement>): void;
   onPointerUp(e: React.PointerEvent<HTMLCanvasElement>): void;
   onWheel(e: React.WheelEvent<HTMLCanvasElement>): void;
+  onKeyDown(e: React.KeyboardEvent<HTMLCanvasElement>): void;
   recenter(): void;
   confirmPreview(): void;
   /** Dùng cho gợi ý (FR-10): đặt quân xem trước từ ngoài vào. */
@@ -45,6 +60,7 @@ export function useBoardCanvas(args: {
   const [palette, setPalette] = useState<Palette | null>(null);
   const [cam, setCam] = useState<Camera>({ cell: CELL_DEFAULT_DESKTOP, ox: 0, oy: 0 });
   const [preview, setPreview] = useState<Point | null>(null);
+  const [cursor, setCursor] = useState<Point | null>(null);
 
   const localPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const box = e.currentTarget.getBoundingClientRect();
@@ -109,11 +125,18 @@ export function useBoardCanvas(args: {
       status: args.status,
       preview,
       previewSide: 'human',
+      cursor,
       w: canvas.width / dpr,
       h: canvas.height / dpr,
       palette,
     });
-  }, [cam, args.moves, args.status, preview, palette]);
+  }, [cam, args.moves, args.status, preview, cursor, palette]);
+
+  // Ván mới thì con trỏ về `null`, để lần bấm phím sau lại bắt đầu từ ô (0,0). Giữ
+  // con trỏ cũ nghĩa là nó trỏ vào một ô của ván đã biến mất.
+  useEffect(() => {
+    if (args.moves.length === 0) setCursor(null);
+  }, [args.moves.length]);
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     const p = localPoint(e);
@@ -167,6 +190,80 @@ export function useBoardCanvas(args: {
     setCam((current) => zoomAt(current, sx, sy, clampCell(current.cell + delta)));
   }, []);
 
+  /** Kích thước khung nhìn theo CSS px — `canvas.width` là pixel thiết bị. */
+  const viewSize = useCallback(() => {
+    const canvas = canvasRef.current;
+    const dpr = window.devicePixelRatio || 1;
+    return { w: (canvas?.width ?? 0) / dpr, h: (canvas?.height ?? 0) / dpr };
+  }, []);
+
+  /**
+   * Con trỏ bắt đầu ở NƯỚC CUỐI, không phải ở (0,0) giữa ván.
+   * Đó là chỗ người chơi đang nghĩ; bắt họ bấm mũi tên từ gốc toạ độ về lại thế trận
+   * là bắt họ đi lại quãng đường mà chính bàn vô hạn vừa tạo ra.
+   */
+  const startCell = useCallback((): Point => {
+    const last = args.moves[args.moves.length - 1];
+    return last?.at ?? { x: 0, y: 0 };
+  }, [args.moves]);
+
+  /**
+   * Toàn bộ bàn phím của bàn cờ — ADR-0020.
+   *
+   * Mũi tên trần dịch CON TRỎ. `Shift` + mũi tên KÉO BÀN, và con trỏ đi theo bàn nên
+   * nó đứng yên trên màn hình. Không có chế độ nào: một chế độ kéo-bàn riêng là trạng
+   * thái ẩn, và trên bàn vô hạn thì không biết mình đang ở chế độ nào nghĩa là mỗi
+   * phím mũi tên làm một trong hai việc hoàn toàn khác nhau.
+   *
+   * Chỉ `preventDefault` cho những phím hàm này THẬT SỰ xử lý. Chặn tất cả sẽ giết
+   * `Tab`, và người dùng bàn phím mắc kẹt trong canvas — đúng cái mà FR-15 định sửa.
+   */
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+      const dir = ARROWS[e.key];
+      if (dir !== undefined) {
+        e.preventDefault();
+        const base = cursor ?? startCell();
+        // Lần bấm đầu chỉ ĐẶT con trỏ, không dịch: nếu dịch luôn thì ô đầu tiên người
+        // dùng nhìn thấy đã lệch một ô so với nước cuối, và không ai hiểu tại sao.
+        const next = cursor === null ? base : { x: base.x + dir.x, y: base.y + dir.y };
+        setCursor(next);
+        const { w, h } = viewSize();
+        if (e.shiftKey) {
+          setCam((c) => panBy(c, -dir.x * c.cell, -dir.y * c.cell));
+        } else {
+          setCam((c) => ensureVisible(c, next, w, h));
+        }
+        return;
+      }
+
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (args.status.kind !== 'playing') return;
+        const at = cursor ?? startCell();
+        setCursor(at);
+        setPreview(null);
+        args.onPlace(at);
+        return;
+      }
+
+      if (e.key === '+' || e.key === '=' || e.key === '-') {
+        e.preventDefault();
+        const { w, h } = viewSize();
+        const delta = e.key === '-' ? -KEY_ZOOM_STEP_PX : KEY_ZOOM_STEP_PX;
+        setCam((c) => zoomAt(c, w / 2, h / 2, clampCell(c.cell + delta)));
+        return;
+      }
+
+      if (e.key === 'Home') {
+        e.preventDefault();
+        const { w, h } = viewSize();
+        setCam(fitToMoves(args.moves, w, h));
+      }
+    },
+    [args, cursor, startCell, viewSize],
+  );
+
   const recenter = useCallback(() => {
     const canvas = canvasRef.current;
     if (canvas == null) return;
@@ -190,10 +287,12 @@ export function useBoardCanvas(args: {
     canvasRef,
     cam,
     preview,
+    cursor,
     onPointerDown,
     onPointerMove,
     onPointerUp,
     onWheel,
+    onKeyDown,
     recenter,
     confirmPreview,
     showPreview,

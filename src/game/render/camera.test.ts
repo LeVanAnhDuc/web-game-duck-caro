@@ -5,6 +5,7 @@ import {
   cellCenterToScreen,
   cellToScreen,
   clampCell,
+  ensureVisible,
   fitToMoves,
   panBy,
   screenToCell,
@@ -119,5 +120,63 @@ describe('fitToMoves', () => {
       { at: { x: 500, y: 500 }, side: 'ai' },
     ];
     expect(fitToMoves(moves, 375, 656).cell).toBe(CELL_MIN);
+  });
+});
+
+describe('ensureVisible (ADR-0020)', () => {
+  const cam = { cell: 32, ox: 100, oy: 100 };
+  const view = { w: 320, h: 320 };
+
+  it('ô đã nằm trọn trong khung thì trả về CHÍNH camera đó, không phải bản sao', () => {
+    // `toBe` chứ không `toEqual`: React so sánh tham chiếu, nên trả bản sao mỗi lần
+    // bấm phím sẽ vẽ lại cả bàn dù không có gì đổi.
+    expect(ensureVisible(cam, { x: 0, y: 0 }, view.w, view.h)).toBe(cam);
+    expect(ensureVisible(cam, { x: 2, y: 2 }, view.w, view.h)).toBe(cam);
+  });
+
+  it('ô lệch sang phải ngoài khung thì bàn dịch sang trái, mức phóng không đổi', () => {
+    const next = ensureVisible(cam, { x: 10, y: 0 }, view.w, view.h);
+    expect(next.cell).toBe(cam.cell);
+    expect(next.oy).toBe(cam.oy);
+    expect(next.ox).toBeLessThan(cam.ox);
+    // Ô 10 có mép phải ở 100 + 11*32 = 452; cần <= 320 trừ một ô đệm.
+    expect(10 * next.cell + next.ox + next.cell).toBeLessThanOrEqual(view.w);
+  });
+
+  it('ô lệch sang trái ngoài khung thì bàn dịch sang phải', () => {
+    const next = ensureVisible(cam, { x: -6, y: 0 }, view.w, view.h);
+    expect(next.ox).toBeGreaterThan(cam.ox);
+    expect(-6 * next.cell + next.ox).toBeGreaterThanOrEqual(0);
+  });
+
+  it('lệch lên trên và xuống dưới, mỗi chiều một ca', () => {
+    const up = ensureVisible(cam, { x: 0, y: -6 }, view.w, view.h);
+    expect(up.oy).toBeGreaterThan(cam.oy);
+    expect(up.ox).toBe(cam.ox);
+
+    const down = ensureVisible(cam, { x: 0, y: 12 }, view.w, view.h);
+    expect(down.oy).toBeLessThan(cam.oy);
+    expect(down.ox).toBe(cam.ox);
+  });
+
+  it('lệch cả hai chiều thì dịch cả hai', () => {
+    const next = ensureVisible(cam, { x: 20, y: -9 }, view.w, view.h);
+    expect(next.ox).not.toBe(cam.ox);
+    expect(next.oy).not.toBe(cam.oy);
+  });
+
+  it('khung nhỏ hơn một ô vẫn ra số hữu hạn, không NaN và không treo', () => {
+    const next = ensureVisible(cam, { x: 5, y: 5 }, 10, 10);
+    expect(Number.isFinite(next.ox)).toBe(true);
+    expect(Number.isFinite(next.oy)).toBe(true);
+  });
+
+  it('toạ độ rất âm vẫn được đưa vào khung', () => {
+    const next = ensureVisible(cam, { x: -400, y: -400 }, view.w, view.h);
+    const left = -400 * next.cell + next.ox;
+    const top = -400 * next.cell + next.oy;
+    expect(left).toBeGreaterThanOrEqual(0);
+    expect(top).toBeGreaterThanOrEqual(0);
+    expect(left + next.cell).toBeLessThanOrEqual(view.w);
   });
 });

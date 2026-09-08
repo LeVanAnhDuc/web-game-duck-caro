@@ -17,7 +17,7 @@ file that talks about the other files.
 ```bash
 yarn install
 yarn dev          # http://localhost:3000
-yarn test         # vitest, 196 tests
+yarn test         # vitest, 253 tests
 yarn test:watch
 yarn typecheck
 yarn lint

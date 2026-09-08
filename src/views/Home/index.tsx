@@ -2,19 +2,23 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createWorkerEngine } from '@/game/ai/workerEngine';
+import { browserAudioCtor, createAudio } from '@/game/audio';
 import { makeRng } from '@/game/ai/rng';
 import type { GameStatus, Level, Side } from '@/game/core/types';
 import { createLocalGameRepository } from '@/game/storage/localGameRepository';
 import type { GameResult } from '@/game/storage/types';
 import { useBoardCanvas } from '@/hooks/useBoardCanvas';
 import { useGame } from '@/hooks/useGame';
+import { useSettings } from '@/hooks/useSettings';
 import { usePersistence } from '@/hooks/usePersistence';
 import { strings } from '@/lib/strings';
 import { BoardStage } from './mains/BoardStage';
 import { Controls } from './mains/Controls';
+import { CursorLive } from './mains/CursorLive';
 import { Header } from './mains/Header';
 import { MoveList } from './mains/MoveList';
 import { ReviewBar } from './mains/ReviewBar';
+import { SettingsSheet } from './mains/SettingsSheet';
 import { StartOverlay } from './mains/StartOverlay';
 import { StatsPanel } from './mains/StatsPanel';
 import { StatusLine } from './mains/StatusLine';
@@ -47,6 +51,18 @@ export function Home() {
   const [started, setStarted] = useState(false);
   const [level, setLevel] = useState<Level>('normal');
   const [first, setFirst] = useState<Side>('human');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const { settings, loaded: settingsLoaded, update: updateSettings } = useSettings();
+
+  /*
+   * Âm thanh dựng MỘT lần cho cả phiên, nhưng `AudioContext` bên trong chỉ sinh ra ở
+   * tiếng đầu tiên — tức ở một cử chỉ người dùng (ADR-0021).
+   */
+  const audio = useMemo(() => createAudio(browserAudioCtor()), []);
+  useEffect(() => {
+    audio.setEnabled(settings.sound);
+  }, [audio, settings.sound]);
 
   const engine = useMemo(() => createWorkerEngine(makeRng(ENGINE_SEED)), []);
   // Worker phải bị đóng khi component rời đi, nếu không mỗi lần hot-reload để lại
@@ -58,6 +74,17 @@ export function Home() {
   const persistence = usePersistence(repository);
 
   const game = useGame(engine, { first: 'human', level });
+
+  /*
+   * Mức khó mặc định chỉ áp khi CHƯA vào ván nào. Áp giữa ván sẽ đổi mức của ván đang
+   * chơi mà không hỏi gì, và `journeys.md` §US-04 chỉ đúng tên lỗi đó.
+   */
+  const appliedDefault = useRef(false);
+  useEffect(() => {
+    if (appliedDefault.current || !settingsLoaded || started) return;
+    appliedDefault.current = true;
+    setLevel(settings.defaultLevel);
+  }, [settingsLoaded, started, settings.defaultLevel]);
 
   const status = game.state.status;
   const reviewAt = game.reviewAt;
@@ -143,6 +170,30 @@ export function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, level]);
 
+  /*
+   * Tiếng đi theo NƯỚC MỚI, không theo `status`: một `useEffect` trên `status` sẽ im
+   * suốt ván và chỉ kêu lúc kết thúc. Khoá theo số nước để resize hay tua lại không
+   * phát lại tiếng — cùng loại khoá như khoá chống đếm trùng thống kê.
+   */
+  const soundedFor = useRef(0);
+  useEffect(() => {
+    const count = game.state.moves.length;
+    if (count === soundedFor.current) return;
+    const grew = count > soundedFor.current;
+    soundedFor.current = count;
+    if (!grew || !started) return;
+
+    if (status.kind === 'won') {
+      if (status.by === 'human') audio.win();
+      else audio.lose();
+      return;
+    }
+    const last = game.state.moves[count - 1];
+    if (last?.side === 'human') audio.place();
+    else if (last?.side === 'ai') audio.reply();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game.state.moves, status, started]);
+
   const start = (options: { first: Side; level: Level }) => {
     setLevel(options.level);
     setFirst(options.first);
@@ -204,16 +255,29 @@ export function Home() {
 
   return (
     <main className="flex h-dvh flex-col">
-      <Header levelLabel={LEVEL_LABEL[level]} />
+      <Header
+        levelLabel={LEVEL_LABEL[level]}
+        soundOn={settings.sound}
+        onToggleSound={() => updateSettings({ ...settings, sound: !settings.sound })}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <BoardStage board={board} moves={shownMoves} />
+          <BoardStage
+            board={board}
+            moves={shownMoves}
+            onHint={game.askHint}
+            onUndo={() => {
+              board.clearPreview();
+              game.undoMove();
+            }}
+          />
           {!started && (
             <StartOverlay
               stats={persistence.stats}
+              defaultLevel={settings.defaultLevel}
               onStart={start}
-              onClearAll={persistence.clearAll}
             />
           )}
 
@@ -245,8 +309,18 @@ export function Home() {
             </div>
           )}
 
+          {settingsOpen && (
+            <SettingsSheet
+              settings={settings}
+              onChange={updateSettings}
+              onClearAll={persistence.clearAll}
+              onClose={() => setSettingsOpen(false)}
+            />
+          )}
+
           {!reviewing && (
             <div className="lg:hidden">
+              <CursorLive cursor={board.cursor} moves={shownMoves} />
               <StatusLine
                 state={game.state}
                 thinking={game.thinking}
@@ -292,6 +366,7 @@ export function Home() {
                 variant="panel"
               />
               <MoveList moves={game.state.moves} currentAt={null} variant="panel" />
+              <CursorLive cursor={board.cursor} moves={shownMoves} />
               <StatsPanel stats={persistence.stats} level={level} />
               <WinSheet {...winProps} variant="panel" />
               <Controls orientation="column" {...controlProps} />

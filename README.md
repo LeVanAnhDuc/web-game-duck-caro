@@ -12,8 +12,8 @@ is drawn in code on a canvas: no sprite sheet, no image files. No server, no sig
 
 ![Caro vô hạn gameplay](docs/assets/screenshot.png)
 
-**Status:** milestones 1 to 5 of 7 are done — the game is playable, the opponent is real,
-and a finished game can be replayed move by move. See [`docs/04-state/backlog.md`](docs/04-state/backlog.md).
+**Status:** milestones 1 to 6 of 7 are done — the game is playable, the opponent is real, a
+finished game replays move by move, and a whole game can be played with the keyboard alone. See [`docs/04-state/backlog.md`](docs/04-state/backlog.md).
 
 Releases and the Pages deploy are automated from `main`; the version comes from
 Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
@@ -38,6 +38,33 @@ Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
   - Choose who moves first; the machine answers every move
   - Undo takes back your move **and** the machine's reply
   - Resign closes the game when it is no longer worth finishing
+
+- **Playable with the keyboard alone**
+
+  - The board itself takes focus: arrows move a cursor, Enter places, Shift + arrows pan
+  - `+` and `-` zoom, `Home` fits every mark back on screen, `h` hints, `u` undoes
+  - The cursor drags the viewport along, because a board with no edges will otherwise
+    leave it somewhere off screen
+  - A second live region reads the cursor's coordinates **and whether that cell is
+    taken** — before you commit, not after
+  - Verified on the static build, not the dev server: Next's dev overlay sits in the tab
+    order and would have measured the wrong thing
+
+- **Sound, synthesised on the spot**
+
+  - Four sounds built from oscillators — no audio files, because nothing may be fetched
+    after the first load
+  - Your move and the machine's differ in **pitch**, not in volume
+  - If the browser blocks audio the game stays silent and keeps working; silence is a
+    valid state, not an error path
+
+- **Settings that belong to the machine, not to you**
+
+  - Sound on or off, and the difficulty a new game starts at
+  - Kept separately from saved games, so muting a work computer never mutes the one at
+    home — even after accounts exist
+  - Erasing everything lives here too, behind a confirmation that says plainly there is
+    no copy anywhere
 
 - **Every move is listed, and a finished game replays**
 
@@ -106,6 +133,11 @@ The board has no edges, so moving around it is part of playing it.
 | Zoom | Mouse wheel | Zoom is anchored at the pointer, not at the centre |
 | Undo · Hint · Centre · Resign | Buttons in the right-hand panel | Centre snaps the camera back to the opening stone |
 | Replay a finished game | ‹ › buttons, or click a move in the list | Read-only — a replay never branches the game |
+| Move the cursor | Arrow keys | The viewport follows it |
+| Place with the keyboard | Enter or Space | On the cell the cursor is on |
+| Pan with the keyboard | Shift + arrow keys | The cursor keeps its place on screen |
+| Zoom · centre | `+` `-` · `Home` | Zoom is anchored at the middle of the view |
+| Hint · undo | `h` · `u` | Hint always asks the hard engine |
 
 ## Commands
 
@@ -126,7 +158,7 @@ explicitly rather than leaving the question open.
 - **Framework**: Next.js 15 (App Router, `output: 'export'`), React 19, TypeScript strict
 - **Rendering**: Canvas 2D, drawn procedurally — no asset files
 - **Styling**: Tailwind CSS v3, lucide-react icons, self-hosted fonts via `next/font`
-- **Testing**: vitest + happy-dom (196 unit tests, including 25 tactical positions for the engine)
+- **Testing**: vitest + happy-dom (253 unit tests, including 25 tactical positions for the engine)
 - **Hosting**: static, intended for GitHub Pages
 
 ## Releases and versioning

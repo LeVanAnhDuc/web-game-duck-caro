@@ -24,3 +24,14 @@ export const statsKey = (owner?: string): string => `${prefixFor(owner)}stats`;
  * (NFR-DATA-04) — xoá cả rác của những version cũ còn sót lại.
  */
 export const ALL_VERSIONS_PREFIX = 'gomoku:';
+
+/**
+ * Khoá cài đặt — CỐ Ý không có tiền tố chủ sở hữu (ADR-0019).
+ *
+ * `prefixFor(owner)` gắn `local` hôm nay và id người dùng ngày ghép Ducker ID. Cài đặt
+ * nằm ngoài cơ chế đó, và chính việc nằm ngoài là điều làm nó thuộc về CÁI MÁY chứ
+ * không thuộc về người: tắt tiếng ở máy công ty không được làm im máy ở nhà.
+ *
+ * Vẫn mang `STORAGE_VERSION`, nên đổi cấu trúc cài đặt cũng là bỏ chứ không migrate.
+ */
+export const settingsKey = (): string => `gomoku:${STORAGE_VERSION}:settings`;

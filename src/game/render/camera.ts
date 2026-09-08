@@ -81,3 +81,44 @@ export function fitToMoves(
     oy: (viewH - contentH) / 2 - bounds.minY * cell,
   };
 }
+
+/** Số ô đệm giữ quanh con trỏ khi kéo khung nhìn theo nó. */
+const CURSOR_MARGIN_CELLS = 1;
+
+/**
+ * Dịch khung nhìn tối thiểu để một ô nằm trọn trong đó, cộng một ô đệm — ADR-0020.
+ *
+ * Con trỏ bàn phím đi trên bàn KHÔNG CÓ BIÊN, nên sau chục lần bấm mũi tên nó ra khỏi
+ * màn hình. Lúc đó vòng con trỏ vẫn "tồn tại" và mọi phím vẫn chạy đúng — chỉ là không
+ * ai thấy gì. Đó là lý do hàm này tồn tại, và là lý do nó nằm ở `camera` chứ không ở
+ * hook: bất biến 11 nói mọi phép đổi toạ độ đi qua đúng module này.
+ *
+ * Trả về CHÍNH `cam` khi không cần dịch. React so sánh tham chiếu, nên trả một bản sao
+ * mỗi lần bấm phím sẽ vẽ lại cả bàn dù không có gì đổi.
+ */
+export function ensureVisible(
+  cam: Camera,
+  at: Point,
+  viewW: number,
+  viewH: number,
+): Camera {
+  const pad = cam.cell * CURSOR_MARGIN_CELLS;
+  const corner = cellToScreen(cam, at);
+
+  const shift = (
+    near: number,
+    far: number,
+    limit: number,
+  ): number => {
+    // Khung hẹp hơn ô cộng đệm thì không có vị trí nào thoả cả hai phía; ưu tiên
+    // cạnh gần, vì đó là phía người đọc bắt đầu nhìn.
+    if (near - pad < 0) return pad - near;
+    if (far + pad > limit) return limit - pad - far;
+    return 0;
+  };
+
+  const dx = shift(corner.x, corner.x + cam.cell, viewW);
+  const dy = shift(corner.y, corner.y + cam.cell, viewH);
+  if (dx === 0 && dy === 0) return cam;
+  return { cell: cam.cell, ox: cam.ox + dx, oy: cam.oy + dy };
+}
