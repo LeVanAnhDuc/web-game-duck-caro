@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { describe, expect, it, vi } from 'vitest';
 import { useGame, type UseGame } from './useGame';
 import type { Engine } from '@/game/ai/Engine';
-import type { Move, Point, Side } from '@/game/core/types';
+import type { Level, Move, Point, Side } from '@/game/core/types';
 import type { SavedGame } from '@/game/storage/types';
 
 /**
@@ -11,10 +11,10 @@ import type { SavedGame } from '@/game/storage/types';
  * Dùng `createElement` thay vì JSX để test giữ đuôi `.ts` — không phải vì JSX sai,
  * mà vì một file test không cần thêm một bước transform để chạy.
  */
-function mountHook(engine: Engine, first: Side = 'human') {
+function mountHook(engine: Engine, first: Side = 'human', level: Level = 'normal') {
   const ref: { current: UseGame | null } = { current: null };
   const Probe = () => {
-    ref.current = useGame(engine, { first, level: 'normal' });
+    ref.current = useGame(engine, { first, level });
     return null;
   };
   const host = document.createElement('div');
@@ -220,5 +220,199 @@ describe('useGame — tiếp tục ván đã lưu', () => {
     });
     expect(ref.current?.state.moves).toHaveLength(2);
     expect(ref.current?.state.moves[0]?.at).toEqual({ x: 7, y: 7 });
+  });
+});
+
+describe('useGame — gợi ý (FR-10 · ADR-0016)', () => {
+  it('hỏi engine ở mức Khó kể cả khi đang chơi mức Dễ', async () => {
+    const engine = engineThatPlays({ x: 3, y: 3 });
+    const ref = mountHook(engine, 'human', 'easy');
+    await act(async () => {
+      ref.current?.askHint();
+    });
+    expect(engine.bestMove).toHaveBeenCalledWith([], 'human', 'hard');
+  });
+
+  it('gợi ý KHÔNG thêm nước nào vào ván', async () => {
+    const ref = mountHook(engineThatPlays({ x: 3, y: 3 }));
+    await act(async () => {
+      ref.current?.askHint();
+    });
+    expect(ref.current?.state.moves).toHaveLength(0);
+    expect(ref.current?.hint).toEqual({ x: 3, y: 3 });
+    expect(ref.current?.notice).toBe('Gợi ý: đánh ở 3, 3.');
+  });
+
+  it('engine hỏng thì báo và không treo ở trạng thái đang tìm', async () => {
+    const engine: Engine = { bestMove: vi.fn().mockRejectedValue(new Error('nổ')) };
+    const ref = mountHook(engine);
+    await act(async () => {
+      ref.current?.askHint();
+    });
+    expect(ref.current?.hint).toBeNull();
+    expect(ref.current?.hinting).toBe(false);
+    expect(ref.current?.notice).toBe('Chưa tìm được gợi ý — thử lại một lượt nữa');
+  });
+
+  it('chưa tới lượt mình thì không hỏi engine', async () => {
+    const { engine, play } = deferredEngine();
+    const spy = vi.spyOn(engine, 'bestMove');
+    const ref = mountHook(engine);
+    await act(async () => {
+      ref.current?.place({ x: 0, y: 0 });
+    });
+    // Máy đang nghĩ: đúng một lời gọi, và askHint không được thêm lời gọi thứ hai.
+    await act(async () => {
+      ref.current?.askHint();
+    });
+    expect(spy).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      play({ x: 5, y: 5 });
+    });
+  });
+
+  it('hoàn nước trong lúc đang xin gợi ý thì gợi ý đó bị bỏ (bất biến 7)', async () => {
+    const { engine, play } = deferredEngine();
+    const ref = mountHook(engine);
+    await act(async () => {
+      ref.current?.place({ x: 0, y: 0 });
+    });
+    await act(async () => {
+      play({ x: 1, y: 1 });
+    });
+    await act(async () => {
+      ref.current?.askHint();
+    });
+    await act(async () => {
+      ref.current?.undoMove();
+    });
+    await act(async () => {
+      play({ x: 7, y: 7 });
+    });
+    expect(ref.current?.hint).toBeNull();
+  });
+
+  it('đánh một nước thì gợi ý cũ biến mất', async () => {
+    const ref = mountHook(engineThatPlays({ x: 9, y: 9 }));
+    await act(async () => {
+      ref.current?.askHint();
+    });
+    expect(ref.current?.hint).not.toBeNull();
+    await act(async () => {
+      ref.current?.place({ x: 0, y: 0 });
+    });
+    expect(ref.current?.hint).toBeNull();
+  });
+});
+
+describe('useGame — xem lại ván (FR-09)', () => {
+  /**
+   * Bỏ ván là cách rẻ nhất để có một ván ĐÃ KẾT THÚC với đúng n nước.
+   *
+   * Máy phải đánh mỗi lượt một ô KHÁC NHAU: một engine luôn trả cùng một ô thì nước
+   * thứ hai của nó rơi vào ô đã có quân, `applyMove` từ chối, và ván ngắn hơn mong
+   * đợi mà không có lỗi nào nổ ra.
+   */
+  async function resignedAfter(moves: number) {
+    let replies = 0;
+    const engine: Engine = {
+      bestMove: vi.fn(async () => ({ x: 50, y: replies++ })),
+    };
+    const ref = mountHook(engine);
+    for (let i = 0; i < moves / 2; i += 1) {
+      await act(async () => {
+        ref.current?.place({ x: i, y: 0 });
+      });
+    }
+    await act(async () => {
+      ref.current?.giveUp();
+    });
+    return ref;
+  }
+
+  it('ván chưa kết thúc thì không vào được chế độ xem lại', async () => {
+    const ref = mountHook(engineThatPlays({ x: 1, y: 1 }));
+    await act(async () => {
+      ref.current?.place({ x: 0, y: 0 });
+    });
+    await act(async () => {
+      ref.current?.enterReview();
+    });
+    expect(ref.current?.reviewAt).toBeNull();
+  });
+
+  it('vào xem lại thì đứng ở nước cuối', async () => {
+    const ref = await resignedAfter(4);
+    await act(async () => {
+      ref.current?.enterReview();
+    });
+    expect(ref.current?.reviewAt).toBe(4);
+  });
+
+  it('nhảy ra ngoài khoảng thì bị kẹp vào hai biên', async () => {
+    const ref = await resignedAfter(4);
+    await act(async () => {
+      ref.current?.enterReview();
+    });
+    await act(async () => {
+      ref.current?.gotoMove(-5);
+    });
+    expect(ref.current?.reviewAt).toBe(0);
+    await act(async () => {
+      ref.current?.gotoMove(999);
+    });
+    expect(ref.current?.reviewAt).toBe(4);
+  });
+
+  it('thoát xem lại về null', async () => {
+    const ref = await resignedAfter(4);
+    await act(async () => {
+      ref.current?.enterReview();
+    });
+    await act(async () => {
+      ref.current?.exitReview();
+    });
+    expect(ref.current?.reviewAt).toBeNull();
+  });
+
+  it('MOI thao tác xem lại đều không đụng tới state.moves (bất biến 1)', async () => {
+    const ref = await resignedAfter(4);
+    const before = ref.current?.state.moves;
+    await act(async () => {
+      ref.current?.enterReview();
+    });
+    await act(async () => {
+      ref.current?.gotoMove(1);
+    });
+    await act(async () => {
+      ref.current?.gotoMove(3);
+    });
+    await act(async () => {
+      ref.current?.exitReview();
+    });
+    expect(ref.current?.state.moves).toBe(before);
+    expect(ref.current?.state.moves).toHaveLength(4);
+  });
+
+  it('chơi lại thì thoát khỏi chế độ xem lại', async () => {
+    const ref = await resignedAfter(4);
+    await act(async () => {
+      ref.current?.enterReview();
+    });
+    await act(async () => {
+      ref.current?.resetToMenu();
+    });
+    expect(ref.current?.reviewAt).toBeNull();
+  });
+
+  it('bắt đầu ván mới thì thoát khỏi chế độ xem lại', async () => {
+    const ref = await resignedAfter(4);
+    await act(async () => {
+      ref.current?.enterReview();
+    });
+    await act(async () => {
+      ref.current?.restart({ first: 'human', level: 'hard' });
+    });
+    expect(ref.current?.reviewAt).toBeNull();
   });
 });
