@@ -1,5 +1,5 @@
 import { markAt, type Board } from './board';
-import { DIRECTIONS, WIN_LENGTH, type Point } from './types';
+import { DIRECTIONS, WIN_LENGTH, type Point, type Rule } from './types';
 
 export type Run = {
   /** Các ô của đoạn, theo thứ tự dọc theo trục. */
@@ -43,16 +43,26 @@ export function maximalRun(board: Board, at: Point, dir: Point): Run {
 }
 
 /**
- * Chuỗi thắng đi qua `at`, hoặc `null`.
+ * Chuỗi thắng đi qua `at` theo luật `rule`, hoặc `null`.
  *
- * KHÔNG quét cửa sổ 5 ô trượt. Cửa sổ 5 ô cho kết quả SAI ở chuỗi 6 bị chặn hai
- * đầu: mỗi cửa sổ con có một đầu là quân CỦA MÌNH, mà quân mình không phải quân
- * địch nên không tính chặn — nên nó báo thắng (bất biến 3).
+ * KHÔNG quét cửa sổ 5 ô trượt, ở CẢ HAI luật. Cửa sổ 5 ô cho kết quả SAI ở chuỗi 6
+ * bị chặn hai đầu: mỗi cửa sổ con có một đầu là quân CỦA MÌNH, mà quân mình không
+ * phải quân địch nên không tính chặn — nên nó báo thắng (bất biến 3).
+ *
+ * Luật chỉ quyết `openEnds` có được xét hay không (ADR-0025). Nó KHÔNG đổi cách quét,
+ * và nó không nới `WIN_LENGTH`: bốn quân bị chặn hai đầu vẫn không thắng ở luật `free`.
+ *
+ * `rule` đến từ ván (`GameState.rule`), không từ cài đặt — bất biến 14.
  */
-export function winningLine(board: Board, at: Point): readonly Point[] | null {
+export function winningLine(
+  board: Board,
+  at: Point,
+  rule: Rule,
+): readonly Point[] | null {
   for (const dir of DIRECTIONS) {
     const run = maximalRun(board, at, dir);
-    if (run.cells.length >= WIN_LENGTH && run.openEnds > 0) return run.cells;
+    if (run.cells.length < WIN_LENGTH) continue;
+    if (rule === 'free' || run.openEnds > 0) return run.cells;
   }
   return null;
 }

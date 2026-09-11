@@ -33,7 +33,7 @@ function SideGlyph({ side }: { side: Side }) {
       aria-hidden="true"
       className="block flex-none"
     >
-      {side === 'human' ? (
+      {side === 'one' ? (
         <path
           d="M2.6 2.6 L9.4 9.4M9.4 2.6 L2.6 9.4"
           stroke="currentColor"
@@ -78,7 +78,7 @@ export function StartOverlay({
   onStart(options: { first: Side; level: Level }): void;
 }) {
   const [level, setLevel] = useState<Level>(defaultLevel);
-  const [first, setFirst] = useState<Side>('human');
+  const [first, setFirst] = useState<Side>('one');
 
   return (
     <div className="absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-paper/85 p-4">
@@ -104,24 +104,24 @@ export function StartOverlay({
         <div className="mb-6 flex gap-1.5">
           <button
             type="button"
-            aria-pressed={first === 'human'}
-            onClick={() => setFirst('human')}
-            className={segment(first === 'human')}
+            aria-pressed={first === 'one'}
+            onClick={() => setFirst('one')}
+            className={segment(first === 'one')}
           >
             <span className="flex items-center justify-center gap-1.5">
               {strings.firstMoveYou}
-              <SideGlyph side="human" />
+              <SideGlyph side="one" />
             </span>
           </button>
           <button
             type="button"
-            aria-pressed={first === 'ai'}
-            onClick={() => setFirst('ai')}
-            className={segment(first === 'ai')}
+            aria-pressed={first === 'two'}
+            onClick={() => setFirst('two')}
+            className={segment(first === 'two')}
           >
             <span className="flex items-center justify-center gap-1.5">
               {strings.firstMoveAi}
-              <SideGlyph side="ai" />
+              <SideGlyph side="two" />
             </span>
           </button>
         </div>

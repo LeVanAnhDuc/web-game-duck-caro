@@ -1,6 +1,6 @@
 import { buildBoard } from '@/game/core/board';
 import { winningLine } from '@/game/core/rules';
-import { opponentOf, type Move, type Point, type Side } from '@/game/core/types';
+import { opponentOf, type Move, type Point, type Rule, type Side } from '@/game/core/types';
 import {
   CANDIDATE_RADIUS_INNER,
   CANDIDATE_RADIUS_ROOT,
@@ -30,6 +30,12 @@ export type SearchParams = {
   readonly blindRate: number;
   /** 1 = luôn lấy nước tốt nhất. > 1 = rút thăm trong ngần đó nước đầu. */
   readonly pickFromTop: number;
+  /**
+   * Luật của VÁN đang nghĩ (ADR-0025), không phải của mức khó — vì thế
+   * `LevelProfile` loại nó ra. Nó ở trong bag này thuần vì lý do cơ học: `negamax`
+   * đệ quy và đã mang `params`, nên thêm một tham số vị trí thứ năm chỉ là tiếng ồn.
+   */
+  readonly rule: Rule;
 };
 
 export type SearchResult = {
@@ -59,7 +65,7 @@ export function search(
   const cells = candidateCells(board, played);
   const winsFor = (at: Point, who: Side): boolean => {
     place(board, at, who);
-    const won = winningLine(board, at) !== null;
+    const won = winningLine(board, at, params.rule) !== null;
     unplace(board, at);
     return won;
   };
@@ -98,6 +104,7 @@ export function search(
       played,
       turn,
       params.topKInner,
+      params.rule,
       CANDIDATE_RADIUS_INNER,
       tilt,
     );
@@ -110,7 +117,7 @@ export function search(
       played.push(candidate.at);
 
       let score: number;
-      if (winningLine(board, candidate.at) !== null) {
+      if (winningLine(board, candidate.at, params.rule) !== null) {
         // Trừ số tầng để thắng SỚM hơn được ưu tiên; nếu không máy sẽ trì hoãn một
         // nước thắng chắc vì mọi đường đều cho cùng một điểm.
         score = WIN_SCORE - ply;
@@ -152,6 +159,7 @@ export function search(
     played,
     side,
     params.topKRoot,
+    params.rule,
     CANDIDATE_RADIUS_ROOT,
     tilt,
   );
@@ -168,7 +176,7 @@ export function search(
       played.push(candidate.at);
 
       let score: number;
-      if (winningLine(board, candidate.at) !== null) score = WIN_SCORE;
+      if (winningLine(board, candidate.at, params.rule) !== null) score = WIN_SCORE;
       else
         score =
           candidate.value -

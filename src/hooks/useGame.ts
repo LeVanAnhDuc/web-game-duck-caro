@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Engine } from '@/game/ai/Engine';
 import { applyMove, createGame, replay, resign, undo } from '@/game/core/game';
-import type { GameState, Level, Point, Side } from '@/game/core/types';
+import type { GameState, Level, Mode, Point, Rule, Side } from '@/game/core/types';
 import type { SavedGame } from '@/game/storage/types';
 import { strings } from '@/lib/strings';
 
@@ -21,6 +21,8 @@ const HINT_LEVEL: Level = 'hard';
 
 export type UseGame = {
   readonly state: GameState;
+  /** Ai ngồi ghế nào. Views đọc nó để gọi tên ghế; KHÔNG suy từ tên ghế (bất biến 15). */
+  readonly mode: Mode;
   readonly thinking: boolean;
   readonly notice: string | null;
   /** Ô engine đề xuất, hoặc `null`. Người gọi đẩy nó vào quân xem trước của bàn. */
@@ -31,7 +33,7 @@ export type UseGame = {
   place(at: Point): void;
   undoMove(): void;
   giveUp(): void;
-  restart(opts: { first: Side; level: Level }): void;
+  restart(opts: { first: Side; level: Level; mode: Mode; rule: Rule }): void;
   askHint(): void;
   /** Chỉ vào được khi ván ĐÃ kết thúc — xem lại là chỉ đọc (US-03). */
   enterReview(): void;
@@ -44,10 +46,16 @@ export type UseGame = {
   resume(saved: SavedGame): boolean;
 };
 
-export function useGame(engine: Engine, opts: { first: Side; level: Level }): UseGame {
+export function useGame(
+  engine: Engine,
+  opts: { first: Side; level: Level; mode: Mode; rule: Rule },
+): UseGame {
   const [first, setFirst] = useState<Side>(opts.first);
   const [level, setLevel] = useState<Level>(opts.level);
-  const [state, setState] = useState<GameState>(() => createGame(opts.first));
+  const [mode, setMode] = useState<Mode>(opts.mode);
+  const [state, setState] = useState<GameState>(() =>
+    createGame(opts.first, opts.rule),
+  );
   const [thinking, setThinking] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [hint, setHint] = useState<Point | null>(null);
@@ -65,6 +73,21 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
   stateRef.current = state;
   const levelRef = useRef(level);
   levelRef.current = level;
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+
+  /**
+   * Ghế đang đi có phải người thật không — bất biến 15.
+   *
+   * Đây là chỗ DUY NHẤT được phép trả lời "tới lượt người hay tới lượt máy". Suy
+   * ra từ `side === 'two'` thì hot-seat sẽ gọi engine cho người thứ hai, và điều đó
+   * đúng về kiểu nên không test nào đỏ.
+   */
+  const isHumanTurn = useCallback(
+    (from: GameState): boolean =>
+      from.status.kind === 'playing' && modeRef.current[from.toMove] === 'human',
+    [],
+  );
 
   const askEngine = useCallback(
     (from: GameState) => {
@@ -77,7 +100,10 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
         timer = setTimeout(() => reject(new Error('engine timeout')), ENGINE_TIMEOUT_MS);
       });
 
-      Promise.race([engine.bestMove(from.moves, from.toMove, levelRef.current), timeout])
+      Promise.race([
+        engine.bestMove(from.moves, from.toMove, levelRef.current, from.rule),
+        timeout,
+      ])
         .then((at) => {
           if (requestId.current !== id) return;
           setState((current) => {
@@ -106,11 +132,15 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
   const place = useCallback(
     (at: Point) => {
       const current = stateRef.current;
-      // Chưa tới lượt thì bỏ qua. Sau nước của người chơi, `toMove` là 'ai' ngay lập
-      // tức, nên đây cũng là lớp chặn double-tap phía UI của NFR-REL-02.
-      if (current.toMove !== 'human' || current.status.kind !== 'playing') return;
+      /*
+       * Ghế đang đi phải do NGƯỜI cầm. Ở chế độ đấu máy, ngay sau nước của người thì
+       * `toMove` đã là ghế của máy, nên đây cũng là lớp chặn double-tap phía UI của
+       * NFR-REL-02. Ở hot-seat thì cả hai ghế đều qua được — đúng như phải vậy.
+       */
+      if (!isHumanTurn(current)) return;
+      const seat = current.toMove;
 
-      const result = applyMove(current, at, 'human');
+      const result = applyMove(current, at, seat);
       if (!result.ok) {
         if (result.reason === 'occupied') setNotice(strings.cellOccupied);
         return;
@@ -118,14 +148,16 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
 
       setState(result.state);
       setHint(null);
+      const who = strings.seatName(seat, modeRef.current);
       if (result.state.status.kind === 'won') {
-        setNotice(strings.wonAt(at.x, at.y));
+        setNotice(strings.seatWonAt(who, at.x, at.y));
         return;
       }
-      setNotice(strings.placedAt(at.x, at.y));
-      askEngine(result.state);
+      setNotice(strings.seatMovedAt(who, at.x, at.y));
+      // Chỉ gọi engine khi ghế KẾ TIẾP do engine cầm. Hot-seat không bao giờ vào đây.
+      if (modeRef.current[result.state.toMove] === 'engine') askEngine(result.state);
     },
-    [askEngine],
+    [askEngine, isHumanTurn],
   );
 
   const undoMove = useCallback(() => {
@@ -134,7 +166,7 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
     setHinting(false);
     setHint(null);
     setNotice(null);
-    setState((current) => undo(current, first));
+    setState((current) => undo(current, first, modeRef.current));
   }, [first]);
 
   const giveUp = useCallback(() => {
@@ -142,12 +174,15 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
     setThinking(false);
     setHinting(false);
     setHint(null);
-    setNotice(strings.youResigned);
-    setState((current) => resign(current, 'human'));
+    setState((current) => {
+      // Ghế ĐANG ĐI nhận thua. Cố định 'one' là bắt người kia thua thay ở hot-seat.
+      setNotice(strings.seatResigned(strings.seatName(current.toMove, modeRef.current)));
+      return resign(current, current.toMove);
+    });
   }, []);
 
   const restart = useCallback(
-    (next: { first: Side; level: Level }) => {
+    (next: { first: Side; level: Level; mode: Mode; rule: Rule }) => {
       requestId.current += 1;
       setThinking(false);
       setHinting(false);
@@ -157,9 +192,11 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
       setFirst(next.first);
       setLevel(next.level);
       levelRef.current = next.level;
-      const fresh = createGame(next.first);
+      setMode(next.mode);
+      modeRef.current = next.mode;
+      const fresh = createGame(next.first, next.rule);
       setState(fresh);
-      if (next.first === 'ai') askEngine(fresh);
+      if (next.mode[next.first] === 'engine') askEngine(fresh);
     },
     [askEngine],
   );
@@ -177,7 +214,7 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
     setHint(null);
     setReviewAt(null);
     setNotice(null);
-    setState(createGame(first));
+    setState(createGame(first, stateRef.current.rule));
   }, [first]);
 
   /**
@@ -190,7 +227,7 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
    */
   const askHint = useCallback(() => {
     const current = stateRef.current;
-    if (current.toMove !== 'human' || current.status.kind !== 'playing') return;
+    if (!isHumanTurn(current)) return;
 
     const id = requestId.current + 1;
     requestId.current = id;
@@ -203,7 +240,10 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
       timer = setTimeout(() => reject(new Error('hint timeout')), ENGINE_TIMEOUT_MS);
     });
 
-    Promise.race([engine.bestMove(current.moves, 'human', HINT_LEVEL), timeout])
+    Promise.race([
+      engine.bestMove(current.moves, current.toMove, HINT_LEVEL, current.rule),
+      timeout,
+    ])
       .then((at) => {
         if (requestId.current !== id) return;
         setHint(at);
@@ -217,7 +257,7 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
         if (timer !== undefined) clearTimeout(timer);
         if (requestId.current === id) setHinting(false);
       });
-  }, [engine]);
+  }, [engine, isHumanTurn]);
 
   const enterReview = useCallback(() => {
     const current = stateRef.current;
@@ -248,7 +288,7 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
     (saved: SavedGame): boolean => {
       let restored: GameState;
       try {
-        restored = replay(saved.moves, saved.first);
+        restored = replay(saved.moves, saved.first, saved.rule);
       } catch {
         return false;
       }
@@ -261,9 +301,20 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
       setFirst(saved.first);
       setLevel(saved.level);
       levelRef.current = saved.level;
+      setMode(saved.mode);
+      modeRef.current = saved.mode;
       setState(restored);
-      // Rời đi đúng lúc máy đang nghĩ thì nước đó chưa được lưu — vào lại, máy nghĩ lại.
-      if (restored.status.kind === 'playing' && restored.toMove === 'ai') askEngine(restored);
+      /*
+       * Rời đi đúng lúc máy đang nghĩ thì nước đó chưa được lưu — vào lại, máy nghĩ
+       * lại. Điều kiện phải hỏi `saved.mode`, không hỏi tên ghế: một ván hot-seat lưu
+       * giữa lượt Người 2 sẽ bị engine đánh hộ nếu ở đây viết `toMove === 'two'`.
+       */
+      if (
+        restored.status.kind === 'playing' &&
+        saved.mode[restored.toMove] === 'engine'
+      ) {
+        askEngine(restored);
+      }
       return true;
     },
     [askEngine],
@@ -274,12 +325,15 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
   useEffect(() => {
     if (mounted.current) return;
     mounted.current = true;
-    if (opts.first === 'ai') askEngine(createGame('ai'));
+    if (opts.mode[opts.first] === 'engine') {
+      askEngine(createGame(opts.first, opts.rule));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
     state,
+    mode,
     thinking,
     notice,
     hint,

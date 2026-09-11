@@ -34,10 +34,10 @@ export function drawMark(
   ctx.lineWidth = Math.max(MIN_STROKE_PX, size * STROKE_RATIO);
   ctx.lineCap = 'round';
   // HÌNH mang thông tin quân của ai; màu chỉ là lớp dư thừa (ADR-0008).
-  ctx.strokeStyle = side === 'human' ? palette.markHuman : palette.markAi;
+  ctx.strokeStyle = side === 'one' ? palette.markHuman : palette.markAi;
 
   ctx.beginPath();
-  if (side === 'human') {
+  if (side === 'one') {
     ctx.moveTo(-half, -half);
     ctx.lineTo(half, half);
     ctx.moveTo(half, -half);

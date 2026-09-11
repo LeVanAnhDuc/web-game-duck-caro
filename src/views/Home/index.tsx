@@ -3,7 +3,15 @@
 // libs
 import { useEffect, useMemo, useState } from 'react';
 // types
-import type { GameStatus, Level, Side } from '@/game/core/types';
+import {
+  DEFAULT_RULE,
+  VS_AI,
+  type GameStatus,
+  type Level,
+  type Mode,
+  type Rule,
+  type Side,
+} from '@/game/core/types';
 // game
 import { makeRng } from '@/game/ai/rng';
 import { createWorkerEngine } from '@/game/ai/workerEngine';
@@ -46,7 +54,7 @@ const PLAYING: GameStatus = { kind: 'playing' };
 export function Home() {
   const [started, setStarted] = useState(false);
   const [level, setLevel] = useState<Level>('normal');
-  const [first, setFirst] = useState<Side>('human');
+  const [first, setFirst] = useState<Side>('one');
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { settings, loaded: settingsLoaded, update: updateSettings } = useSettings();
@@ -60,7 +68,17 @@ export function Home() {
   const repository = useMemo(() => createLocalGameRepository(), []);
   const persistence = usePersistence(repository);
 
-  const game = useGame(engine, { first: 'human', level });
+  /*
+   * `mode` và `rule` KHÔNG được giữ thêm một bản ở đây: `useGame` đã sở hữu chúng
+   * (`game.mode` và `game.state.rule`). Một bản thứ hai là một bản có thể lệch, và
+   * lệch ở đúng hai giá trị quyết định có gọi engine không và xử thắng thế nào.
+   */
+  const game = useGame(engine, {
+    first: 'one',
+    level,
+    mode: VS_AI,
+    rule: DEFAULT_RULE,
+  });
 
   const status = game.state.status;
   const reviewAt = game.reviewAt;
@@ -89,7 +107,7 @@ export function Home() {
     game.undoMove();
   };
 
-  const start = (options: { first: Side; level: Level }) => {
+  const start = (options: { first: Side; level: Level; mode: Mode; rule: Rule }) => {
     setLevel(options.level);
     setFirst(options.first);
     game.restart(options);
@@ -137,7 +155,7 @@ export function Home() {
     canHint:
       started &&
       status.kind === 'playing' &&
-      game.state.toMove === 'human' &&
+      game.mode[game.state.toMove] === 'human' &&
       !game.thinking &&
       !game.hinting,
     canResign: started && status.kind === 'playing',
@@ -186,12 +204,14 @@ export function Home() {
         state={game.state}
         first={first}
         level={level}
+        mode={game.mode}
         onSave={persistence.save}
       />
       <RecordResult
         status={status}
         moveCount={total}
         level={level}
+        mode={game.mode}
         onRecord={persistence.record}
       />
       <PlayMoveSound

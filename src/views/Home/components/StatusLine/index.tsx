@@ -4,7 +4,7 @@ import type { GameState } from '@/game/core/types';
 import { strings } from '@/lib/strings';
 
 /** Glyph `X`/`O` là SVG, không phải ký tự — MASTER.md §9 cấm dingbat làm icon. */
-function SideGlyph({ side }: { side: 'human' | 'ai' }) {
+function SideGlyph({ side }: { side: 'one' | 'two' }) {
   return (
     <svg
       width="13"
@@ -13,9 +13,9 @@ function SideGlyph({ side }: { side: 'human' | 'ai' }) {
       fill="none"
       aria-hidden="true"
       className="block flex-none"
-      style={{ color: side === 'human' ? 'var(--mark-human)' : 'var(--mark-ai)' }}
+      style={{ color: side === 'one' ? 'var(--mark-human)' : 'var(--mark-ai)' }}
     >
-      {side === 'human' ? (
+      {side === 'one' ? (
         <path
           d="M2.6 2.6 L9.4 9.4M9.4 2.6 L2.6 9.4"
           stroke="currentColor"

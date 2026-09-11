@@ -46,13 +46,13 @@ export function PlayMoveSound({
     if (!grew || !started) return;
 
     if (status.kind === 'won') {
-      if (status.by === 'human') audio.win();
+      if (status.by === 'one') audio.win();
       else audio.lose();
       return;
     }
     const last = moves[count - 1];
-    if (last?.side === 'human') audio.place();
-    else if (last?.side === 'ai') audio.reply();
+    if (last?.side === 'one') audio.place();
+    else if (last?.side === 'two') audio.reply();
     // `audio` ổn định qua `useMemo`; ba giá trị kia mới là tín hiệu thật.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moves, status, started]);

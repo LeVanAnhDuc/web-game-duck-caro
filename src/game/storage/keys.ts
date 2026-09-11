@@ -2,8 +2,13 @@
  * Version nằm TRONG tên khoá (ADR-0006). Đổi cấu trúc lưu là đổi `STORAGE_VERSION`,
  * và dữ liệu cũ đơn giản không được đọc tới — bỏ, không migrate. Không cần một hàm
  * migration nào, và cũng không có hàm nào để viết sai.
+ *
+ * `v2` từ 2026-09-11 (mốc 8): `Move.side` đổi miền giá trị và `SavedGame` thêm `mode`
+ * cùng `rule` (ADR-0024 · ADR-0025). Ván dở và thống kê của `v1` vì thế bị bỏ. Đã cân
+ * nhắc một hàm đọc tương thích và BÁC: viết một hàm có thể sai để bảo vệ một tập người
+ * dùng rỗng. Lần đổi cấu trúc KẾ TIẾP là lần phải trả nợ đó — `backlog.md` §Nợ kỹ thuật.
  */
-export const STORAGE_VERSION = 'v1';
+export const STORAGE_VERSION = 'v2';
 
 /**
  * Tiền tố chủ sở hữu. Hôm nay là hằng số `local`; ngày ghép Ducker ID nó thành id

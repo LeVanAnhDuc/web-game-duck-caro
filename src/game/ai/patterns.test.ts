@@ -14,45 +14,45 @@ function boardFrom(rows: readonly string[]) {
   const moves: Move[] = [];
   rows.forEach((row, y) => {
     [...row].forEach((ch, x) => {
-      if (ch === 'x') moves.push({ at: { x, y }, side: 'human' });
-      if (ch === 'o') moves.push({ at: { x, y }, side: 'ai' });
+      if (ch === 'x') moves.push({ at: { x, y }, side: 'one' });
+      if (ch === 'o') moves.push({ at: { x, y }, side: 'two' });
     });
   });
   return buildBoard(moves);
 }
 
-describe('liveSegment — luật chặn hai đầu rơi ra từ việc cắt đoạn', () => {
+describe("liveSegment — luật 'blocked': chặn hai đầu rơi ra từ việc cắt đoạn", () => {
   it('cắt dải tại quân địch và giữ đoạn chứa ô giữa', () => {
-    expect(liveSegment(line('O..MMM..O'))).toBe('..MMM..');
+    expect(liveSegment(line('O..MMM..O'), 'blocked')).toBe('..MMM..');
   });
 
   it('đoạn chặn hai đầu rộng đúng 5 là CHẾT, dù chưa có quân nào lấp đầy', () => {
     // Lấp hết 5 ô đó thành OMMMMMO — năm quân chặn cả hai đầu, không thắng.
-    expect(liveSegment(line('O.MMM.O'))).toBeNull();
+    expect(liveSegment(line('O.MMM.O'), 'blocked')).toBeNull();
   });
 
   it('đoạn bị chặn hai đầu mà chỉ dài 5 là CHẾT — năm quân ở đó không thắng được', () => {
-    expect(liveSegment(line('OMMMMMO'))).toBeNull();
-    expect(liveSegment(line('OM.MMMO'))).toBeNull();
+    expect(liveSegment(line('OMMMMMO'), 'blocked')).toBeNull();
+    expect(liveSegment(line('OM.MMMO'), 'blocked')).toBeNull();
   });
 
   it('đoạn bị chặn hai đầu dài 6 thì còn sống', () => {
-    expect(liveSegment(line('O.MMMM.O'))).toBe('.MMMM.');
+    expect(liveSegment(line('O.MMMM.O'), 'blocked')).toBe('.MMMM.');
   });
 
   it('đoạn chỉ bị chặn một đầu thì 5 ô là đủ', () => {
     // '...OMMMM.....' — chặn trái bởi O, bên phải chạy tới mép cửa sổ nên còn mở.
     const oneSideBlocked = '...OMMMM.....';
     expect(oneSideBlocked).toHaveLength(LINE_RADIUS * 2 + 1);
-    expect(liveSegment(oneSideBlocked)).toBe('MMMM.....');
+    expect(liveSegment(oneSideBlocked, 'blocked')).toBe('MMMM.....');
   });
 
   it('ô giữa là quân địch thì không có đoạn nào', () => {
-    expect(liveSegment(line('OOO'))).toBeNull();
+    expect(liveSegment(line('OOO'), 'blocked')).toBeNull();
   });
 
   it('dải trống hoàn toàn vẫn là một đoạn sống', () => {
-    expect(liveSegment(line('.'))).toHaveLength(LINE_RADIUS * 2 + 1);
+    expect(liveSegment(line('.'), 'blocked')).toHaveLength(LINE_RADIUS * 2 + 1);
   });
 });
 
@@ -94,14 +94,14 @@ describe('scoreSegment — bảng mẫu', () => {
 describe('lineAround', () => {
   it('nhìn từ phía mình: quân mình là M, quân địch là O', () => {
     const board = boardFrom(['.xxo.']);
-    const text = lineAround(board, { x: 1, y: 0 }, { x: 1, y: 0 }, 'human');
+    const text = lineAround(board, { x: 1, y: 0 }, { x: 1, y: 0 }, 'one');
     expect(text[LINE_RADIUS]).toBe('M');
     expect(text.slice(LINE_RADIUS, LINE_RADIUS + 3)).toBe('MMO');
   });
 
   it('cùng một dải nhìn từ phía kia thì M và O đổi chỗ', () => {
     const board = boardFrom(['.xxo.']);
-    const text = lineAround(board, { x: 1, y: 0 }, { x: 1, y: 0 }, 'ai');
+    const text = lineAround(board, { x: 1, y: 0 }, { x: 1, y: 0 }, 'two');
     expect(text.slice(LINE_RADIUS, LINE_RADIUS + 3)).toBe('OOM');
   });
 });
@@ -109,16 +109,64 @@ describe('lineAround', () => {
 describe('scoreLine trên bàn thật', () => {
   it('bốn quân hở hai đầu được chấm là bốn hở', () => {
     const board = boardFrom(['..xxxx..']);
-    expect(scoreLine(board, { x: 3, y: 0 }, { x: 1, y: 0 }, 'human')).toBe(SCORE.OPEN_FOUR);
+    expect(scoreLine(board, { x: 3, y: 0 }, { x: 1, y: 0 }, 'one', 'blocked')).toBe(SCORE.OPEN_FOUR);
   });
 
   it('năm quân bị chặn hai đầu được chấm BẰNG 0 — không phải điểm cao', () => {
     const board = boardFrom(['oxxxxxo']);
-    expect(scoreLine(board, { x: 3, y: 0 }, { x: 1, y: 0 }, 'human')).toBe(0);
+    expect(scoreLine(board, { x: 3, y: 0 }, { x: 1, y: 0 }, 'one', 'blocked')).toBe(0);
   });
 
   it('hướng không có quân nào của mình thì bằng điểm một quân lẻ', () => {
     const board = boardFrom(['..x..']);
-    expect(scoreLine(board, { x: 2, y: 0 }, { x: 0, y: 1 }, 'human')).toBe(SCORE.ONE);
+    expect(scoreLine(board, { x: 2, y: 0 }, { x: 0, y: 1 }, 'one', 'blocked')).toBe(SCORE.ONE);
+  });
+});
+
+/**
+ * Luật 'free' trong engine (ADR-0025). Cả khối này canh đúng một thứ: engine phải
+ * THẤY đoạn năm bị chặn hai đầu là một đe doạ thật, vì ở luật này nó thắng ngay.
+ *
+ * Nếu `rule` không xuống tới đây, mọi test ở trên vẫn xanh — bảng mẫu vẫn đúng cho
+ * luật `blocked`. Đây là bộ duy nhất đỏ, và đó là lý do nó tồn tại.
+ */
+describe("liveSegment — luật 'free': chặn hai đầu KHÔNG còn giết đoạn", () => {
+  it('đoạn chặn hai đầu dài đúng 5 vẫn SỐNG', () => {
+    expect(liveSegment(line('O.MMM.O'), 'free')).toBe('.MMM.');
+  });
+
+  it('năm quân chặn hai đầu là đoạn sống — ở luật kia nó là null', () => {
+    expect(liveSegment(line('OMMMMMO'), 'free')).toBe('MMMMM');
+    expect(liveSegment(line('OMMMMMO'), 'blocked')).toBeNull();
+  });
+
+  it('đoạn chặn hai đầu chỉ dài 4 thì CHẾT ở cả hai luật — độ dài không được nới', () => {
+    expect(liveSegment(line('O.MM.O'), 'free')).toBeNull();
+    expect(liveSegment(line('O.MM.O'), 'blocked')).toBeNull();
+  });
+
+  it('ô giữa là quân địch thì vẫn không có đoạn nào', () => {
+    expect(liveSegment(line('OOO'), 'free')).toBeNull();
+  });
+});
+
+describe("scoreLine — luật 'free' chấm đoạn năm bị chặn là đe doạ thật", () => {
+  it('năm quân chặn hai đầu: 0 điểm ở blocked, điểm bốn-hở-trở-lên ở free', () => {
+    const board = boardFrom(['oxxxxxo']);
+    const at = { x: 3, y: 0 };
+    const right = { x: 1, y: 0 };
+    expect(scoreLine(board, at, right, 'one', 'blocked')).toBe(0);
+    expect(scoreLine(board, at, right, 'one', 'free')).toBeGreaterThanOrEqual(
+      SCORE.FOUR,
+    );
+  });
+
+  it('bốn quân hở hai đầu chấm giống nhau ở cả hai luật', () => {
+    const board = boardFrom(['..xxxx..']);
+    const at = { x: 3, y: 0 };
+    const right = { x: 1, y: 0 };
+    expect(scoreLine(board, at, right, 'one', 'free')).toBe(
+      scoreLine(board, at, right, 'one', 'blocked'),
+    );
   });
 });

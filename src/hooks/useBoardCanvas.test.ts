@@ -98,7 +98,7 @@ const press = (
   return prevented;
 };
 
-const moveAt = (x: number, y: number): Move => ({ at: { x, y }, side: 'human' });
+const moveAt = (x: number, y: number): Move => ({ at: { x, y }, side: 'one' });
 
 describe('useBoardCanvas — con trỏ bàn phím (ADR-0020)', () => {
   it('lần bấm mũi tên ĐẦU TIÊN chỉ đặt con trỏ, không dịch nó', () => {
@@ -199,7 +199,7 @@ describe('useBoardCanvas — đánh quân bằng bàn phím', () => {
     const onPlace = vi.fn();
     const { ref } = mountBoard({
       moves: [moveAt(0, 0)],
-      status: { kind: 'resigned', by: 'human' },
+      status: { kind: 'resigned', by: 'one' },
       onPlace,
     });
     press(ref, 'Enter');

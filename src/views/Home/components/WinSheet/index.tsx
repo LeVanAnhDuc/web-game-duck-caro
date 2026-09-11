@@ -7,7 +7,7 @@ import { strings } from '@/lib/strings';
 
 function titleFor(status: GameStatus): string {
   if (status.kind === 'won') {
-    return status.by === 'human' ? strings.youWin : strings.youLose;
+    return status.by === 'one' ? strings.youWin : strings.youLose;
   }
   return strings.youResigned;
 }

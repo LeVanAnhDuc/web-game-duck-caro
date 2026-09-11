@@ -21,7 +21,7 @@ function memory(seed: Record<string, string> = {}) {
 
 describe('settingsKey (ADR-0019)', () => {
   it('không mang tiền tố chủ sở hữu — đó là điều làm nó thuộc về máy', () => {
-    expect(settingsKey()).toBe('gomoku:v1:settings');
+    expect(settingsKey()).toBe('gomoku:v2:settings');
     expect(settingsKey()).not.toContain('local');
   });
 });

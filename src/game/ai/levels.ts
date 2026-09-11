@@ -1,8 +1,13 @@
 import type { Level } from '@/game/core/types';
 import type { SearchParams } from './search';
 
-/** Ba tham số của một mức, tách khỏi nguồn ngẫu nhiên. */
-export type LevelProfile = Omit<SearchParams, 'rng'>;
+/**
+ * Tham số của một MỨC KHÓ — tách khỏi nguồn ngẫu nhiên, và tách khỏi `rule`.
+ *
+ * `rule` bị loại ra có chủ đích: nó thuộc về VÁN, không thuộc về mức (ADR-0025).
+ * Để nó vào đây là mời người ta viết `LEVELS.hard.rule` — một câu vô nghĩa.
+ */
+export type LevelProfile = Omit<SearchParams, 'rng' | 'rule'>;
 
 /**
  * ADR-0005: ba mức là ba bộ tham số của CÙNG một engine, không phải ba thuật toán.

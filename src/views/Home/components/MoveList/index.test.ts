@@ -5,10 +5,10 @@ import { MoveList } from './index';
 import type { Move } from '@/game/core/types';
 
 const moves: Move[] = [
-  { at: { x: 0, y: 0 }, side: 'human' },
-  { at: { x: 1, y: 0 }, side: 'ai' },
-  { at: { x: -12, y: 7 }, side: 'human' },
-  { at: { x: 2, y: 2 }, side: 'ai' },
+  { at: { x: 0, y: 0 }, side: 'one' },
+  { at: { x: 1, y: 0 }, side: 'two' },
+  { at: { x: -12, y: 7 }, side: 'one' },
+  { at: { x: 2, y: 2 }, side: 'two' },
 ];
 
 // Props viết inline trong signature (R-16), nên test lấy kiểu từ chính component —

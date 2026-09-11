@@ -1,4 +1,4 @@
-import type { Level, Move, Point, Side } from '@/game/core/types';
+import type { Controller, Level, Mode, Move, Point, Rule, Side } from '@/game/core/types';
 import type { GameRepository } from './GameRepository';
 import { ALL_VERSIONS_PREFIX, currentGameKey, statsKey } from './keys';
 import { createSafeStorage, type SafeStorage } from './safeStorage';
@@ -14,7 +14,16 @@ import {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const isSide = (value: unknown): value is Side => value === 'human' || value === 'ai';
+const isSide = (value: unknown): value is Side => value === 'one' || value === 'two';
+
+const isController = (value: unknown): value is Controller =>
+  value === 'human' || value === 'engine';
+
+const isMode = (value: unknown): value is Mode =>
+  isRecord(value) && isController(value.one) && isController(value.two);
+
+const isRule = (value: unknown): value is Rule =>
+  value === 'blocked' || value === 'free';
 
 const isLevel = (value: unknown): value is Level =>
   value === 'easy' || value === 'normal' || value === 'hard';
@@ -50,13 +59,16 @@ function parseJson(text: string | null): unknown {
  */
 function parseSavedGame(value: unknown): SavedGame | null {
   if (!isRecord(value)) return null;
-  const { moves, first, level, savedAt } = value;
+  const { moves, first, level, mode, rule, savedAt } = value;
   if (!Array.isArray(moves) || !moves.every(isMove)) return null;
   if (!isSide(first) || !isLevel(level) || typeof savedAt !== 'string') return null;
+  if (!isMode(mode) || !isRule(rule)) return null;
   return {
     moves: moves.map((move) => ({ at: { x: move.at.x, y: move.at.y }, side: move.side })),
     first,
     level,
+    mode: { one: mode.one, two: mode.two },
+    rule,
     savedAt,
   };
 }

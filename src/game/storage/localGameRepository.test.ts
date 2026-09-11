@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { Move } from '@/game/core/types';
+import { VS_AI, type Move } from '@/game/core/types';
 import { createLocalGameRepository } from './localGameRepository';
 import { currentGameKey, statsKey } from './keys';
 import { createSafeStorage, type SafeStorage } from './safeStorage';
@@ -42,15 +42,21 @@ const throwingBacking = (): Storage =>
     },
   }) as unknown as Storage;
 
+/** Phan HOP LE dung chung cho moi fixture JSON tho ben duoi. */
+const OK_TAIL =
+  '"mode":{"one":"human","two":"engine"},"rule":"blocked","savedAt":"x"';
+
 const MOVES: Move[] = [
-  { at: { x: 0, y: 0 }, side: 'human' },
-  { at: { x: -1, y: 2 }, side: 'ai' },
+  { at: { x: 0, y: 0 }, side: 'one' },
+  { at: { x: -1, y: 2 }, side: 'two' },
 ];
 
 const GAME: SavedGame = {
   moves: MOVES,
-  first: 'human',
+  first: 'one',
   level: 'hard',
+  mode: VS_AI,
+  rule: 'blocked',
   savedAt: '2026-09-04T00:00:00.000Z',
 };
 
@@ -85,12 +91,23 @@ describe('localGameRepository — ván đang chơi', () => {
   });
 
   it('đúng JSON nhưng sai hình dạng → null', async () => {
+    /*
+     * Mỗi dòng chỉ được sai ĐÚNG MỘT chỗ, và chỗ đó là chỗ tên ca nói. Ở mốc 8 cả
+     * khối này từng đỏ vì `"first":"human"` — giá trị của `Side` cũ — nên mọi dòng
+     * trả null vì lý do sai. Một bộ test xanh vì lý do sai thì không canh gì cả.
+     */
     for (const bad of [
-      '{"moves":"khong phai mang","first":"human","level":"hard","savedAt":"x"}',
-      '{"moves":[{"at":{"x":0},"side":"human"}],"first":"human","level":"hard","savedAt":"x"}',
-      '{"moves":[],"first":"nguoi","level":"hard","savedAt":"x"}',
-      '{"moves":[],"first":"human","level":"sieu kho","savedAt":"x"}',
-      '{"moves":[],"first":"human","level":"hard"}',
+      '{"moves":"khong phai mang","first":"one","level":"hard",' + OK_TAIL + '}',
+      '{"moves":[{"at":{"x":0},"side":"one"}],"first":"one","level":"hard",' + OK_TAIL + '}',
+      '{"moves":[],"first":"nguoi","level":"hard",' + OK_TAIL + '}',
+      '{"moves":[],"first":"one","level":"sieu kho",' + OK_TAIL + '}',
+      '{"moves":[],"first":"one","level":"hard","mode":{"one":"human","two":"engine"},"rule":"blocked"}',
+      // mode và rule mới ở v2: thiếu, hoặc mang giá trị lạ, đều phải bị bỏ.
+      '{"moves":[],"first":"one","level":"hard","rule":"blocked","savedAt":"x"}',
+      '{"moves":[],"first":"one","level":"hard","mode":{"one":"human"},"rule":"blocked","savedAt":"x"}',
+      '{"moves":[],"first":"one","level":"hard","mode":{"one":"human","two":"robot"},"rule":"blocked","savedAt":"x"}',
+      '{"moves":[],"first":"one","level":"hard","mode":{"one":"human","two":"engine"},"savedAt":"x"}',
+      '{"moves":[],"first":"one","level":"hard","mode":{"one":"human","two":"engine"},"rule":"renju","savedAt":"x"}',
       '[]',
       'null',
       '42',
@@ -103,7 +120,10 @@ describe('localGameRepository — ván đang chơi', () => {
   });
 
   it('toạ độ không phải số nguyên bị từ chối — bàn chỉ có ô nguyên', async () => {
-    const bad = '{"moves":[{"at":{"x":0.5,"y":0},"side":"human"}],"first":"human","level":"hard","savedAt":"x"}';
+    const bad =
+      '{"moves":[{"at":{"x":0.5,"y":0},"side":"one"}],"first":"one","level":"hard",' +
+      OK_TAIL +
+      '}';
     const repo = createLocalGameRepository(
       createSafeStorage(fakeBacking({ [currentGameKey()]: bad })),
     );
@@ -112,13 +132,20 @@ describe('localGameRepository — ván đang chơi', () => {
 
   it('khoá lạ thêm bằng tay không đi tiếp vào ứng dụng', async () => {
     const withExtra =
-      '{"moves":[],"first":"human","level":"hard","savedAt":"x","cheat":true}';
+      '{"moves":[],"first":"one","level":"hard",' + OK_TAIL + ',"cheat":true}';
     const repo = createLocalGameRepository(
       createSafeStorage(fakeBacking({ [currentGameKey()]: withExtra })),
     );
     const loaded = await repo.loadCurrentGame();
     expect(loaded).not.toBeNull();
-    expect(Object.keys(loaded ?? {}).sort()).toEqual(['first', 'level', 'moves', 'savedAt']);
+    expect(Object.keys(loaded ?? {}).sort()).toEqual([
+      'first',
+      'level',
+      'mode',
+      'moves',
+      'rule',
+      'savedAt',
+    ]);
   });
 });
 
@@ -193,7 +220,7 @@ describe('localGameRepository — lưu trữ bị chặn (NFR-REL-04)', () => {
 
 describe('khoá lưu trữ', () => {
   it('mang version và chủ sở hữu, nên dữ liệu version khác không bị đọc tới', () => {
-    expect(currentGameKey()).toBe('gomoku:v1:local:currentGame');
-    expect(statsKey('nguoi-dung-42')).toBe('gomoku:v1:nguoi-dung-42:stats');
+    expect(currentGameKey()).toBe('gomoku:v2:local:currentGame');
+    expect(statsKey('nguoi-dung-42')).toBe('gomoku:v2:nguoi-dung-42:stats');
   });
 });

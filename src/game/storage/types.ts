@@ -1,15 +1,22 @@
-import type { Level, Move, Side } from '@/game/core/types';
+import type { Level, Mode, Move, Rule, Side } from '@/game/core/types';
 
 /**
  * Ván đang chơi, đủ để dựng lại trạng thái.
  *
  * Lưu `moves` chứ không lưu bàn — `moves` là nguồn đúng (bất biến 1), và `core/game.replay`
  * dựng lại mọi thứ khác từ nó, kể cả lượt đi và trạng thái thắng.
+ *
+ * `mode` và `rule` phải được LƯU, không suy lại lúc đọc:
+ * - thiếu `mode`, một ván hot-seat mở lại sẽ bị engine đánh hộ ghế thứ hai;
+ * - thiếu `rule`, ván được xử bằng luật đang đặt trong cài đặt chứ không phải luật
+ *   đã sinh ra nó, nên cùng một chuỗi nước cho hai kết cục (bất biến 14).
  */
 export type SavedGame = {
   readonly moves: readonly Move[];
   readonly first: Side;
   readonly level: Level;
+  readonly mode: Mode;
+  readonly rule: Rule;
   /** ISO 8601 ở **UTC** (NFR-I18N-02). Đổi múi giờ chỉ xảy ra ở tầng hiển thị. */
   readonly savedAt: string;
 };

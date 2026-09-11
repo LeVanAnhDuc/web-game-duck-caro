@@ -124,7 +124,7 @@ export function useBoardCanvas(args: {
       moves: args.moves,
       status: args.status,
       preview,
-      previewSide: 'human',
+      previewSide: 'one',
       cursor,
       w: canvas.width / dpr,
       h: canvas.height / dpr,

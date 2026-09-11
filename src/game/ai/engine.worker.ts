@@ -20,6 +20,7 @@ ctx.onmessage = (event: MessageEvent<ThinkRequest>) => {
     const result = search(request.moves, request.side, {
       ...profile,
       rng: makeRng(request.seed),
+      rule: request.rule,
     });
     const response: WorkerResponse = {
       type: 'move',

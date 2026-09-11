@@ -25,8 +25,8 @@ function movesFrom(rows: readonly string[], origin: Point = { x: 0, y: 0 }): Mov
   rows.forEach((row, dy) => {
     [...row].forEach((ch, dx) => {
       const cell: Point = { x: origin.x + dx, y: origin.y + dy };
-      if (ch === 'x') moves.push({ at: cell, side: 'human' });
-      if (ch === 'o') moves.push({ at: cell, side: 'ai' });
+      if (ch === 'x') moves.push({ at: cell, side: 'one' });
+      if (ch === 'o') moves.push({ at: cell, side: 'two' });
     });
   });
   return moves;
@@ -34,7 +34,7 @@ function movesFrom(rows: readonly string[], origin: Point = { x: 0, y: 0 }): Mov
 
 const at = (x: number, y: number): Point => ({ x, y });
 
-const AI: Side = 'ai';
+const AI: Side = 'two';
 
 /**
  * Ngân sách lớn tới mức không bao giờ chạm tới: test ghim ĐỘ SÂU chứ không ghim
@@ -55,6 +55,7 @@ function searchParams(depth: number, seed: number): SearchParams {
     topKRoot: 24,
     topKInner: 16,
     rng: makeRng(seed),
+    rule: 'blocked',
     blindRate: 0,
     pickFromTop: 1,
   };

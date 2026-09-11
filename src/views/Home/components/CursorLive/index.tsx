@@ -27,8 +27,8 @@ export function CursorLive({
     if (cursor === null) return '';
     const mark = markAt(buildBoard(moves), cursor);
     const { x, y } = cursor;
-    if (mark === 'human') return strings.cursorTakenYou(x, y);
-    if (mark === 'ai') return strings.cursorTakenAi(x, y);
+    if (mark === 'one') return strings.cursorTakenYou(x, y);
+    if (mark === 'two') return strings.cursorTakenAi(x, y);
     return strings.cursorEmpty(x, y);
   })();
 

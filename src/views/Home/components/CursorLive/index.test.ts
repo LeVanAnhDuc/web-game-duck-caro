@@ -5,8 +5,8 @@ import { CursorLive } from './index';
 import type { Move, Point } from '@/game/core/types';
 
 const moves: Move[] = [
-  { at: { x: 0, y: 0 }, side: 'human' },
-  { at: { x: -3, y: 2 }, side: 'ai' },
+  { at: { x: 0, y: 0 }, side: 'one' },
+  { at: { x: -3, y: 2 }, side: 'two' },
 ];
 
 function render(cursor: Point | null) {

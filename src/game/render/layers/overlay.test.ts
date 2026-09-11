@@ -52,7 +52,7 @@ describe('placeConfirmButton (ADR-0017)', () => {
    * `far`, đứng đủ xa mép để cạnh trái là một lựa chọn thật.
    */
   const far: Point = { x: 4, y: 2 };
-  const mv = (x: number, y: number): Move => ({ at: { x, y }, side: 'ai' });
+  const mv = (x: number, y: number): Move => ({ at: { x, y }, side: 'two' });
 
   it('ô bên phải trống thì nút nằm bên phải', () => {
     expect(placeConfirmButton(cam, at, [], view, btn)).toEqual({ x: 64 + 32 + 8, y: 62 });
