@@ -35,10 +35,6 @@ jobs:
           GITHUB_PAGES: 'true'
 
       # NFR-SEC-05: dependency không có lỗ hổng mức high trở lên.
-      # `|| true` là CỐ Ý và là nợ có ghi: yarn classic không có cờ lọc theo mức,
-      # nên bước này hiện chỉ để BÁO, chưa chặn. Xem backlog.md §Nợ kỹ thuật.
-      - name: Audit (báo, chưa chặn)
-        run: yarn audit --level high || true
 
   # E2E tách thành job RIÊNG, chạy song song với `check`.
   #
@@ -48,6 +44,21 @@ jobs:
   #
   # `yarn build` do `playwright.config.ts` gọi trong `webServer` — E2E kiểm bản build
   # tĩnh, không kiểm dev server (ADR-0022).
+  # Trả nợ kỹ thuật đã ghi trong backlog: bước `yarn audit --level high || true`
+  # không bao giờ đỏ được, vì yarn classic không lọc theo mức. Thay bằng một cổng
+  # chặn thật. Nó đọc cơ sở dữ liệu advisory của GitHub chứ không gọi endpoint
+  # audit của yarn, và chỉ xét dependency mà PR THÊM VÀO — lỗ hổng đã nằm sẵn
+  # trong lock file là việc của Dependabot.
+  dependencies:
+    name: New dependencies
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
   e2e:
     runs-on: ubuntu-latest
     steps:
