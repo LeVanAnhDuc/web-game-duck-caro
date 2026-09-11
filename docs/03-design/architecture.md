@@ -58,14 +58,24 @@ lần nghĩ nó nhận cả danh sách nước đi và dựng lại bàn, nên n
 | --- | --- | --- | --- |
 | `game/core` | Luật chơi và máy trạng thái ván: bàn thưa, đoạn cực đại, phát hiện thắng, apply/undo | không gì (thuần TS) | `render` · `ai` · `storage` · React · DOM |
 | `game/ai` | Lượng giá thế bàn và tìm nước đi; entry của Worker | `game/core` | `render` · `storage` · React · DOM |
-| `game/render` | Vẽ một khung lên canvas và đổi toạ độ bàn ↔ màn hình | `game/core` · `render/palette` | `ai` · `storage` · React |
+| `game/render` | Vẽ một khung lên canvas, đổi toạ độ bàn ↔ màn hình, và áp `data-theme` lên `<html>` | `game/core` · `game/appearance` · `render/palette` | `ai` · `storage` · `settings` · React |
 | `game/storage` | Bọc `localStorage`, kiểm hình dạng dữ liệu đọc ra, và định nghĩa ranh giới repository. **Không biết luật chơi** — ván lưu sai luật do `hooks` bắt qua `core/game.replay` | `game/core` (chỉ kiểu dữ liệu) | `render` · `ai` · React |
+| `game/appearance` | **Module LÁ**: kiểu của lựa chọn trình bày — giao diện sáng/tối và bộ quân — cùng hàm kiểm hình dạng. Không DOM, không import gì | không gì (thuần TS) | mọi thứ |
+| `game/settings` | Cài đặt của MÁY sau seam riêng, không đi qua `GameRepository` (ADR-0019). Kiểm hình dạng; giá trị lạ làm **toàn bộ** về mặc định | `game/core` (kiểu) · `game/appearance` · `game/storage` (khoá + `safeStorage`) | `render` · `ai` · React |
 | `hooks` | Cầu nối React ↔ game: giữ state, nói chuyện với Worker, gọi repository | tất cả module `game/*` | — |
 | `views` | Bố cục và các lớp phủ | `hooks` · `render` · `lib/strings` | `game/core` · `ai` · `storage` trực tiếp |
 | `lib/strings` | Toàn bộ chuỗi hiển thị, tiếng Việt | không gì | — |
 
 Ranh giới này là thứ cho phép kiểm toàn bộ luật và toàn bộ AI bằng unit test trên thế bàn
 dựng tay, không cần browser. Nó cũng là bất biến — xem `invariants.md` dòng 4 và 5.
+
+**Vì sao `game/appearance` tồn tại** (2026-09-11, mốc 8). `Theme` và `PieceSet` cần cho
+**hai** module không được phụ thuộc nhau: `game/settings` lưu chúng, `game/render` đọc
+chúng. Lần đầu tôi đặt kiểu trong `game/render` và để `settings` import — **ESLint bắt
+đúng** bằng luật `no-restricted-imports` của bất biến 4, chứ không phải tôi tự thấy. Đặt
+vào `game/core` thì sai loại: đây không phải luật chơi, và `core` không được biết sản
+phẩm trông thế nào. Nên nó thành một module lá không phụ thuộc ai, và phần chạm DOM
+(`applyTheme`, script chống nháy) ở lại `game/render/theme.ts`.
 
 ## 4. Luồng dữ liệu của đường đi quan trọng nhất
 

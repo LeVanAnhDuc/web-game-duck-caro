@@ -35,8 +35,9 @@ describe('createSettingsStore', () => {
   it('ghi rồi đọc lại ra nguyên giá trị', () => {
     const { storage } = memory();
     const store = createSettingsStore(storage);
-    expect(store.save({ sound: false, defaultLevel: 'hard' })).toBe(true);
-    expect(store.load()).toEqual({ sound: false, defaultLevel: 'hard' });
+    const next = { ...DEFAULT_SETTINGS, sound: false, defaultLevel: 'hard' as const };
+    expect(store.save(next)).toBe(true);
+    expect(store.load()).toEqual(next);
   });
 
   it('JSON hỏng thì về mặc định, KHÔNG ném (NFR-REL-04)', () => {
@@ -50,7 +51,7 @@ describe('createSettingsStore', () => {
     // Một mức lạ đi tiếp vào `useGame` sẽ thành khoá tra bảng không tồn tại, và AI
     // chạy với cấu hình `undefined` — vẫn đánh, chỉ là đánh sai.
     const { storage } = memory({
-      [settingsKey()]: JSON.stringify({ sound: true, defaultLevel: 'impossible' }),
+      [settingsKey()]: JSON.stringify({ ...DEFAULT_SETTINGS, defaultLevel: 'impossible' }),
     });
     expect(createSettingsStore(storage).load()).toEqual(DEFAULT_SETTINGS);
   });
@@ -63,7 +64,7 @@ describe('createSettingsStore', () => {
       '"chuoi"',
       JSON.stringify({ sound: 'co' }),
       JSON.stringify({ defaultLevel: 'hard' }),
-      JSON.stringify({ sound: 1, defaultLevel: 'hard' }),
+      JSON.stringify({ ...DEFAULT_SETTINGS, sound: 1 }),
     ]) {
       const { storage } = memory({ [settingsKey()]: bad });
       expect(createSettingsStore(storage).load()).toEqual(DEFAULT_SETTINGS);
@@ -85,7 +86,11 @@ describe('createSettingsStore', () => {
 
   it('chỉ chạm đúng một khoá, không rải rác thêm khoá nào', () => {
     const { storage, data } = memory();
-    createSettingsStore(storage).save({ sound: false, defaultLevel: 'easy' });
+    createSettingsStore(storage).save({
+      ...DEFAULT_SETTINGS,
+      sound: false,
+      defaultLevel: 'easy',
+    });
     expect([...data.keys()]).toEqual([settingsKey()]);
   });
 

@@ -8,6 +8,7 @@ import {
   drawWinStroke,
 } from './layers/overlay';
 import type { Palette } from './palette';
+import { DEFAULT_PIECE_SET, type PieceSet } from './pieceSets';
 import type { GameStatus, Move, Point, Side } from '@/game/core/types';
 
 export type FrameInput = {
@@ -21,18 +22,21 @@ export type FrameInput = {
   readonly w: number;
   readonly h: number;
   readonly palette: Palette;
+  /** Bộ quân đang chọn (FR-20 · ADR-0027). Không đổi kết quả ván nào. */
+  readonly pieceSet?: PieceSet;
 };
 
 /** Thứ tự lớp: giấy -> quân -> lớp phủ. Nét gạch thắng vẽ sau cùng để không bị che. */
 export function drawFrame(ctx: CanvasRenderingContext2D, input: FrameInput): void {
   const { cam, moves, status, preview, previewSide, cursor, w, h, palette } = input;
+  const set = input.pieceSet ?? DEFAULT_PIECE_SET;
 
   drawGrid(ctx, cam, w, h, palette);
-  drawMarks(ctx, cam, moves, palette);
+  drawMarks(ctx, cam, moves, palette, set);
 
   const last = moves[moves.length - 1];
   if (last !== undefined) drawLastMoveRing(ctx, cam, last.at, palette);
-  if (preview !== null) drawPreview(ctx, cam, preview, previewSide, palette);
+  if (preview !== null) drawPreview(ctx, cam, preview, previewSide, palette, set);
   // Vòng con trỏ vẽ SAU quân xem trước: hai thứ có thể trùng ô (bấm Gợi ý rồi dùng
   // bàn phím), và lúc đó cái mang thông tin vị trí là vòng con trỏ.
   if (cursor !== null) drawCursorRing(ctx, cam, cursor, palette);

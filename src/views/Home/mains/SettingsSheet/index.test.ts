@@ -60,24 +60,24 @@ describe('SettingsSheet — nhãn và vùng bấm', () => {
 
 describe('SettingsSheet — đổi cài đặt', () => {
   it('bấm ô âm thanh gọi onChange với giá trị ĐẢO lại', () => {
-    const { host, onChange } = render({ sound: true, defaultLevel: 'normal' });
+    const { host, onChange } = render({ ...DEFAULT_SETTINGS, sound: true, defaultLevel: 'normal' });
     const input = host.querySelector<HTMLInputElement>('#setting-sound');
     expect(input?.checked).toBe(true);
     // React map `onChange` cua checkbox vao su kien click, khong vao 'input'.
     act(() => {
       input?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
-    expect(onChange).toHaveBeenCalledWith({ sound: false, defaultLevel: 'normal' });
+    expect(onChange).toHaveBeenCalledWith({ ...DEFAULT_SETTINGS, sound: false, defaultLevel: 'normal' });
   });
 
   it('chọn mức khó gọi onChange với mức mới, giữ nguyên âm thanh', () => {
-    const { byText, click, onChange } = render({ sound: false, defaultLevel: 'normal' });
+    const { byText, click, onChange } = render({ ...DEFAULT_SETTINGS, sound: false, defaultLevel: 'normal' });
     click(byText('Khó'));
-    expect(onChange).toHaveBeenCalledWith({ sound: false, defaultLevel: 'hard' });
+    expect(onChange).toHaveBeenCalledWith({ ...DEFAULT_SETTINGS, sound: false, defaultLevel: 'hard' });
   });
 
   it('mức đang chọn mang aria-pressed, đúng một nút', () => {
-    const { host } = render({ sound: true, defaultLevel: 'hard' });
+    const { host } = render({ ...DEFAULT_SETTINGS, sound: true, defaultLevel: 'hard' });
     const pressed = Array.from(host.querySelectorAll('[aria-pressed="true"]'));
     expect(pressed).toHaveLength(1);
     expect(pressed[0]?.textContent).toContain('Khó');

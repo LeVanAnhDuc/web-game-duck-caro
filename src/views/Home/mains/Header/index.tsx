@@ -10,11 +10,11 @@ function Wordmark() {
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
         <path
           d="M2.5 2.5 L8 8M8 2.5 L2.5 8"
-          stroke="var(--mark-human)"
+          stroke="var(--mark-one)"
           strokeWidth="2.2"
           strokeLinecap="round"
         />
-        <circle cx="14" cy="14" r="3.6" stroke="var(--mark-ai)" strokeWidth="2.2" />
+        <circle cx="14" cy="14" r="3.6" stroke="var(--mark-two)" strokeWidth="2.2" />
       </svg>
       <span className="font-semibold tracking-tight text-ink-strong">
         {strings.appName}

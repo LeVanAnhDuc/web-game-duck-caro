@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Be_Vietnam_Pro, JetBrains_Mono } from 'next/font/google';
 import type { ReactNode } from 'react';
+import { themeBootScript } from '@/game/render/theme';
+import { settingsKey } from '@/game/storage/keys';
 import { strings } from '@/lib/strings';
 import './globals.css';
 
@@ -42,6 +44,25 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="vi" className={`${ui.variable} ${mono.variable}`}>
+      <head>
+        {/*
+          Chống nháy màu khi tải — ADR-0026 · NFR-PERF-10.
+
+          Bản build là static export (ADR-0001), nên không có server để đọc lựa chọn
+          và trả HTML đã đúng theo. Lựa chọn nằm trong `localStorage`, mà `localStorage`
+          chỉ đọc được bằng JavaScript. Nếu đợi React thì trình duyệt đã vẽ xong một
+          khung bằng bảng SÁNG — với người chọn nền tối, đó là một chớp trắng toàn màn.
+
+          Phải là `dangerouslySetInnerHTML` đặt tay: `next/script` kể cả với
+          `strategy="beforeInteractive"` vẫn không chạy trước lần vẽ đầu tiên.
+
+          Nội dung script nằm ở `game/render/theme.themeBootScript` — nó không bao giờ
+          ném, và đó là điều kiện sống của nó: một ngoại lệ ở đây làm trắng cả trang.
+        */}
+        <script
+          dangerouslySetInnerHTML={{ __html: themeBootScript(settingsKey()) }}
+        />
+      </head>
       <body className="font-ui">{children}</body>
     </html>
   );

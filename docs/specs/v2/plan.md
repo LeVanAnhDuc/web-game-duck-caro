@@ -70,15 +70,15 @@ Phụ thuộc nhóm 1 · 2 · 3.
 
 **Độc lập với nhóm 1–4**, chạy song song được.
 
-- [ ] **5.1** `globals.css`: ba tầng token theo `design.md` §3, đúng thứ tự. `color-scheme`
+- [x] **5.1** `globals.css`: ba tầng token theo `design.md` §3, đúng thứ tự. `color-scheme`
       đi theo `data-theme`.
-- [ ] **5.2** `app/layout.tsx`: script inline trong `<head>` đặt `data-theme` trước lần vẽ
+- [x] **5.2** `app/layout.tsx`: script inline trong `<head>` đặt `data-theme` trước lần vẽ
       đầu. Bọc `try/catch` — `localStorage` bị chặn thì im lặng về `system`.
-- [ ] **5.3** `render/palette.ts`: đổi `markHuman`/`markAi` → `markOne`/`markTwo`; đổi tên
+- [x] **5.3** `render/palette.ts`: đổi `markHuman`/`markAi` → `markOne`/`markTwo`; đổi tên
       biến trong `globals.css` và `MASTER.md` §1 §2 cho khớp. Giá trị hex **không đổi**.
-- [ ] **5.4** `useBoardCanvas`: `MutationObserver` trên `data-theme` + listener
+- [x] **5.4** `useBoardCanvas`: `MutationObserver` trên `data-theme` + listener
       `prefers-color-scheme` → vẽ lại. Test: đổi thuộc tính → hàm vẽ được gọi lại.
-- [ ] **5.5** `render/layers/marks.ts`: bảng tra `SETS` cho bốn bộ. Test: mỗi bộ vẽ ra
+- [x] **5.5** `render/layers/marks.ts`: bảng tra `SETS` cho bốn bộ. Test: mỗi bộ vẽ ra
       đúng số path mong đợi cho từng ghế; không bộ nào đặt `strokeStyle` ngoài
       `markOne`/`markTwo` (bất biến 16).
 

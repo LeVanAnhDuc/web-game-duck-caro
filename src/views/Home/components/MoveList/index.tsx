@@ -17,7 +17,7 @@ function SideGlyph({ side }: { side: Side }) {
       fill="none"
       aria-hidden="true"
       className="block flex-none"
-      style={{ color: side === 'one' ? 'var(--mark-human)' : 'var(--mark-ai)' }}
+      style={{ color: side === 'one' ? 'var(--mark-one)' : 'var(--mark-two)' }}
     >
       {side === 'one' ? (
         <path
