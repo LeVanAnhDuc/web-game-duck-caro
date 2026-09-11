@@ -35,7 +35,29 @@ không thống kê riêng.
 bị bỏ theo ADR-0006 — commit `feat!:`, release major. Lần đổi cấu trúc **kế tiếp** là lần
 phải trả nợ migrate, xem §Nợ kỹ thuật.
 
-**Đang chặn:** không có gì.
+**Đã xong nhóm 1–4** (kiểu, lõi luật, engine, lưu trữ `v2`, `useGame`): 282 unit test,
+typecheck và lint xanh. Nhóm 5–6 (giao diện, bộ quân, UI) chưa làm.
+
+**Một phát hiện ở task 2.4 cần quyết, và nó KHÔNG phải do đợt này gây ra.** Đo
+`NFR-PERF-06` cho cả hai luật thì **mức Khó vượt ngân sách 1500ms ở 7/7 lượt, cả hai
+luật, cả hai thế bàn**, và chỉ tới độ sâu 5 thay vì 6. Số đầy đủ ở
+[`nfr.md`](../02-requirements/nfr.md) §NFR-PERF-06.
+
+Đã chạy **thí nghiệm đối chứng** thay vì đoán: bỏ hẳn phép so sánh `rule === 'blocked'`
+ra khỏi `liveSegment`, tức trả dòng nóng về hình dạng trước ADR-0025, rồi đo lại.
+`blocked` vẫn 1564ms ở thế bàn yên. Nên tham số luật không phải nguyên nhân — chi phí
+của nó nằm dưới mức nhiễu.
+
+**Chưa nới ngân sách, chưa hạ độ sâu.** Cả hai là đổi ngưỡng hoặc đổi sản phẩm dựa trên
+một phép đo chưa tách được nguyên nhân giữa "máy này chậm hơn" và "hai thế bàn này nặng
+hơn". Việc phải làm trước nằm ở §Việc tiếp theo.
+
+**Bài học về chính cách đo:** phép đo 2026-09-04 ghi con số (1221ms, độ sâu 6) nhưng
+**không ghi thế bàn đã dùng**, nên hôm nay không so được với nó. Từ giờ mọi phép đo
+hiệu năng phải ghi kèm thế bàn — `nfr.md` §NFR-PERF-06 đã ghi cả hai thế bàn của lần này
+dưới dạng tái tạo được.
+
+**Đang chặn:** không có gì — nhóm 5 và 6 độc lập với phát hiện trên, làm tiếp được.
 
 ---
 
@@ -89,6 +111,7 @@ chưa làm: `NFR-PERF-05` và `NFR-PERF-07` cần một **điện thoại thật
 
 | Việc | Liên quan | Ưu tiên | Vì sao ưu tiên đó |
 | --- | --- | --- | --- |
+| Tách nguyên nhân `NFR-PERF-06` mức Khó: đo lại trên máy cùng loại với lần 2026-09-04, dùng ĐÚNG hai thế bàn đã ghi trong `nfr.md` | NFR-PERF-06 · ADR-0014 | cao | Đây là ngưỡng duy nhất đang KHÔNG ĐẠT mà đã có số. Không tách được nguyên nhân thì mọi cách chữa — nới ngân sách, hạ độ sâu, quay lại transposition table — đều là chữa một thứ chưa ai biết là gì |
 | Đo `NFR-PERF-05` và `NFR-PERF-07` trên một điện thoại thật | NFR-PERF-05 · NFR-PERF-07 | cao | Bàn vô hạn là rủi ro hiệu năng lớn nhất. `NFR-PERF-07` giờ cũng đo được: worker đã chạy thật, còn thiếu một lần mở Performance panel xác nhận không có long task |
 | Xem chế độ tối tận mắt ở cả bốn khổ | NFR-A11Y-01 | thấp | Token đã đúng; còn thiếu một lần nhìn |
 | Nghe thật bốn tiếng bằng tai | FR-14 | thấp | Đếm được oscillator, nhưng "nghe có hợp không" thì không chứng minh được bằng code — ADR-0021 đã ghi sẵn giới hạn này |

@@ -15,29 +15,29 @@ task mấy trên mấy.
 
 Không phụ thuộc gì. Mọi nhóm sau phụ thuộc nhóm này.
 
-- [ ] **1.1** `core/types.ts`: `Side = 'one' | 'two'`, thêm `Controller`, `Mode`, `Rule`,
+- [x] **1.1** `core/types.ts`: `Side = 'one' | 'two'`, thêm `Controller`, `Mode`, `Rule`,
       hằng `VS_AI` · `HOTSEAT`. Sửa `opponentOf`. Chưa sửa file nào khác — `yarn typecheck`
       sẽ đỏ ở ~7 file, đó là danh sách việc của nhóm 2–4.
-- [ ] **1.2** `core/rules.ts`: `winningLine(board, at, rule)`. Test **trước**: đoạn 5 bị
+- [x] **1.2** `core/rules.ts`: `winningLine(board, at, rule)`. Test **trước**: đoạn 5 bị
       chặn hai đầu → `null` ở `blocked`, → thắng ở `free`; đoạn 6 bị chặn hai đầu → cùng
       cặp kết quả đó (bất biến 3).
-- [ ] **1.3** `core/game.ts`: `createGame(first, rule)`, `applyMove` truyền `rule` xuống
+- [x] **1.3** `core/game.ts`: `createGame(first, rule)`, `applyMove` truyền `rule` xuống
       `winningLine`, `replay` giữ `rule`.
-- [ ] **1.4** `core/game.ts`: `undo(state, mode)` lùi **1** nước khi cả hai ghế là
+- [x] **1.4** `core/game.ts`: `undo(state, mode)` lùi **1** nước khi cả hai ghế là
       `human`, **2** nước khi có `engine`. Test cả hai.
-- [ ] **1.5** Chạy `yarn test` — 253 test cũ phải xanh lại sau khi đổi tên giá trị `Side`.
+- [x] **1.5** Chạy `yarn test` — 253 test cũ phải xanh lại sau khi đổi tên giá trị `Side`.
       Test nào phải sửa nội dung (không chỉ đổi tên) thì **ghi lại vì sao** ở commit body.
 
 ## Nhóm 2 · Engine biết luật — 4 task
 
 Phụ thuộc nhóm 1. Làm sớm vì `NFR-PERF-06` phải đo lại và cần biết ngay nếu nhánh luật quá đắt.
 
-- [ ] **2.1** `ai/protocol.ts`: thêm `rule` vào thông điệp yêu cầu (bất biến 6).
-- [ ] **2.2** `ai/patterns.ts`: bảng mẫu nhận `rule`. Ở `free`, đoạn 5 bị chặn hai đầu
+- [x] **2.1** `ai/protocol.ts`: thêm `rule` vào thông điệp yêu cầu (bất biến 6).
+- [x] **2.2** `ai/patterns.ts`: bảng mẫu nhận `rule`. Ở `free`, đoạn 5 bị chặn hai đầu
       chấm là **thắng**. Test trước, trên cả hai luật.
-- [ ] **2.3** `ai/evaluate.ts` + `ai/search.ts` + `ai/localEngine.ts` + `engine.worker.ts`:
+- [x] **2.3** `ai/evaluate.ts` + `ai/search.ts` + `ai/localEngine.ts` + `engine.worker.ts`:
       luồn `rule` xuống. Giữ độ sâu tiêm từ ngoài (bất biến 9).
-- [ ] **2.4** **Đo `NFR-PERF-06` cho cả hai luật**, ghi số thật vào `nfr.md`. Không viết
+- [x] **2.4** **Đo `NFR-PERF-06` cho cả hai luật**, ghi số thật vào `nfr.md`. Không viết
       con số nào chưa chạy ra. Nếu `free` vượt ngân sách → dừng, ghi vào `backlog.md`
       §Đang làm và bàn lại trước khi đi tiếp.
 
@@ -45,25 +45,25 @@ Phụ thuộc nhóm 1. Làm sớm vì `NFR-PERF-06` phải đo lại và cần b
 
 Phụ thuộc nhóm 1.
 
-- [ ] **3.1** `storage/keys.ts`: `STORAGE_VERSION = 'v2'`. Không viết hàm migrate nào
+- [x] **3.1** `storage/keys.ts`: `STORAGE_VERSION = 'v2'`. Không viết hàm migrate nào
       (ADR-0006 · `design.md` §6).
-- [ ] **3.2** `storage/types.ts`: `SavedGame` thêm `mode` · `rule`, `first` đổi miền.
+- [x] **3.2** `storage/types.ts`: `SavedGame` thêm `mode` · `rule`, `first` đổi miền.
       `localGameRepository` kiểm **hình dạng** `mode`/`rule` và bỏ dữ liệu lạ — giống
       cách `settingsStore.parse` đang làm, không kiểm luật chơi.
-- [ ] **3.3** `settingsStore`: thêm `theme` · `pieceSet` · `defaultRule` vào `Settings`
+- [x] **3.3** `settingsStore`: thêm `theme` · `pieceSet` · `defaultRule` vào `Settings`
       và vào `parse`. Giá trị lạ → **toàn bộ** về `DEFAULT_SETTINGS`, đúng hành vi hiện có.
 
 ## Nhóm 4 · `useGame` biết chế độ — 4 task
 
 Phụ thuộc nhóm 1 · 2 · 3.
 
-- [ ] **4.1** `useGame(engine, {mode, rule, level})`. Sau mỗi nước: gọi engine **chỉ khi**
+- [x] **4.1** `useGame(engine, {mode, rule, level})`. Sau mỗi nước: gọi engine **chỉ khi**
       `mode[state.toMove] === 'engine'` (bất biến 15).
-- [ ] **4.2** `place()` bỏ điều kiện `toMove !== 'human'`; thay bằng "ghế đang đi có
+- [x] **4.2** `place()` bỏ điều kiện `toMove !== 'human'`; thay bằng "ghế đang đi có
       controller là `human`". Giữ lớp chặn double-tap của `NFR-REL-02`.
-- [ ] **4.3** `restart`, `resetToMenu`, `resume` mang theo `mode` · `rule`. `resume` một
+- [x] **4.3** `restart`, `resetToMenu`, `resume` mang theo `mode` · `rule`. `resume` một
       ván hot-seat **không** được gọi engine (US-05 §Điều gì có thể sai).
-- [ ] **4.4** Test: ván hot-seat 4 nước không gọi engine lần nào (engine giả, đếm số lần
+- [x] **4.4** Test: ván hot-seat 4 nước không gọi engine lần nào (engine giả, đếm số lần
       gọi = 0). Đây là test giữ bất biến 15.
 
 ## Nhóm 5 · Giao diện và bộ quân — 5 task
