@@ -33,7 +33,7 @@ này không có server, không có datastore, không có tiền. Để chúng l�
 | 6 | Worker **vô trạng thái**: mỗi yêu cầu gửi cả `moves` **và `rule`**, worker dựng lại bàn (ADR-0004 · ADR-0025) | Sau một lần undo, worker nghĩ trên một thế bàn khác thế bàn người chơi đang thấy. Thiếu `rule` thì nó nghĩ đúng trên một luật khác luật đang chơi |
 | 7 | Mọi kết quả từ worker phải khớp `requestId` hiện tại, không khớp thì **bỏ** | Nước của máy xuất hiện sau khi người chơi đã hoàn nước — bàn nhận một nước từ quá khứ |
 | 8 | Lượng giá là **tăng dần** theo 4 đường qua nước vừa đánh. Không lặp qua mọi quân để tính lại | Mỗi chuỗi bị đếm nhiều lần, nên điểm sai theo tỉ lệ — AI vẫn đánh, chỉ là đánh kém |
-| 9 | `search` nhận `deadline` và độ sâu **tiêm từ ngoài**. Test ghim độ sâu, không ghim milliseconds | Test xanh trên máy dev, đỏ ngẫu nhiên trên CI, và không ai tìm ra vì sao |
+| 9 | `search` nhận `deadline` và độ sâu **tiêm từ ngoài**. Test ghim độ sâu, không ghim milliseconds — kể cả ngưỡng `testTimeout` của harness, vốn là một cái đồng hồ không ai viết ra | Test xanh trên máy dev, đỏ ngẫu nhiên trên CI, và không ai tìm ra vì sao. Đã xảy ra ở mốc 8: bộ chiến thuật bị vitest kill ở 5000ms mặc định khi máy tải nặng, và nó hiện ra y như một đáp án sai |
 | 10 | Nguồn ngẫu nhiên **tiêm từ ngoài** và seed được (ADR-0005) | E2E xanh đỏ tuỳ lượt; bộ test mất niềm tin trong một tuần |
 | 11 | Đổi toạ độ màn hình ↔ toạ độ bàn **chỉ** đi qua `render/camera`. Không nơi nào tự nhân chia lại | Hit-test lệch khỏi chỗ vẽ ở mức phóng khác mặc định. Ở mức mặc định vẫn đúng, nên thử nhanh không thấy |
 | 12 | Mốc thời gian lưu ở **UTC**; đổi múi giờ chỉ ở tầng hiển thị | Ván lưu và thống kê lệch một ngày ở biên múi giờ. Test viết theo giờ máy vẫn xanh |

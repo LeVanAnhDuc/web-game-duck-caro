@@ -34,6 +34,11 @@ không thống kê riêng.
 bị bỏ theo ADR-0006 — commit `feat!:`, release major. Lần đổi cấu trúc **kế tiếp** là lần
 phải trả nợ migrate, xem §Nợ kỹ thuật.
 
+**Nhánh đã rebase lên `origin/main` mới** (a5b5568 — bản UX persona review của phiên
+khác đã vào `main` trong lúc mốc 8 đang làm). Xung đột duy nhất nằm trong khối
+`BEGIN:auto` của `docs/README.md`, giải bằng cách chạy lại `docs-regen.sh` — bảng đó
+do file sinh ra, nên file là nguồn đúng, không phải bảng.
+
 **Đã xong nhóm 1–7** của [`plan.md`](../specs/v2/plan.md): 308 unit test · 27 E2E ·
 typecheck · lint · build tĩnh, tất cả xanh. Còn nhóm 8 (code review, chốt nhánh).
 
@@ -112,13 +117,25 @@ file CSS và bắt hai khối phải giống hệt nhau. Nguy cơ lệch âm th�
 
 Ba lỗi hành vi đã có test riêng, không chỉ có một lần sửa.
 
-**Một lượt test đỏ chưa giải thích được, ghi ra để lần sau có điểm bắt đầu.** Trong một
-lượt `yarn test`, ca `search.tactics.test.ts > ba gãy oo.o` đỏ một lần rồi xanh ở cả bốn
-lượt chạy lại sau đó. Ca đó **tất định**: `blindRate: 0`, `pickFromTop: 1`, độ sâu ghim,
-và `deadlineMs` là 10⁷ms nên hạn giờ không thể nổ (`stopAt = Date.now() + deadlineMs`,
-đã kiểm). Lượt đỏ đó xảy ra khi máy đang chạy nhiều việc song song và chính lệnh đó bị
-đẩy sang chạy nền vì quá 300s. **Chưa biết nguyên nhân.** Nếu nó lặp lại, chỗ đáng nhìn
-đầu tiên là liệu có gì trong `search` phụ thuộc đồng hồ ngoài `stopAt` hay không.
+**Một phụ thuộc đồng hồ ẨN trong bộ test chiến thuật — đã tìm ra và đã chữa.**
+
+`search.tactics.test.ts` đỏ **hai lần** ở mốc 8, ở **hai ca khác nhau**, cả hai đều ở
+~5.2s. Lần đầu tôi ghi là "chưa biết nguyên nhân"; lần thứ hai cho thấy con số 5.2s mới
+là dấu vết: đó là **ngưỡng `testTimeout` mặc định 5000ms của vitest**, không phải một
+đáp án sai. Vitest KILL test và nó hiện ra y như một ca đỏ.
+
+Đo trên máy rảnh: ca chậm nhất của bộ đó mất **3.0s**, ba ca sau mất 2.6s · 2.2s · 2.0s
+— tức chỉ còn ~2s dư. Máy chạy nhiều việc song song là vượt.
+
+Đây đúng là thứ **bất biến 9** cấm: bộ test ghim ĐỘ SÂU chứ không ghim milliseconds, và
+`deadlineMs` để 10⁷ms nên hạn giờ của chính `search` không bao giờ nổ — nhưng ngưỡng của
+harness thì vẫn là một cái đồng hồ, chỉ là cái đồng hồ không ai viết ra. Đã chữa bằng
+`vi.setConfig({ testTimeout: 60_000 })` trong chính file đó, kèm lý do. Nới ngưỡng này
+không làm bộ test yếu đi: không ca nào ở đây khẳng định điều gì về thời gian, và ngưỡng
+hiệu năng thật là `NFR-PERF-06`, đo riêng.
+
+Bài học: **một ca đỏ "tự xanh khi chạy lại" không phải dao động ngẫu nhiên cho tới khi
+biết vì sao.** Lần đầu tôi đã gần như bỏ qua nó.
 
 **Đang chặn:** không có gì.
 
