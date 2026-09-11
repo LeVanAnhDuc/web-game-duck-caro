@@ -13,11 +13,17 @@ const moves: Move[] = [
 
 // Props viết inline trong signature (R-16), nên test lấy kiểu từ chính component —
 // cùng lối `Parameters<typeof X>[0]` mà test của ReviewBar đã dùng.
-function render(props: Parameters<typeof MoveList>[0]) {
+/*
+ * `pieceSet` có mặc định ở đây chứ không ở component: bộ test này đo VAI TRÒ của
+ * hàng (chỉ đọc 32px so với bấm được 44px — ADR-0018), không đo hình quân. Hình quân
+ * có bộ test riêng ở `game/render/pieceSets.test.ts`.
+ */
+function render(props: Omit<Parameters<typeof MoveList>[0], 'pieceSet'>) {
+  const full: Parameters<typeof MoveList>[0] = { pieceSet: 'pencil', ...props };
   const host = document.createElement('div');
   document.body.appendChild(host);
   act(() => {
-    createRoot(host).render(createElement(MoveList, props));
+    createRoot(host).render(createElement(MoveList, full));
   });
   return host;
 }

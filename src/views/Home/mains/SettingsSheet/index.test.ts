@@ -39,10 +39,21 @@ describe('SettingsSheet — nhãn và vùng bấm', () => {
     }
   });
 
+  /*
+   * jsdom không có layout nên không đo được chiều cao thật; lớp là thứ thay thế duy
+   * nhất. Nhưng nó phải đo NGƯỠNG, không đo một lớp cụ thể: ô chọn bộ quân cao 60px
+   * và vẫn đạt NFR-A11Y-03. Bản trước chỉ khớp `min-h-11` nên nó đỏ với một nút CAO
+   * HƠN yêu cầu — tức nó canh cách viết, không canh yêu cầu.
+   */
   it('mọi nút cao ít nhất 44px theo lớp, và có tên đọc được', () => {
     const { host } = render();
+    const MIN_PX = 44;
     for (const button of Array.from(host.querySelectorAll('button'))) {
-      expect(button.className).toMatch(/min-h-11|h-11/);
+      const arbitrary = /(?:min-)?h-\[(\d+)px\]/.exec(button.className);
+      const tall =
+        /min-h-11|(?:^|\s)h-11(?:\s|$)/.test(button.className) ||
+        (arbitrary !== null && Number(arbitrary[1]) >= MIN_PX);
+      expect(tall, button.className).toBe(true);
       const named =
         button.getAttribute('aria-label') !== null ||
         (button.textContent ?? '').trim().length > 0;
@@ -76,11 +87,25 @@ describe('SettingsSheet — đổi cài đặt', () => {
     expect(onChange).toHaveBeenCalledWith({ ...DEFAULT_SETTINGS, sound: false, defaultLevel: 'hard' });
   });
 
-  it('mức đang chọn mang aria-pressed, đúng một nút', () => {
+  /*
+   * Khẳng định theo TỪNG NHÓM, không theo cả sheet. Từ mốc 8 có bốn nhóm chọn một
+   * (giao diện, bộ quân, mức khó, luật), nên "đúng một nút được nhấn trong cả màn"
+   * đã thành một câu sai. Mỗi nhóm vẫn phải có đúng một.
+   */
+  it('mỗi nhóm chọn-một có ĐÚNG một nút mang aria-pressed', () => {
     const { host } = render({ ...DEFAULT_SETTINGS, sound: true, defaultLevel: 'hard' });
-    const pressed = Array.from(host.querySelectorAll('[aria-pressed="true"]'));
-    expect(pressed).toHaveLength(1);
-    expect(pressed[0]?.textContent).toContain('Khó');
+    const groups = Array.from(host.querySelectorAll('[role="group"]'));
+    expect(groups.length).toBeGreaterThanOrEqual(4);
+    for (const group of groups) {
+      const pressed = Array.from(group.querySelectorAll('[aria-pressed="true"]'));
+      expect(pressed, group.getAttribute('aria-label') ?? '').toHaveLength(1);
+    }
+  });
+
+  it('mức đang chọn là mức được nhấn trong nhóm mức khó', () => {
+    const { host } = render({ ...DEFAULT_SETTINGS, sound: true, defaultLevel: 'hard' });
+    const group = host.querySelector('[role="group"][aria-label="Mức khó mặc định"]');
+    expect(group?.querySelector('[aria-pressed="true"]')?.textContent).toContain('Khó');
   });
 });
 

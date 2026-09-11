@@ -23,8 +23,8 @@ KHÔNG chứa: tính năng ngoài phạm vi (-> 01-product/overview.md §Non-Goa
 [`docs/specs/v2/plan.md`](../specs/v2/plan.md) — **đọc file đó trước**, nó có checkbox;
 thiết kế ở [`design.md`](../specs/v2/design.md); năm quyết định ở ADR-0024 … ADR-0028.
 
-Đang ở: **tài liệu đã xong, chưa viết dòng code nào.** Task kế tiếp là **1.1** —
-`core/types.ts`.
+Đang ở: **code đã xong và đã nhìn tận mắt.** Task kế tiếp là **8.2 → 8.4** — chốt
+backlog, regen docs, rồi code review và đóng nhánh.
 
 **Hai Non-Goal đã được gỡ có chủ đích** (`overview.md` §4): hot-seat, và luật ngoài caro
 Việt. Đây là cuộc bàn về phạm vi, không phải một lần bỏ qua tài liệu. Đổi lại §4 nhận một
@@ -35,8 +35,37 @@ không thống kê riêng.
 bị bỏ theo ADR-0006 — commit `feat!:`, release major. Lần đổi cấu trúc **kế tiếp** là lần
 phải trả nợ migrate, xem §Nợ kỹ thuật.
 
-**Đã xong nhóm 1–4** (kiểu, lõi luật, engine, lưu trữ `v2`, `useGame`): 282 unit test,
-typecheck và lint xanh. Nhóm 5–6 (giao diện, bộ quân, UI) chưa làm.
+**Đã xong nhóm 1–7** của [`plan.md`](../specs/v2/plan.md): 308 unit test · 27 E2E ·
+typecheck · lint · build tĩnh, tất cả xanh. Còn nhóm 8 (code review, chốt nhánh).
+
+**Bốn lỗi thật chỉ tìm ra bằng cách CHẠY APP, không bằng test** — ghi ra vì cả bốn cùng
+một loại, và loại đó không có test nào bắt hộ:
+
+1. **Bàn thụt 56px lúc bắt đầu ván** nên cú bấm đầu vào giữa bàn rơi vào ô (0,−1).
+   Nguyên nhân: `SeatBar` chỉ render khi đã vào ván. E2E `play.spec.ts` bắt được. Lần
+   chữa đầu (tự đưa camera về giữa khi bàn trống) **vẫn để lọt** ở đường tiếp tục ván đã
+   lưu, nơi ván đã có quân trước khi thanh xuất hiện. Chữa đúng là giữ chiều cao bàn
+   KHÔNG ĐỔI: thanh luôn chiếm 56px và tự ẩn nội dung.
+2. **Nháy sáng khi tải ở chế độ tối** — `useSettings` khởi đầu bằng mặc định `'system'`,
+   nên ghost áp giao diện chạy trước lúc cài đặt đọc xong và **xoá** `data-theme` mà
+   script trong `<head>` vừa đặt. `NFR-PERF-10` đỏ **một lần trong hai lần chạy**, nên
+   một lần chạy xanh không chứng minh được gì — phải `--repeat-each`.
+3. **Quân của ghế một tàng hình trên nút đang chọn**: `--mark-one` bằng đúng
+   `--ink-strong`, tức đen trên đen. Thấy bằng mắt ở màn bắt đầu.
+4. **Thanh hai ghế trải hết cửa sổ ở khổ 1440**, nên vạch chia rơi vào giữa CỬA SỔ chứ
+   không giữa BÀN — mất đúng phép so "nửa nào sáng hơn" mà ADR-0028 dựa vào.
+
+Cộng ba thứ nữa cùng loại: pill header in mức khó ở chế độ hot-seat (không có máy nào),
+bảng thống kê theo mức hiện ở hot-seat (không ván nào được ghi), và ô bộ quân đang chọn
+dùng màu `--focus` — màu của vòng focus bàn phím — làm viền chọn.
+
+**Quả trứng của bộ Vịt phải vẽ lại ba lần.** Hai bản đầu nhọn đỉnh và đọc ra hình lá;
+nguyên nhân là điểm điều khiển Bézier cạnh đỉnh đặt lệch khỏi đỉnh nên hai đoạn gặp nhau
+thành một góc. Hình đúng hay sai không có cách nào khẳng định bằng code.
+
+**Hai chỗ lệch khỏi mockup đã duyệt, cố ý:** `NoticeLine` được giữ (mockup không vẽ dòng
+đó, nhưng bỏ nó là mất phản hồi "Ô đó đã có quân" cho người nhìn bằng mắt), và viền ô bộ
+quân đang chọn dùng `--ink-strong` thay cho `--focus` của mockup.
 
 **Một phát hiện ở task 2.4 cần quyết, và nó KHÔNG phải do đợt này gây ra.** Đo
 `NFR-PERF-06` cho cả hai luật thì **mức Khó vượt ngân sách 1500ms ở 7/7 lượt, cả hai

@@ -26,10 +26,16 @@ export async function playAt(page: Page, dx: number, dy: number) {
   await page.locator('canvas').click({ position: await cellPosition(page, dx, dy) });
 }
 
-/** Số nước đang hiện trong cột phải. Nguồn duy nhất để chờ, thay cho `waitForTimeout`. */
+/**
+ * Số nước đang có trong ván, đọc từ DANH SÁCH NƯỚC ĐI ở cột phải.
+ *
+ * Đếm hàng chứ không đọc chữ "nước N": ở mốc 8, dòng trạng thái cũ bị tách thành
+ * `SeatBar` (lượt của ai) và `NoticeLine` (thông báo), và số nước chuyển vào một chip
+ * chỉ in số. Danh sách nước đi là cách nói trực tiếp nhất của "ván có bao nhiêu nước",
+ * và nó không đổi chỗ theo bố cục — nên nó là mốc neo bền hơn.
+ */
 export async function moveCount(page: Page): Promise<number> {
-  const text = (await page.locator('aside').getByText(/^nước \d+$/).first().textContent()) ?? '';
-  return Number(text.replace(/\D/g, ''));
+  return page.locator('aside li').count();
 }
 
 /**
@@ -39,10 +45,7 @@ export async function moveCount(page: Page): Promise<number> {
  * CI chậm hơn máy dev, nên mọi `waitForTimeout` là một test sẽ đỏ ngẫu nhiên.
  */
 export async function expectMoves(page: Page, n: number) {
-  // `.first()` vì cột phải có tới HAI chỗ in số nước: dòng trạng thái và khối kết ván.
-  await expect(
-    page.locator('aside').getByText(new RegExp(`^nước ${n}$`)).first(),
-  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('aside li')).toHaveCount(n, { timeout: 15_000 });
 }
 
 /**
@@ -64,13 +67,27 @@ export async function tabToCanvas(page: Page, limit = 12) {
 /** Mở một ván mới. Mức Dễ là mặc định của test: ~8ms một nước thay vì ~1.2s. */
 export async function startGame(
   page: Page,
-  opts: { level?: 'Dễ' | 'Thường' | 'Khó'; first?: 'Bạn' | 'Máy' } = {},
+  opts: {
+    level?: 'Dễ' | 'Thường' | 'Khó';
+    first?: 'Bạn' | 'Máy' | 'Người 1' | 'Người 2';
+    mode?: 'Đấu máy' | 'Hai người';
+    rule?: 'Caro Việt' | 'Tự do';
+  } = {},
 ) {
   const overlay = page.getByRole('button', { name: 'Bắt đầu ván mới' });
   await expect(overlay).toBeVisible();
-  await page.getByRole('button', { name: opts.level ?? 'Dễ', exact: true }).click();
-  if (opts.first === 'Máy') {
-    await page.getByRole('button', { name: 'Máy', exact: true }).click();
+  // Chế độ trước tiên: nó làm mục Mức khó xuất hiện hay biến mất.
+  if (opts.mode !== undefined) {
+    await page.getByRole('button', { name: opts.mode, exact: true }).click();
+  }
+  if (opts.mode !== 'Hai người') {
+    await page.getByRole('button', { name: opts.level ?? 'Dễ', exact: true }).click();
+  }
+  if (opts.rule !== undefined) {
+    await page.getByRole('button', { name: opts.rule, exact: true }).click();
+  }
+  if (opts.first !== undefined) {
+    await page.getByRole('button', { name: opts.first, exact: true }).click();
   }
   await overlay.click();
   await expect(overlay).toBeHidden();

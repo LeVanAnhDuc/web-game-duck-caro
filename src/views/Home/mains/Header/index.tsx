@@ -24,12 +24,16 @@ function Wordmark() {
 }
 
 export function Header({
-  levelLabel,
+  badge,
   soundOn,
   onToggleSound,
   onOpenSettings,
 }: {
-  levelLabel: string;
+  /**
+   * Nhãn tròn bên phải. Ở chế độ đấu máy là mức khó; ở hot-seat là "Hai người" —
+   * in một mức khó ở đó là nói về một cái máy không tham gia ván nào.
+   */
+  badge: string;
   soundOn: boolean;
   onToggleSound(): void;
   onOpenSettings(): void;
@@ -39,7 +43,7 @@ export function Header({
       <Wordmark />
       <div className="flex items-center gap-1">
         <span className="mr-1 rounded-full border border-edge px-2.5 py-1 font-mono text-xs font-medium">
-          {levelLabel}
+          {badge}
         </span>
         {/*
           Nhãn nói HÀNH ĐỘNG sẽ xảy ra khi bấm, không nói trạng thái hiện tại. Và icon

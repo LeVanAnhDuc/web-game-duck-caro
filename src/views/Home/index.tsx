@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 // types
 import {
   DEFAULT_RULE,
+  hasEngine,
   VS_AI,
   type GameStatus,
   type Level,
@@ -22,8 +23,9 @@ import { useBoardCanvas, useGame, usePersistence, useSettings } from '@/hooks';
 import { Controls } from './components/Controls';
 import { CursorLive } from './components/CursorLive';
 import { MoveList } from './components/MoveList';
+import { NoticeLine } from './components/NoticeLine';
 import { ReviewPane } from './components/ReviewPane';
-import { StatusLine } from './components/StatusLine';
+import { SeatBar } from './components/SeatBar';
 import { WinSheet } from './components/WinSheet';
 import { BoardStage } from './mains/BoardStage';
 import { Header } from './mains/Header';
@@ -32,6 +34,7 @@ import { StartOverlay } from './mains/StartOverlay';
 import { StatsPanel } from './mains/StatsPanel';
 // ghosts
 import { ApplyDefaultLevel } from './ghosts/ApplyDefaultLevel';
+import { ApplyTheme } from './ghosts/ApplyTheme';
 import { PlayMoveSound } from './ghosts/PlayMoveSound';
 import { RecordResult } from './ghosts/RecordResult';
 import { ResumeSavedGame } from './ghosts/ResumeSavedGame';
@@ -100,6 +103,13 @@ export function Home() {
     moves: shownMoves,
     status: shownStatus,
     onPlace: game.place,
+    pieceSet: settings.pieceSet,
+    /*
+     * Quân xem trước mang hình và màu của GHẾ ĐANG ĐI (ADR-0028) — tín hiệu
+     * "tới lượt ai" thứ hai, và là tín hiệu nằm đúng chỗ mắt đang nhìn. Thanh
+     * hai ghế ở trên NÓI; cái này CHO THẤY.
+     */
+    previewSide: game.state.toMove,
   });
 
   const undo = () => {
@@ -113,6 +123,13 @@ export function Home() {
     game.restart(options);
     setStarted(true);
   };
+
+  /*
+   * Đổi chế độ hoặc luật GIỮA VÁN không làm được từ đây — không có nút nào cho
+   * nó, và đó là chủ ý. Cả hai đông cứng theo ván (bất biến 14 · ADR-0025), nên
+   * muốn đổi thì bỏ ván rồi bắt đầu ván mới, đi qua đúng luồng của US-04. Một
+   * hộp xác nhận ở đây sẽ là con đường thứ hai tới cùng một chỗ.
+   */
 
   /**
    * "Chơi lại" đưa về màn chọn mức, và phải DỌN ván cũ.
@@ -143,6 +160,7 @@ export function Home() {
 
   const reviewProps = {
     moves: game.state.moves,
+    pieceSet: settings.pieceSet,
     // `reviewing` đã canh `reviewAt !== null` ở mọi chỗ dùng; `?? 0` chỉ để chiều TS.
     at: reviewAt ?? 0,
     onGoto: game.gotoMove,
@@ -167,6 +185,7 @@ export function Home() {
 
   const winProps = {
     status,
+    mode: game.mode,
     moveCount: total,
     onPlayAgain: playAgain,
     onReview: startReview,
@@ -181,6 +200,7 @@ export function Home() {
         trong file này: effect của con chạy trước effect của cha và theo đúng thứ tự
         con, nên xê dịch mấy dòng dưới đây là xê dịch thứ tự chạy thật.
       */}
+      <ApplyTheme theme={settings.theme} loaded={settingsLoaded} />
       <ApplyDefaultLevel
         loaded={settingsLoaded}
         started={started}
@@ -222,7 +242,9 @@ export function Home() {
       />
 
       <Header
-        levelLabel={LEVEL_LABEL[level]}
+        badge={
+          hasEngine(game.mode) ? LEVEL_LABEL[level] : strings.modeHotseat
+        }
         soundOn={settings.sound}
         onToggleSound={() => updateSettings({ ...settings, sound: !settings.sound })}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -230,11 +252,29 @@ export function Home() {
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <div className="relative flex min-h-0 flex-1 flex-col">
+          {/*
+            Thanh hai ghế nằm TRONG cột bàn, không ở ngoài: ở 1440 nó sẽ trải hết
+            cửa sổ và vạch chia giữa hai ghế rơi vào giữa CỬA SỔ chứ không giữa BÀN
+            — mất đúng phép so "nửa nào sáng hơn" mà ADR-0028 dựa vào. Thấy được
+            bằng mắt ở khổ 1440, không thấy được bằng test.
+
+            Nó render VÔ ĐIỀU KIỆN và tự ẩn nội dung khi chưa vào ván, nên chiều cao
+            khung bàn KHÔNG ĐỔI — xem ghi chú trong `SeatBar`.
+          */}
+          <SeatBar
+            state={game.state}
+            mode={game.mode}
+            thinking={game.thinking}
+            pieceSet={settings.pieceSet}
+            visible={started}
+          />
           <BoardStage board={board} moves={shownMoves} onHint={game.askHint} onUndo={undo} />
           {!started && (
             <StartOverlay
               stats={persistence.stats}
               defaultLevel={settings.defaultLevel}
+              defaultRule={settings.defaultRule}
+              pieceSet={settings.pieceSet}
               onStart={start}
             />
           )}
@@ -253,7 +293,7 @@ export function Home() {
           {!reviewing && (
             <div className="lg:hidden">
               <CursorLive cursor={board.cursor} moves={shownMoves} />
-              <StatusLine
+              <NoticeLine
                 state={game.state}
                 thinking={game.thinking}
                 notice={game.notice}
@@ -275,15 +315,26 @@ export function Home() {
             <ReviewPane variant="panel" {...reviewProps} />
           ) : (
             <>
-              <StatusLine
+              <NoticeLine
                 state={game.state}
                 thinking={game.thinking}
                 notice={game.notice}
                 variant="panel"
               />
-              <MoveList moves={game.state.moves} currentAt={null} variant="panel" />
+              <MoveList
+                moves={game.state.moves}
+                currentAt={null}
+                variant="panel"
+                pieceSet={settings.pieceSet}
+              />
               <CursorLive cursor={board.cursor} moves={shownMoves} />
-              <StatsPanel stats={persistence.stats} level={level} />
+              {/*
+                Hot-seat không vào thống kê (overview.md §4), nên một bảng "Dễ ·
+                Thường · Khó" ở đây nói về một cái máy không tham gia ván nào.
+              */}
+              {hasEngine(game.mode) && (
+                <StatsPanel stats={persistence.stats} level={level} />
+              )}
               <WinSheet {...winProps} variant="panel" />
               <Controls orientation="column" {...controlProps} />
             </>

@@ -12,9 +12,13 @@ is drawn in code on a canvas: no sprite sheet, no image files. No server, no sig
 
 ![Duck Caro gameplay](docs/assets/screenshot.png)
 
-**Status:** all 7 milestones are done. The game is playable, the opponent is real, a finished
-game replays move by move, a whole game can be played with the keyboard alone, and the load
-budget is measured rather than guessed — LCP 1.0s on a throttled 4G phone profile. See [`docs/04-state/backlog.md`](docs/04-state/backlog.md).
+**Status:** v2. Two people can share one screen, the win rule is chosen per game, the
+interface follows light or dark, and the pieces can be swapped. The opponent is real, a
+finished game replays move by move, a whole game can be played with the keyboard alone,
+and the load budget is measured rather than guessed — LCP 1.0s on a throttled 4G phone
+profile. One threshold is currently **not met**: the hard engine overruns its 1.5s budget
+on the machine it was last measured on, under both rules, and the cause has not been
+isolated yet. See [`docs/04-state/backlog.md`](docs/04-state/backlog.md).
 
 Releases and the Pages deploy are automated from `main`; the version comes from
 Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
@@ -27,18 +31,32 @@ Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
   - Coordinates are integers and go negative; the first move of a game is `0, 0`
   - No board edge means "blocked" has exactly one meaning — an enemy mark, never a wall
 
-- **Vietnamese caro rules, stated precisely**
+- **Two win rules, chosen per game**
 
   - Five or more in a row wins, judged on the maximal run through the last move
-  - A run blocked by enemy marks at **both** ends does not win, however long it is
-  - Six in a row wins when it is not blocked; six blocked at both ends does not
-  - There is no draw: an unbounded board never runs out of cells
+  - Vietnamese caro: a run blocked by enemy marks at **both** ends does not win,
+    however long it is. Freestyle: it wins anyway
+  - The rule is frozen when the game starts and saved with it, so reopening a game
+    months later judges it by the rule it was played under — not by today's setting
+  - The engine is taught the rule too, down to its pattern table: under freestyle a
+    blocked five is a real threat, and an engine that scored it as harmless would
+    keep playing while missing both its own win and yours
+  - There is no draw under either rule: an unbounded board never runs out of cells
 
-- **Play against the machine**
+- **Play against the machine, or against the person next to you**
 
   - Choose who moves first; the machine answers every move
-  - Undo takes back your move **and** the machine's reply
-  - Resign closes the game when it is no longer worth finishing
+  - Two-player mode shares one screen and one board: no account, no matchmaking,
+    nothing to install. The difficulty picker disappears, because there is no
+    machine to set a difficulty for
+  - A two-seat bar splits the screen and says whose turn it is — the active half is
+    brighter, bolder and underlined in that seat's mark colour, so it reads without
+    relying on colour. The preview mark under the cursor takes the moving seat's
+    shape as well: one signal says it, the other shows it where you are looking
+  - Undo takes back your move **and** the machine's reply — but exactly one move in
+    two-player mode, where taking two would delete a move the other person made
+  - Resign closes the game when it is no longer worth finishing, and it is the seat
+    to move that resigns, not a fixed one
 
 - **Playable with the keyboard alone**
 
@@ -61,7 +79,16 @@ Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
 
 - **Settings that belong to the machine, not to you**
 
-  - Sound on or off, and the difficulty a new game starts at
+  - Sound on or off, the difficulty and the win rule a new game starts at
+  - Light, dark, or follow the system — three states, not a switch, so "follow the
+    system" stays available. The choice is applied before the first paint, because a
+    static export has no server to ask and a dark-theme reader would otherwise get a
+    full-screen white flash on every load
+  - Four piece sets: pencil, solid/hollow, geometric, and duck-and-egg. A set is a
+    pair of **shapes** and never a pair of colours — the mark colours stay the two
+    that have measured contrast, so choosing a set cannot reopen a contrast figure.
+    Each tile draws the real shapes rather than naming them, and they come from the
+    same shape data the board draws from
   - Kept separately from saved games, so muting a work computer never mutes the one at
     home — even after accounts exist
   - Erasing everything lives here too, behind a confirmation that says plainly there is
@@ -85,7 +112,10 @@ Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
   - Three difficulties that differ in search depth, time budget and one more thing —
     **Easy is weakened by occasionally not seeing your threat at all**, because a
     shallower search still blocks perfectly and would never feel easy
-  - Hard reaches depth 6 inside its 1.5s budget; Easy answers in under 10ms
+  - Easy answers in under 30ms and Normal well inside 600ms. Hard is the exception:
+    measured 2026-09-11 it overruns its 1.5s budget and reaches depth 5, not the depth 6
+    an earlier measurement recorded. A control run rules the second win rule out as the
+    cause; the real one is not isolated yet, and no threshold was widened to hide it
   - Every level is reproducible from a seed, so a bug found while playing can be replayed
 
 - **Marks are told apart by shape, not by colour**
@@ -160,8 +190,8 @@ explicitly rather than leaving the question open.
 - **Framework**: Next.js 15 (App Router, `output: 'export'`), React 19, TypeScript strict
 - **Rendering**: Canvas 2D, drawn procedurally — no asset files
 - **Styling**: Tailwind CSS v3, lucide-react icons, self-hosted fonts via `next/font`
-- **Testing**: vitest + happy-dom (253 unit tests, including 25 tactical positions for the
-  engine) and Playwright (19 end-to-end tests, run against the static export — not the dev
+- **Testing**: vitest + happy-dom (308 unit tests, including 25 tactical positions for the
+  engine) and Playwright (27 end-to-end tests, run against the static export — not the dev
   server, whose dev overlay sits in the tab order and would measure the wrong focus tree)
 - **Hosting**: static, intended for GitHub Pages
 

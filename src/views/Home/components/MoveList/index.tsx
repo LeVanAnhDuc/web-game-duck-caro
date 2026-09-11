@@ -3,35 +3,12 @@
 // libs
 import { useEffect, useRef } from 'react';
 // types
-import type { Move, Side } from '@/game/core/types';
+import type { PieceSet } from '@/game/appearance/types';
+import type { Move } from '@/game/core/types';
+// components
+import { PieceGlyph } from '../PieceGlyph';
 // others
 import { strings } from '@/lib/strings';
-
-/** Glyph `X`/`O` là SVG, không phải ký tự — MASTER.md §9 cấm dingbat làm icon. */
-function SideGlyph({ side }: { side: Side }) {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 12 12"
-      fill="none"
-      aria-hidden="true"
-      className="block flex-none"
-      style={{ color: side === 'one' ? 'var(--mark-one)' : 'var(--mark-two)' }}
-    >
-      {side === 'one' ? (
-        <path
-          d="M2.6 2.6 L9.4 9.4M9.4 2.6 L2.6 9.4"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      ) : (
-        <circle cx="6" cy="6" r="3.5" stroke="currentColor" strokeWidth="2" />
-      )}
-    </svg>
-  );
-}
 
 /*
  * Lưới `2.5rem 1.25rem 1fr` là spec `.move-row` của MASTER.md §8.
@@ -47,12 +24,15 @@ export function MoveList({
   moves,
   currentAt,
   variant,
+  pieceSet,
   onPick,
 }: {
   moves: readonly Move[];
   /** Nước đang xem trong chế độ xem lại; `null` khi đang chơi. */
   currentAt: number | null;
   variant: 'panel' | 'sheet';
+  /** Bộ quân đang chọn — cột glyph phải khớp bàn cờ, không phải khớp một bản vẽ riêng. */
+  pieceSet: PieceSet;
   /**
    * Có `onPick` = hàng BẤM ĐƯỢC. Đây cũng là thứ quyết định chiều cao hàng:
    * 44px khi bấm được, 32px khi chỉ để đọc (ADR-0018). Chiều cao đi theo VAI TRÒ
@@ -86,7 +66,7 @@ export function MoveList({
               <span className="whitespace-pre text-right">
                 {String(i + 1).padStart(2, ' ')}
               </span>
-              <SideGlyph side={move.side} />
+              <PieceGlyph side={move.side} set={pieceSet} size={13} />
               <span className="whitespace-pre">
                 {strings.moveCoord(move.at.x, move.at.y)}
               </span>

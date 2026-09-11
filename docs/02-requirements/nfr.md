@@ -2,7 +2,7 @@
 
 > **Trả lời:** Ngưỡng nào áp cho **mọi** feature, để không phải nhắc lại từng lần?
 > **Trạng thái:** 🟡 một phần — NFR-PERF-05 · NFR-PERF-07 còn thiếu một lần đo trên điện thoại THẬT;
-> **NFR-PERF-06 KHÔNG ĐẠT ở mức Khó** — đã đo cả hai luật 2026-09-11, và luật không phải nguyên nhân; NFR-A11Y-07 và NFR-PERF-10 mới cấp, chưa đo
+> **NFR-PERF-06 KHÔNG ĐẠT ở mức Khó** — đã đo cả hai luật 2026-09-11, và luật không phải nguyên nhân. NFR-A11Y-07 và NFR-PERF-10 đã đo và ĐẠT
 > **Cập nhật:** 2026-09-11 · commit —
 > **Cập nhật khi:** thêm loại tài nguyên mới · thêm nhóm người dùng · sau sự cố sinh ra ngưỡng mới
 
@@ -36,7 +36,7 @@ tái dùng một ID cũ cho một ý nghĩa mới, vì `grep` sẽ trả về c�
 | NFR-PERF-07 | AI không chiếm main thread quá một frame (16ms) liên tục — mọi việc nặng nằm trong Worker | Performance panel: không có long task nào trên main thread khi AI đang nghĩ |
 | NFR-PERF-08 | First Load JS ≤ **150 kB**. Đo: mốc 4 **114 kB** · mốc 5 **116 kB** · mốc 6 **118 kB** (2026-09-08) | `next build` rồi đọc cột First Load JS |
 | NFR-PERF-09 | Lần tải đầu trên 4G mô phỏng: **LCP ≤ 2.5s** · **load ≤ 4.5s** · **truyền ≤ 700 kB**. Đo 2026-09-08 (5 lần, lấy trung vị): LCP **1.00s** · load **3.17s** · **526 kB**, và lần nào cũng chơi được ngay | `node e2e/measure-load.mjs --runs 5` trên bản build tĩnh (ADR-0022) |
-| NFR-PERF-10 | Trang hiện ra **đã đúng giao diện đã chọn**, không có khung nào vẽ bằng bảng màu kia. Chưa đo — mới cấp 2026-09-11 (ADR-0026) | `e2e`: đặt `localStorage` theme = `dark`, tải bản build tĩnh, đọc `documentElement.dataset.theme` ở `document-start` |
+| NFR-PERF-10 | Trang hiện ra **đã đúng giao diện đã chọn**, không có khung nào vẽ bằng bảng màu kia. **ĐẠT 2026-09-11**, sau khi test này bắt được một lỗi thật — xem ghi chú dưới bảng | `e2e`: đặt `localStorage` theme = `dark`, tải bản build tĩnh, đọc `documentElement.dataset.theme` ở `document-start` |
 
 ### NFR-PERF-06 — số đo 2026-09-11, hai luật (ADR-0025)
 
@@ -94,6 +94,45 @@ ngưỡng còn lại lấy từ chính số đo cộng một khoảng dư (~40%)
 toàn bộ là **tám file woff2** của hai họ font (`MASTER.md` §4). Đây là chỗ đầu tiên nên
 nhìn nếu ngày nào ngưỡng này bị vượt.
 
+### NFR-A11Y-07 — bốn bộ quân, nhìn tận mắt 2026-09-11
+
+Chụp bàn hot-seat ở mức phóng **nhỏ nhất (16px)** và ở mức mặc định, cho cả bốn bộ, ở
+cả hai giao diện. Kết quả: **cả bốn đạt.** Tiêu chí là *hai hình của một bộ phân biệt
+được*, và ở cả bốn bộ khác biệt đó sống qua xám hoá vì nó không nằm ở màu:
+
+| Bộ | Ghế một | Ghế hai | Khác biệt sống qua xám hoá là gì |
+| --- | --- | --- | --- |
+| Bút chì | ✕ hai nét chéo | ◯ vòng | nét chéo so với nét cong |
+| Đặc/rỗng | ● chấm đặc | ◯ vòng | khối ĐẶC so với nét hở |
+| Hình học | △ tam giác | □ vuông | ba cạnh so với bốn cạnh |
+| Vịt | con vịt | quả trứng | khối nhiều nét so với một nét kín |
+
+**Giới hạn đã biết của bộ Vịt, ghi ra để không ai ngạc nhiên:** ở ô 16px, ba nét của
+con vịt (đầu · mỏ · thân) nằm gần nhau hơn chính độ dày nét (12% cạnh ô, tối thiểu 2px),
+nên chúng nhập lại thành **một khối đặc**. Nó vẫn phân biệt rõ với quả trứng — khối đặc
+so với nét hở — nên `NFR-A11Y-07` đạt; nhưng ở mức phóng đó nó không còn đọc ra *con
+vịt*. Từ ô ~24px trở lên thì hình về lại bình thường. Đây là giới hạn của một hình ba
+phần ở 16px, không phải thứ sửa được bằng cách đổi màu (bất biến 16).
+
+Quả trứng phải vẽ lại **ba lần**: hai bản đầu nhọn ở đỉnh và đọc ra hình lá. Nguyên nhân
+là điểm điều khiển Bézier cạnh đỉnh đặt lệch khỏi đỉnh, nên hai đoạn gặp nhau thành một
+góc. Không có test nào bắt được việc đó — hình đúng hay sai chỉ mắt trả lời được.
+
+### NFR-PERF-10 — và lỗi mà nó bắt được
+
+Test này **đỏ khoảng một lần trong hai lần chạy** khi mới viết, và nguyên nhân là một
+lỗi thật, không phải dao động: `useSettings` khởi đầu bằng `DEFAULT_SETTINGS`
+(`theme: 'system'`) và chỉ đọc `localStorage` trong một effect, nên ghost áp giao diện
+chạy TRƯỚC lúc cài đặt đọc xong và **xoá** `data-theme` mà script trong `<head>` vừa
+đặt. Chuỗi thật là: tối → **một khung sáng** → tối. Đúng cú nháy mà ADR-0026 dựng script
+kia để chặn, chỉ muộn hơn vài chục ms.
+
+Đã chữa bằng cách chặn ghost đó cho tới khi `loaded` — cùng lối `ApplyDefaultLevel` đã
+dùng. Xác nhận bằng `--repeat-each=4`: 32/32 xanh.
+
+Bài học đáng giữ: **một lần chạy xanh không chứng minh được loại lỗi này không có.** Với
+test canh thứ tự khởi động, phải chạy lặp.
+
 ## Security
 
 | ID | Ngưỡng | Cách kiểm |
@@ -116,7 +155,7 @@ nhìn nếu ngày nào ngưỡng này bị vượt.
 | NFR-A11Y-04 | Mọi input trong cài đặt có label liên kết; thông báo đọc được bởi screen reader | Review |
 | NFR-A11Y-05 | Tôn trọng `prefers-reduced-motion` — camera nhảy thẳng thay vì trượt, không có animation thắng | Bật thiết lập rồi thử tay |
 | NFR-A11Y-06 | Canvas có nhãn, và có vùng `aria-live="polite"` đọc mỗi nước đi kèm toạ độ, cùng kết quả ván. Ở hot-seat vùng này cũng đọc **ghế nào đang tới lượt** (ADR-0028) | Thử với screen reader một lượt |
-| NFR-A11Y-07 | **Mỗi bộ quân** (FR-20): hai hình phân biệt được khi ảnh bị **xám hoá**, và ở ô **16px** (`--cell-min`). Chưa đo — mới cấp 2026-09-11 (ADR-0027) | Chụp bàn ở mức phóng nhỏ nhất cho từng bộ, xám hoá, nhìn tận mắt · kiểm ở cả hai giao diện |
+| NFR-A11Y-07 | **Mỗi bộ quân** (FR-20): hai hình phân biệt được khi ảnh bị **xám hoá**, và ở ô **16px** (`--cell-min`). **ĐẠT cả bốn bộ, 2026-09-11** — xem ghi chú dưới bảng | Chụp bàn ở mức phóng nhỏ nhất cho từng bộ, ở cả hai giao diện, rồi nhìn tận mắt |
 
 ## i18n
 

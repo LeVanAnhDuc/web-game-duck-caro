@@ -86,37 +86,43 @@ Phụ thuộc nhóm 1 · 2 · 3.
 
 Phụ thuộc nhóm 4 · 5. Bố cục theo mockup đã duyệt (canvas Artifact, không lưu trong repo).
 
-- [ ] **6.1** `components/SeatBar` — thay `StatusLine`. Cả hai chế độ, gồm trạng thái
-      "Máy đang nghĩ…". Mang vùng `aria-live` của `NFR-A11Y-06`. **Xoá `StatusLine`.**
-- [ ] **6.2** `mains/StartOverlay`: mục Chế độ trên cùng, mục Luật kèm dòng ⓘ đổi theo
+- [x] **6.1** `components/SeatBar` — thay phần "lượt của ai" của `StatusLine`. Cả hai
+      chế độ, gồm trạng thái "Máy đang nghĩ…". `StatusLine` đã **xoá**, nhưng phần
+      `aria-live` của nó tách thành `components/NoticeLine` chứ không biến mất —
+      mockup không vẽ dòng đó, mà bỏ nó là mất phản hồi "Ô đó đã có quân" cho người
+      nhìn bằng mắt. Chỗ lệch này đã nói ra.
+- [x] **6.2** `mains/StartOverlay`: mục Chế độ trên cùng, mục Luật kèm dòng ⓘ đổi theo
       lựa chọn, ẩn Mức khó khi hot-seat, nhãn "Ai đi trước" đổi theo chế độ.
-- [ ] **6.3** `mains/SettingsSheet`: mục Giao diện (3), mục Bộ quân (4 ô **vẽ hình thật**,
+- [x] **6.3** `mains/SettingsSheet`: mục Giao diện (3), mục Bộ quân (4 ô **vẽ hình thật**,
       không phải tên), mục Luật mặc định. Nhãn liên kết `htmlFor`/`id` — `NFR-A11Y-04`.
-- [ ] **6.4** Quân xem trước ở con trỏ mang hình + màu của **bên đang đi** (ADR-0028).
-      Đổi chế độ giữa ván → hỏi xác nhận, ván tính là bỏ (giống US-04).
+- [x] **6.4** Quân xem trước ở con trỏ mang hình + màu của **bên đang đi** (ADR-0028).
+      ~~Đổi chế độ giữa ván → hỏi xác nhận~~ → **không làm**: chế độ và luật đông cứng
+      theo ván (bất biến 14), nên không có nút nào đổi chúng giữa ván. Muốn đổi thì bỏ
+      ván rồi bắt đầu ván mới — đi qua đúng luồng US-04. Một hộp xác nhận ở đây là con
+      đường thứ hai tới cùng một chỗ.
 
 ## Nhóm 7 · Kiểm và đo — 6 task
 
-- [ ] **7.1** `lib/strings.ts`: rà `grep` mọi chuỗi còn giả định đối thủ là máy. Sửa
+- [x] **7.1** `lib/strings.ts`: rà `grep` mọi chuỗi còn giả định đối thủ là máy. Sửa
       `appTagline`. `NFR-I18N-01` — không chuỗi nào rơi ra ngoài file này.
-- [ ] **7.2** `yarn typecheck` · `yarn lint` · `yarn test` xanh. Cập nhật số test trong
+- [x] **7.2** `yarn typecheck` · `yarn lint` · `yarn test` xanh. Cập nhật số test trong
       `README.md` §Tech Stack.
-- [ ] **7.3** E2E mới: chơi trọn một ván hot-seat; engine **không** được gọi.
-- [ ] **7.4** E2E mới cho `NFR-PERF-10`: đặt theme `dark`, tải bản build tĩnh, đọc
+- [x] **7.3** E2E mới: chơi trọn một ván hot-seat; engine **không** được gọi.
+- [x] **7.4** E2E mới cho `NFR-PERF-10`: đặt theme `dark`, tải bản build tĩnh, đọc
       `data-theme` ở `document-start`. Trên **bản build**, không dev server (ADR-0022).
-- [ ] **7.5** `NFR-A11Y-07`: chụp bàn ở 16px cho cả bốn bộ, xám hoá, nhìn tận mắt, ở cả
+- [x] **7.5** `NFR-A11Y-07`: chụp bàn ở 16px cho cả bốn bộ, xám hoá, nhìn tận mắt, ở cả
       hai giao diện. Bộ nào không đạt thì **bỏ bộ đó** và ghi lý do vào ADR-0027.
-- [ ] **7.6** Bước 5 của flow: chạy app thật, chụp ở 375 / 768 / 1024 / 1440, thử hover ·
+- [x] **7.6** Bước 5 của flow: chạy app thật, chụp ở 375 / 768 / 1024 / 1440, thử hover ·
       focus · bàn phím · đổi theme · đổi bộ quân. Lệch mockup thì nói ra **trong hội
       thoại** và cập nhật canvas.
 
 ## Nhóm 8 · Chốt — 4 task
 
-- [ ] **8.1** `README.md` §Features: bốn bullet tiếng Anh, đúng style và nhóm đang có
+- [x] **8.1** `README.md` §Features: bốn bullet tiếng Anh, đúng style và nhóm đang có
       (`CLAUDE.md` §README — bắt buộc cùng nhánh).
-- [ ] **8.2** `backlog.md`: §Đang làm ghi trạng thái thật; §Nợ kỹ thuật thêm hai dòng
+- [x] **8.2** `backlog.md`: §Đang làm ghi trạng thái thật; §Nợ kỹ thuật thêm hai dòng
       (hot-seat không vào thống kê · hai luật đổ chung ô).
-- [ ] **8.3** `docs/README.md` + `decisions/README.md`: **không sửa tay** trong khối
+- [x] **8.3** `docs/README.md` + `decisions/README.md`: **không sửa tay** trong khối
       `BEGIN:auto` — sửa header `**Trạng thái:**` của từng file rồi để `docs-regen.sh` sinh.
 - [ ] **8.4** `requesting-code-review` → `verification-before-completion` →
       `finishing-a-development-branch`.

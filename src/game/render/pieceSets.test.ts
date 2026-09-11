@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Side } from '@/game/core/types';
 import { drawMark } from './layers/marks';
 import type { Palette } from './palette';
+import { PIECE_SHAPES as SHARED_SHAPES } from '@/game/appearance/shapes';
 import { PIECE_SETS, PIECE_SHAPES, isPieceSet } from './pieceSets';
 
 const cam = { cell: 32, ox: 0, oy: 0 };
@@ -67,11 +68,24 @@ function spyCtx() {
 }
 
 describe('PIECE_SHAPES — bảng tra bốn bộ (FR-20 · ADR-0027)', () => {
-  it('mỗi bộ có đúng hai hình, một cho mỗi ghế', () => {
+  it('mỗi bộ có đúng hai hình, một cho mỗi ghế, và hình nào cũng có nét', () => {
     for (const set of PIECE_SETS) {
-      expect(typeof PIECE_SHAPES[set].one, set).toBe('function');
-      expect(typeof PIECE_SHAPES[set].two, set).toBe('function');
+      for (const side of ['one', 'two'] as const) {
+        const shape = PIECE_SHAPES[set][side];
+        expect(Array.isArray(shape), `${set}/${side}`).toBe(true);
+        expect(shape.length, `${set}/${side}`).toBeGreaterThan(0);
+      }
     }
+  });
+
+  /*
+   * Điểm của việc tả hình MỘT LẦN (`game/appearance/shapes.ts`): canvas và SVG đọc
+   * chung. Test này canh rằng không ai lặng lẽ dựng một bảng hình thứ hai — hình
+   * trong bảng chọn khác hình trên bàn là làm người chơi chọn một thứ, nhận một thứ
+   * khác, và cả hai bản đều "đúng" theo bản thân chúng nên không gì đỏ.
+   */
+  it('bảng hình mà canvas dùng CHÍNH LÀ bảng trong game/appearance', () => {
+    expect(PIECE_SHAPES).toBe(SHARED_SHAPES);
   });
 
   it('không có bộ nào ngoài bốn bộ đã khai báo', () => {

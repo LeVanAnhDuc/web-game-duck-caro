@@ -1,6 +1,6 @@
 import { cellToScreen, type Camera } from '../camera';
 import type { Palette } from '../palette';
-import { DEFAULT_PIECE_SET, PIECE_SHAPES, type PieceSet } from '../pieceSets';
+import { DEFAULT_PIECE_SET, drawPiece, type PieceSet } from '../pieceSets';
 import type { Move, Point, Side } from '@/game/core/types';
 
 /** Từ MASTER.md §6: nét dày 12% cạnh ô, quân thụt vào 22% để không chạm kẻ ô. */
@@ -47,7 +47,7 @@ export function drawMark(
   ctx.lineJoin = 'round';
   // HÌNH mang thông tin quân của ai; màu chỉ là lớp dư thừa (ADR-0008).
   ctx.strokeStyle = colourOf(side, palette);
-  PIECE_SHAPES[set][side](ctx, half);
+  drawPiece(ctx, set, side, half);
   ctx.restore();
 }
 
