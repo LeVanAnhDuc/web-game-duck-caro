@@ -15,6 +15,15 @@
 | [`04-state/backlog.md`](04-state/backlog.md) | Đang làm gì, tiếp theo làm gì, và đang nợ những gì? | 🟢 đủ | bắt đầu/kết thúc một việc · brainstorm ra việc mới · cố ý … |
 | [`03-design/code-conventions.md`](03-design/code-conventions.md) | Code mới đặt ở thư mục nào, đặt tên ra sao, viết theo khuô… | 🟢 đủ — đã chốt và đã áp dụng vào `src/` (AD… | chốt/bác một rule · thêm một tầng thư mục mới · đổi cấu hì… |
 | [`design-system/gomoku/MASTER.md`](design-system/gomoku/MASTER.md) | — | — | — |
+| [`ux-reviews/2026-09-11-red-routes.md`](ux-reviews/2026-09-11-red-routes.md) | — | — | — |
+| [`ux-reviews/2026-09-11-red-routes/p01-mai-RR-01.md`](ux-reviews/2026-09-11-red-routes/p01-mai-RR-01.md) | — | — | — |
+| [`ux-reviews/2026-09-11-red-routes/p02-chu-hung-RR-02.md`](ux-reviews/2026-09-11-red-routes/p02-chu-hung-RR-02.md) | — | — | — |
+| [`ux-reviews/2026-09-11-red-routes/p03-hanh-RR-05.md`](ux-reviews/2026-09-11-red-routes/p03-hanh-RR-05.md) | — | — | — |
+| [`ux-reviews/2026-09-11-red-routes/p04-bao-RR-03.md`](ux-reviews/2026-09-11-red-routes/p04-bao-RR-03.md) | — | — | — |
+| [`ux-reviews/2026-09-11-red-routes/p05-co-lien-RR-04.md`](ux-reviews/2026-09-11-red-routes/p05-co-lien-RR-04.md) | — | — | — |
+| [`ux-reviews/2026-09-11-red-routes/p06-quan-blind.md`](ux-reviews/2026-09-11-red-routes/p06-quan-blind.md) | — | — | — |
+| [`ux-reviews/2026-09-11-red-routes/p07-ong-tam-blind.md`](ux-reviews/2026-09-11-red-routes/p07-ong-tam-blind.md) | — | — | — |
+| [`ux-reviews/2026-09-11-red-routes/run-notes.md`](ux-reviews/2026-09-11-red-routes/run-notes.md) | — | — | — |
 | [`decisions/`](decisions/README.md) | Tại sao lại làm thế này? | 23 ADR | mỗi quyết định kỹ thuật |
 | [`../.env.example`](../.env.example) | cần biến nào để chạy được dự án này? | ⚪ chưa áp dụng — dự án không đọc biến môi tr… | code đọc một biến mới (process.env.X / import.meta.env.X /… |
 <!-- END:auto -->

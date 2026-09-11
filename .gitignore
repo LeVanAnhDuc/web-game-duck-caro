@@ -26,3 +26,4 @@ next-env.d.ts
 !/.claude/settings.local.json
 !/.claude/skills/
 !/.claude/scripts/
+!/.claude/agents/
