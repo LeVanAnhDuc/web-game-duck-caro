@@ -239,6 +239,7 @@ export function Home() {
         started={started}
         moves={game.state.moves}
         status={status}
+        mode={game.mode}
       />
 
       <Header
@@ -269,7 +270,21 @@ export function Home() {
             visible={started}
           />
           <BoardStage board={board} moves={shownMoves} onHint={game.askHint} onUndo={undo} />
-          {!started && (
+          {/*
+            CHỜ cài đặt đọc xong mới dựng màn bắt đầu.
+
+            `StartOverlay` chốt `defaultLevel` và `defaultRule` vào `useState` ở lần
+            render đầu, mà lần đó `useSettings` còn đang trả `DEFAULT_SETTINGS` — nó chỉ
+            đọc `localStorage` trong một effect (ADR-0001: bản build tĩnh không có
+            storage lúc build). Dựng sớm thì hai mục "mặc định" trong cài đặt KHÔNG ÁP
+            cho ván đầu sau mỗi lần tải trang, và chỉ đúng từ ván thứ hai — lúc "Chơi
+            lại" dựng lại overlay. Cùng loại lỗi thứ tự khởi động như cú nháy giao diện
+            mà `NFR-PERF-10` bắt được.
+
+            Chờ ở đây rẻ hơn đồng bộ prop vào state: một `useEffect` sync sẽ ghi đè lựa
+            chọn người chơi vừa bấm nếu cài đặt đọc xong muộn hơn cú bấm đó.
+          */}
+          {!started && settingsLoaded && (
             <StartOverlay
               stats={persistence.stats}
               defaultLevel={settings.defaultLevel}
@@ -292,7 +307,7 @@ export function Home() {
 
           {!reviewing && (
             <div className="lg:hidden">
-              <CursorLive cursor={board.cursor} moves={shownMoves} />
+              <CursorLive cursor={board.cursor} moves={shownMoves} mode={game.mode} />
               <NoticeLine
                 state={game.state}
                 thinking={game.thinking}
@@ -327,7 +342,7 @@ export function Home() {
                 variant="panel"
                 pieceSet={settings.pieceSet}
               />
-              <CursorLive cursor={board.cursor} moves={shownMoves} />
+              <CursorLive cursor={board.cursor} moves={shownMoves} mode={game.mode} />
               {/*
                 Hot-seat không vào thống kê (overview.md §4), nên một bảng "Dễ ·
                 Thường · Khó" ở đây nói về một cái máy không tham gia ván nào.

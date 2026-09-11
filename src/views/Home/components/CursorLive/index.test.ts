@@ -2,18 +2,18 @@ import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { describe, expect, it } from 'vitest';
 import { CursorLive } from './index';
-import type { Move, Point } from '@/game/core/types';
+import { HOTSEAT, VS_AI, type Mode, type Move, type Point } from '@/game/core/types';
 
 const moves: Move[] = [
   { at: { x: 0, y: 0 }, side: 'one' },
   { at: { x: -3, y: 2 }, side: 'two' },
 ];
 
-function render(cursor: Point | null) {
+function render(cursor: Point | null, mode: Mode = VS_AI) {
   const host = document.createElement('div');
   document.body.appendChild(host);
   act(() => {
-    createRoot(host).render(createElement(CursorLive, { cursor, moves }));
+    createRoot(host).render(createElement(CursorLive, { cursor, moves, mode }));
   });
   return host;
 }
@@ -44,6 +44,21 @@ describe('CursorLive (NFR-A11Y-06)', () => {
     expect(you).toContain('quân của bạn');
     expect(ai).toContain('quân của máy');
     expect(you).not.toBe(ai);
+  });
+
+  /*
+   * Bất biến 15. Bản trước đọc ô của ghế hai là "quân của máy" bất kể chế độ, nên ở
+   * hot-seat nó đọc một câu SAI vào tai người dùng bàn phím, ở mỗi ô. Code review bắt
+   * được; không có test này thì nó xanh mãi.
+   */
+  it('ở HOT-SEAT không ô nào được gọi là quân của máy', () => {
+    const one = render({ x: 0, y: 0 }, HOTSEAT).textContent ?? '';
+    const two = render({ x: -3, y: 2 }, HOTSEAT).textContent ?? '';
+    expect(one).not.toContain('máy');
+    expect(two).not.toContain('máy');
+    expect(one).toContain('người 1');
+    expect(two).toContain('người 2');
+    expect(one).not.toBe(two);
   });
 
   it('toạ độ âm dùng dấu trừ thật U+2212, không phải dấu gạch bàn phím', () => {

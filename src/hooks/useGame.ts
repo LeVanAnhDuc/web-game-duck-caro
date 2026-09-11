@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Engine } from '@/game/ai/Engine';
 import { applyMove, createGame, replay, resign, undo } from '@/game/core/game';
+import { opponentOf } from '@/game/core/types';
 import type { GameState, Level, Mode, Point, Rule, Side } from '@/game/core/types';
 import type { SavedGame } from '@/game/storage/types';
 import { strings } from '@/lib/strings';
@@ -166,19 +167,51 @@ export function useGame(
     setHinting(false);
     setHint(null);
     setNotice(null);
-    setState((current) => undo(current, first, modeRef.current));
-  }, [first]);
+
+    const next = undo(stateRef.current, first, modeRef.current);
+    setState(next);
+    /*
+     * Hoàn nước có thể trả bàn về đúng lượt của ENGINE, và lúc đó phải gọi nó lại —
+     * nếu không ván ĐỨNG HẲN: `place` từ chối vì chưa tới lượt người, mà engine thì
+     * không ai hỏi.
+     *
+     * Đường đi tới đó: chọn "Máy đi trước", máy đánh nước đầu, bấm Hoàn. Bỏ 2 nước
+     * từ một ván có 1 nước còn lại ván trống, và ván trống với `first: 'two'` là
+     * lượt của máy. Lỗi này có từ v1; nó chỉ hiện ra ở đây vì `undo` vừa được viết
+     * lại để nhận `mode`.
+     */
+    if (next.status.kind === 'playing' && modeRef.current[next.toMove] === 'engine') {
+      askEngine(next);
+    }
+  }, [askEngine, first]);
 
   const giveUp = useCallback(() => {
     requestId.current += 1;
     setThinking(false);
     setHinting(false);
     setHint(null);
-    setState((current) => {
-      // Ghế ĐANG ĐI nhận thua. Cố định 'one' là bắt người kia thua thay ở hot-seat.
-      setNotice(strings.seatResigned(strings.seatName(current.toMove, modeRef.current)));
-      return resign(current, current.toMove);
-    });
+
+    const current = stateRef.current;
+    if (current.status.kind !== 'playing') return;
+
+    /*
+     * Ghế bỏ ván là ghế do NGƯỜI cầm, không phải ghế đang đi.
+     *
+     * Ở chế độ đấu máy, `toMove` đã là ghế của máy ngay sau nước của người — nên
+     * bấm Bỏ ván trong lúc máy đang nghĩ (tới 1.5s ở mức Khó) mà lấy `toMove` thì
+     * MÁY nhận thua: màn kết ván ghi "Máy đã bỏ ván", tức người vừa xin thua được
+     * hiện là người thắng. Ở hot-seat thì hai nhánh này trùng nhau, vì ghế đang đi
+     * luôn do người cầm.
+     */
+    const seat =
+      modeRef.current[current.toMove] === 'human'
+        ? current.toMove
+        : opponentOf(current.toMove);
+
+    // `setNotice` ở NGOÀI updater: một updater có side-effect bị React gọi hai lần
+    // dưới StrictMode, và có thể chạy trong pha render.
+    setNotice(strings.seatResigned(strings.seatName(seat, modeRef.current)));
+    setState(resign(current, seat));
   }, []);
 
   const restart = useCallback(

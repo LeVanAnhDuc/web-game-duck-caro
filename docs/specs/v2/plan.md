@@ -124,8 +124,8 @@ Phụ thuộc nhóm 4 · 5. Bố cục theo mockup đã duyệt (canvas Artifact
       (hot-seat không vào thống kê · hai luật đổ chung ô).
 - [x] **8.3** `docs/README.md` + `decisions/README.md`: **không sửa tay** trong khối
       `BEGIN:auto` — sửa header `**Trạng thái:**` của từng file rồi để `docs-regen.sh` sinh.
-- [ ] **8.4** `requesting-code-review` → `verification-before-completion` →
-      `finishing-a-development-branch`.
+- [x] **8.4a** Code review xong (8 phát hiện, đã sửa cả 8 — xem `backlog.md`).
+- [ ] **8.4b** Mở PR và đóng nhánh.
 
 ---
 

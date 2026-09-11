@@ -551,3 +551,89 @@ describe('useGame — hot-seat (FR-17 · US-05)', () => {
     expect(ref.current?.state.status).toMatchObject({ kind: 'won', by: 'one' });
   });
 });
+
+/**
+ * Hai lỗi do code review tìm ra ở mốc 8. Cả hai đều là loại "code chạy, test xanh,
+ * kết quả sai" — nên chúng phải có test riêng, không được chỉ có một lần sửa.
+ */
+describe('useGame — hai lỗi code review bắt được', () => {
+  it('bỏ ván trong lúc MÁY đang nghĩ thì NGƯỜI nhận thua, không phải máy', async () => {
+    /*
+     * `toMove` đã là ghế của máy ngay sau nước của người, nên lấy `toMove` làm ghế bỏ
+     * ván sẽ cho ra `resigned by 'two'` — màn kết ván ghi "Máy đã bỏ ván", tức người
+     * vừa xin thua được hiện là người THẮNG.
+     */
+    let release: ((at: Point) => void) | null = null;
+    const engine: Engine = {
+      bestMove: vi.fn(
+        () =>
+          new Promise<Point>((resolve) => {
+            release = resolve;
+          }),
+      ),
+    };
+    const ref = mountHook(engine, 'one', 'hard');
+
+    await act(async () => {
+      ref.current?.place({ x: 0, y: 0 });
+    });
+    // Máy đang nghĩ, và lượt đã là của máy.
+    expect(ref.current?.thinking).toBe(true);
+    expect(ref.current?.state.toMove).toBe('two');
+
+    await act(async () => {
+      ref.current?.giveUp();
+    });
+    expect(ref.current?.state.status).toEqual({ kind: 'resigned', by: 'one' });
+    expect(ref.current?.notice).toContain('Bạn');
+
+    // Và kết quả engine trả về muộn KHÔNG được đi vào ván đã đóng (bất biến 7).
+    await act(async () => {
+      release?.({ x: 5, y: 5 });
+    });
+    expect(ref.current?.state.moves).toHaveLength(1);
+  });
+
+  it('hoàn nước về đúng lượt MÁY thì máy được gọi lại, ván không đứng', async () => {
+    /*
+     * Đường đi: chọn "Máy đi trước", máy đánh nước đầu, bấm Hoàn. Bỏ 2 nước từ một ván
+     * có 1 nước còn lại ván TRỐNG, và ván trống với `first: 'two'` là lượt của máy.
+     * Không gọi lại engine thì `place` từ chối vì chưa tới lượt người, mà engine thì
+     * không ai hỏi — bàn chết cho tới khi bắt đầu lại.
+     */
+    const engine = engineThatPlays({ x: 2, y: 2 });
+    const ref = mountHook(engine, 'two', 'easy');
+
+    await act(async () => {});
+    expect(ref.current?.state.moves).toHaveLength(1);
+
+    await act(async () => {
+      ref.current?.undoMove();
+    });
+    // Máy phải đánh lại ngay, nên bàn có 1 nước và lượt về lại người.
+    expect(ref.current?.state.moves).toHaveLength(1);
+    expect(ref.current?.state.toMove).toBe('one');
+
+    // Và người chơi đánh tiếp được — đây là điều mà bản cũ làm mất.
+    await act(async () => {
+      ref.current?.place({ x: 0, y: 0 });
+    });
+    expect(ref.current?.state.moves.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('hoàn nước ở hot-seat KHÔNG gọi engine, kể cả khi ghế hai tới lượt', async () => {
+    const engine = engineThatPlays({ x: 9, y: 9 });
+    const ref = mountHook(engine, 'one', 'easy', HOTSEAT);
+    await act(async () => {
+      ref.current?.place({ x: 0, y: 0 });
+    });
+    await act(async () => {
+      ref.current?.place({ x: 1, y: 0 });
+    });
+    await act(async () => {
+      ref.current?.undoMove();
+    });
+    expect(ref.current?.state.toMove).toBe('two');
+    expect(engine.bestMove).not.toHaveBeenCalled();
+  });
+});

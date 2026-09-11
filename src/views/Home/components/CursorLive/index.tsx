@@ -1,5 +1,5 @@
 // types
-import type { Move, Point } from '@/game/core/types';
+import type { Mode, Move, Point } from '@/game/core/types';
 // game
 import { buildBoard, markAt } from '@/game/core/board';
 // others
@@ -19,16 +19,24 @@ import { strings } from '@/lib/strings';
 export function CursorLive({
   cursor,
   moves,
+  mode,
 }: {
   cursor: Point | null;
   moves: readonly Move[];
+  /**
+   * Bất biến 15. Bản trước đọc ô của ghế hai là "quân của máy" — ở hot-seat đó là
+   * một câu SAI đọc vào tai người dùng bàn phím ở mỗi ô, và ô của ghế một thì bị
+   * gọi là "quân của bạn" với đúng một trong hai người.
+   */
+  mode: Mode;
 }) {
   const text = (() => {
     if (cursor === null) return '';
     const mark = markAt(buildBoard(moves), cursor);
     const { x, y } = cursor;
-    if (mark === 'one') return strings.cursorTakenYou(x, y);
-    if (mark === 'two') return strings.cursorTakenAi(x, y);
+    if (mark !== undefined) {
+      return strings.cursorTakenBy(strings.seatName(mark, mode), x, y);
+    }
     return strings.cursorEmpty(x, y);
   })();
 

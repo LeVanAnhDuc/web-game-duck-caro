@@ -190,7 +190,7 @@ explicitly rather than leaving the question open.
 - **Framework**: Next.js 15 (App Router, `output: 'export'`), React 19, TypeScript strict
 - **Rendering**: Canvas 2D, drawn procedurally — no asset files
 - **Styling**: Tailwind CSS v3, lucide-react icons, self-hosted fonts via `next/font`
-- **Testing**: vitest + happy-dom (308 unit tests, including 25 tactical positions for the
+- **Testing**: vitest + happy-dom (317 unit tests, including 25 tactical positions for the
   engine) and Playwright (27 end-to-end tests, run against the static export — not the dev
   server, whose dev overlay sits in the tab order and would measure the wrong focus tree)
 - **Hosting**: static, intended for GitHub Pages

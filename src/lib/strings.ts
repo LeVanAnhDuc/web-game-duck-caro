@@ -125,6 +125,10 @@ export const strings = {
   cursorTakenAi: (x: number, y: number) =>
     `Con trỏ ở ${minus(x)}, ${minus(y)}. Ô này là quân của máy.`,
 
+  /** Thay `cursorTakenYou` / `cursorTakenAi`: tên ghế đến từ `Mode` (bất biến 15). */
+  cursorTakenBy: (who: string, x: number, y: number) =>
+    `Con trỏ ở ${minus(x)}, ${minus(y)}. Ô này là quân của ${who.toLowerCase()}.`,
+
   /**
    * Tên một ghế, ĐỌC TỪ `Mode` (ADR-0024). Đây là chỗ duy nhất biết khi nào một ghế
    * được gọi là "Máy" — bất biến 15 cấm mọi nơi khác suy ra điều đó từ tên ghế.

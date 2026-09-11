@@ -23,8 +23,7 @@ KHÔNG chứa: tính năng ngoài phạm vi (-> 01-product/overview.md §Non-Goa
 [`docs/specs/v2/plan.md`](../specs/v2/plan.md) — **đọc file đó trước**, nó có checkbox;
 thiết kế ở [`design.md`](../specs/v2/design.md); năm quyết định ở ADR-0024 … ADR-0028.
 
-Đang ở: **code đã xong và đã nhìn tận mắt.** Task kế tiếp là **8.2 → 8.4** — chốt
-backlog, regen docs, rồi code review và đóng nhánh.
+Đang ở: **code xong, đã nhìn tận mắt, code review xong và đã sửa hết.** 317 unit test · 27 E2E (chạy hai lượt lặp: 54/54). Còn lại: mở PR và đóng nhánh.
 
 **Hai Non-Goal đã được gỡ có chủ đích** (`overview.md` §4): hot-seat, và luật ngoài caro
 Việt. Đây là cuộc bàn về phạm vi, không phải một lần bỏ qua tài liệu. Đổi lại §4 nhận một
@@ -86,7 +85,42 @@ hơn". Việc phải làm trước nằm ở §Việc tiếp theo.
 hiệu năng phải ghi kèm thế bàn — `nfr.md` §NFR-PERF-06 đã ghi cả hai thế bàn của lần này
 dưới dạng tái tạo được.
 
-**Đang chặn:** không có gì — nhóm 5 và 6 độc lập với phát hiện trên, làm tiếp được.
+**Code review (nhóm 8) tìm thêm 8 điểm, đã sửa cả 8.** Hai điểm nặng nhất là lỗi
+hành vi thật, và cả hai đều do đợt này gây ra hoặc phơi ra:
+
+1. **Bấm Bỏ ván trong lúc máy đang nghĩ thì MÁY nhận thua.** `giveUp` được viết lại để
+   lấy ghế đang đi thay cho `'one'` cố định — đúng cho hot-seat, nhưng ở chế độ đấu máy
+   `toMove` đã là ghế của máy ngay sau nước của người, nên màn kết ván ghi "Máy đã bỏ
+   ván": người vừa xin thua được hiện là người THẮNG. Đã sửa thành "ghế do NGƯỜI cầm".
+2. **Hoàn nước làm ván ĐỨNG HẲN khi máy đi trước.** Chọn "Máy đi trước", máy đánh nước
+   đầu, bấm Hoàn → ván trống, lượt của máy, và không ai gọi máy. Lỗi này có từ v1; nó
+   chỉ hiện ra vì `undo` vừa được viết lại để nhận `mode`. Đã sửa: gọi lại engine sau
+   hoàn nước nếu lượt về ghế của engine.
+
+Sáu điểm còn lại: **luật mặc định trong cài đặt không áp cho ván đầu** sau mỗi lần tải
+trang (`StartOverlay` chốt prop vào `useState` trước khi cài đặt đọc xong — cùng loại
+lỗi thứ tự khởi động như cú nháy giao diện); **hot-seat phát tiếng THUA khi Người 2
+thắng**; **screen reader đọc "quân của máy" ở hot-seat**; `aria-label` trên một `<span>`
+trần bị trình duyệt bỏ qua nên số nước đọc ra không có ngữ cảnh; mệnh đề "đưa về giữa
+khi bàn trống" **đặt lại cả mức phóng** ở mọi lần resize (đã **bỏ hẳn** — bug nó định
+chữa đã được chữa đúng chỗ bằng cách giữ chiều cao `SeatBar` không đổi); và hai bản sao
+bảng màu tối trong `globals.css`.
+
+Bản sao bảng màu tối là **bắt buộc** — CSS không gộp được một selector trong `@media`
+với một selector ngoài nó. Nên thay vì gộp, đã thêm `src/app/globals.test.ts` đọc chính
+file CSS và bắt hai khối phải giống hệt nhau. Nguy cơ lệch âm thầm thành một test đỏ.
+
+Ba lỗi hành vi đã có test riêng, không chỉ có một lần sửa.
+
+**Một lượt test đỏ chưa giải thích được, ghi ra để lần sau có điểm bắt đầu.** Trong một
+lượt `yarn test`, ca `search.tactics.test.ts > ba gãy oo.o` đỏ một lần rồi xanh ở cả bốn
+lượt chạy lại sau đó. Ca đó **tất định**: `blindRate: 0`, `pickFromTop: 1`, độ sâu ghim,
+và `deadlineMs` là 10⁷ms nên hạn giờ không thể nổ (`stopAt = Date.now() + deadlineMs`,
+đã kiểm). Lượt đỏ đó xảy ra khi máy đang chạy nhiều việc song song và chính lệnh đó bị
+đẩy sang chạy nền vì quá 300s. **Chưa biết nguyên nhân.** Nếu nó lặp lại, chỗ đáng nhìn
+đầu tiên là liệu có gì trong `search` phụ thuộc đồng hồ ngoài `stopAt` hay không.
+
+**Đang chặn:** không có gì.
 
 ---
 

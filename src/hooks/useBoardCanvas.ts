@@ -66,9 +66,6 @@ export function useBoardCanvas(args: {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
   const centred = useRef(false);
-  /** Đọc trong handler resize, vốn có deps rỗng — nên nó phải là ref, không phải prop. */
-  const movesLen = useRef(args.moves.length);
-  movesLen.current = args.moves.length;
   const [palette, setPalette] = useState<Palette | null>(null);
   const [cam, setCam] = useState<Camera>({ cell: CELL_DEFAULT_DESKTOP, ox: 0, oy: 0 });
   const [preview, setPreview] = useState<Point | null>(null);
@@ -96,19 +93,17 @@ export function useBoardCanvas(args: {
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
       /*
-       * BÀN TRỐNG thì luôn mở ở GIỮA, kể cả khi khung vừa đổi kích thước.
+       * Chỉ đưa về giữa ở LẦN ĐẦU. Không bao giờ tự dịch khung nhìn sau đó — kể cả
+       * khi bàn còn trống.
        *
-       * Không phải chuyện thẩm mỹ — đây là một bug thật ở mốc 8, do E2E bắt. `SeatBar`
-       * chỉ hiện sau khi bắt đầu ván, nên khung bàn thụt 56px ngay lúc đó; camera giữ
-       * nguyên `oy` nên ô (0,0) tụt xuống gần một ô, và cú bấm đầu tiên vào giữa bàn
-       * rơi vào ô (0,−1). Bấm vẫn ra MỘT ô, chỉ là ô sai — đúng loại lệch mà bất biến
-       * 11 cảnh báo, và ở caro thì một nước nhầm là mất ván.
-       *
-       * Điều kiện `moves.length === 0` là thứ làm nó an toàn: ván đang có quân thì
-       * KHÔNG bao giờ tự dịch khung nhìn — đó là giật màn hình của người đang đánh, và
-       * `backlog.md` §Nợ kỹ thuật đã ghi rõ là không làm.
+       * Đã thử thêm `|| moves.length === 0` để chữa một bug khác (khung bàn thụt 56px
+       * lúc vào ván) và **bỏ**: nó đặt lại cả mức phóng ở mọi lần resize khi bàn
+       * trống, nên thanh địa chỉ trên điện thoại co lại là mất pan/zoom người chơi
+       * vừa đặt, và ở chế độ xem lại đứng tại nước 0 thì bàn đếm là trống nên camera
+       * bị kéo về gốc. Bug kia đã được chữa đúng chỗ của nó: `SeatBar` giữ chiều cao
+       * khung bàn KHÔNG ĐỔI.
        */
-      if (!centred.current || movesLen.current === 0) {
+      if (!centred.current) {
         centred.current = true;
         const cell = w <= MOBILE_MAX_WIDTH ? CELL_DEFAULT_MOBILE : CELL_DEFAULT_DESKTOP;
         setCam({ cell, ox: w / 2 - cell / 2, oy: h / 2 - cell / 2 });

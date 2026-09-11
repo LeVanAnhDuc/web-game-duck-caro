@@ -98,11 +98,14 @@ export function SeatBar({
         Số nước ngồi trên vạch chia. Ở giữa chứ không ở mép: hai nửa phải cân nhau, vì
         cái mang thông tin là "nửa nào sáng hơn" và một nửa rộng hơn sẽ phá phép so đó.
       */}
-      <span
-        aria-label={strings.moveCount(state.moves.length)}
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-edge bg-raised px-2 py-0.5 font-mono text-xs leading-4 text-ink-muted"
-      >
-        {state.moves.length}
+      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-edge bg-raised px-2 py-0.5 font-mono text-xs leading-4 text-ink-muted">
+        {/*
+          Chữ ẨN thay cho `aria-label`: một `<span>` trần mang `role="generic"`, và
+          ARIA cấm đặt tên cho role đó — trình duyệt bỏ qua `aria-label` ở đây, nên
+          screen reader chỉ đọc "12" mà không có ngữ cảnh nào.
+        */}
+        <span className="sr-only">{strings.moveCount(state.moves.length)}</span>
+        <span aria-hidden="true">{state.moves.length}</span>
       </span>
     </div>
   );
