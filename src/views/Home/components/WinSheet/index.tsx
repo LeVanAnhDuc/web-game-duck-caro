@@ -1,15 +1,18 @@
 // libs
 import { History } from 'lucide-react';
 // types
-import type { GameStatus } from '@/game/core/types';
+import type { GameStatus, Mode } from '@/game/core/types';
 // others
 import { strings } from '@/lib/strings';
 
-function titleFor(status: GameStatus): string {
-  if (status.kind === 'won') {
-    return status.by === 'human' ? strings.youWin : strings.youLose;
-  }
-  return strings.youResigned;
+/**
+ * Tên ghế đọc từ `Mode` (bất biến 15). Ở hot-seat, "Bạn thắng" là một câu sai với
+ * một trong hai người đang ngồi trước máy.
+ */
+function titleFor(status: GameStatus, mode: Mode): string {
+  if (status.kind === 'playing') return '';
+  const who = strings.seatName(status.by, mode);
+  return status.kind === 'won' ? strings.seatWins(who) : strings.seatResigned(who);
 }
 
 /**
@@ -19,12 +22,14 @@ function titleFor(status: GameStatus): string {
  */
 export function WinSheet({
   status,
+  mode,
   moveCount,
   variant,
   onPlayAgain,
   onReview,
 }: {
   status: GameStatus;
+  mode: Mode;
   moveCount: number;
   variant: 'sheet' | 'panel';
   onPlayAgain(): void;
@@ -49,7 +54,7 @@ export function WinSheet({
             : 'text-2xl font-bold leading-8 text-ink-strong'
         }
       >
-        {titleFor(status)}
+        {titleFor(status, mode)}
       </p>
       <p className="mb-4 mt-1.5 font-mono text-sm text-ink-muted">
         {strings.moveCount(moveCount)}

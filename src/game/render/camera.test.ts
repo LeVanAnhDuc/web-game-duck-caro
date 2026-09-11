@@ -101,8 +101,8 @@ describe('fitToMoves', () => {
 
   it('mọi quân đã đánh đều nằm trong khung nhìn', () => {
     const moves: Move[] = [
-      { at: { x: -8, y: -3 }, side: 'human' },
-      { at: { x: 11, y: 9 }, side: 'ai' },
+      { at: { x: -8, y: -3 }, side: 'one' },
+      { at: { x: 11, y: 9 }, side: 'two' },
     ];
     const c = fitToMoves(moves, 375, 656);
     for (const move of moves) {
@@ -116,8 +116,8 @@ describe('fitToMoves', () => {
 
   it('không phóng nhỏ hơn CELL_MIN dù thế trận rất rộng', () => {
     const moves: Move[] = [
-      { at: { x: -500, y: -500 }, side: 'human' },
-      { at: { x: 500, y: 500 }, side: 'ai' },
+      { at: { x: -500, y: -500 }, side: 'one' },
+      { at: { x: 500, y: 500 }, side: 'two' },
     ];
     expect(fitToMoves(moves, 375, 656).cell).toBe(CELL_MIN);
   });

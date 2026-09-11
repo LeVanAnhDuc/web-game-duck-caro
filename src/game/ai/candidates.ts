@@ -1,5 +1,5 @@
 import { keyOf } from '@/game/core/board';
-import type { Point, Side } from '@/game/core/types';
+import type { Point, Rule, Side } from '@/game/core/types';
 import { moveValue, type WorkingBoard } from './evaluate';
 
 /**
@@ -50,12 +50,13 @@ export function rankedCandidates(
   played: readonly Point[],
   side: Side,
   limit: number,
+  rule: Rule,
   radius: number = CANDIDATE_RADIUS_ROOT,
   tilt?: number,
 ): RankedMove[] {
   const ranked = candidateCells(board, played, radius).map((at) => ({
     at,
-    value: moveValue(board, at, side, tilt),
+    value: moveValue(board, at, side, rule, tilt),
   }));
   ranked.sort((a, b) => b.value - a.value || a.at.x - b.at.x || a.at.y - b.at.y);
   return ranked.slice(0, limit);

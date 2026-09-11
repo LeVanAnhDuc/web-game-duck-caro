@@ -3,7 +3,16 @@
 // libs
 import { useEffect, useMemo, useState } from 'react';
 // types
-import type { GameStatus, Level, Side } from '@/game/core/types';
+import {
+  DEFAULT_RULE,
+  hasEngine,
+  VS_AI,
+  type GameStatus,
+  type Level,
+  type Mode,
+  type Rule,
+  type Side,
+} from '@/game/core/types';
 // game
 import { makeRng } from '@/game/ai/rng';
 import { createWorkerEngine } from '@/game/ai/workerEngine';
@@ -14,8 +23,9 @@ import { useBoardCanvas, useGame, usePersistence, useSettings } from '@/hooks';
 import { Controls } from './components/Controls';
 import { CursorLive } from './components/CursorLive';
 import { MoveList } from './components/MoveList';
+import { NoticeLine } from './components/NoticeLine';
 import { ReviewPane } from './components/ReviewPane';
-import { StatusLine } from './components/StatusLine';
+import { SeatBar } from './components/SeatBar';
 import { WinSheet } from './components/WinSheet';
 import { BoardStage } from './mains/BoardStage';
 import { Header } from './mains/Header';
@@ -24,6 +34,7 @@ import { StartOverlay } from './mains/StartOverlay';
 import { StatsPanel } from './mains/StatsPanel';
 // ghosts
 import { ApplyDefaultLevel } from './ghosts/ApplyDefaultLevel';
+import { ApplyTheme } from './ghosts/ApplyTheme';
 import { PlayMoveSound } from './ghosts/PlayMoveSound';
 import { RecordResult } from './ghosts/RecordResult';
 import { ResumeSavedGame } from './ghosts/ResumeSavedGame';
@@ -46,7 +57,7 @@ const PLAYING: GameStatus = { kind: 'playing' };
 export function Home() {
   const [started, setStarted] = useState(false);
   const [level, setLevel] = useState<Level>('normal');
-  const [first, setFirst] = useState<Side>('human');
+  const [first, setFirst] = useState<Side>('one');
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { settings, loaded: settingsLoaded, update: updateSettings } = useSettings();
@@ -60,7 +71,17 @@ export function Home() {
   const repository = useMemo(() => createLocalGameRepository(), []);
   const persistence = usePersistence(repository);
 
-  const game = useGame(engine, { first: 'human', level });
+  /*
+   * `mode` và `rule` KHÔNG được giữ thêm một bản ở đây: `useGame` đã sở hữu chúng
+   * (`game.mode` và `game.state.rule`). Một bản thứ hai là một bản có thể lệch, và
+   * lệch ở đúng hai giá trị quyết định có gọi engine không và xử thắng thế nào.
+   */
+  const game = useGame(engine, {
+    first: 'one',
+    level,
+    mode: VS_AI,
+    rule: DEFAULT_RULE,
+  });
 
   const status = game.state.status;
   const reviewAt = game.reviewAt;
@@ -82,6 +103,13 @@ export function Home() {
     moves: shownMoves,
     status: shownStatus,
     onPlace: game.place,
+    pieceSet: settings.pieceSet,
+    /*
+     * Quân xem trước mang hình và màu của GHẾ ĐANG ĐI (ADR-0028) — tín hiệu
+     * "tới lượt ai" thứ hai, và là tín hiệu nằm đúng chỗ mắt đang nhìn. Thanh
+     * hai ghế ở trên NÓI; cái này CHO THẤY.
+     */
+    previewSide: game.state.toMove,
   });
 
   const undo = () => {
@@ -89,12 +117,19 @@ export function Home() {
     game.undoMove();
   };
 
-  const start = (options: { first: Side; level: Level }) => {
+  const start = (options: { first: Side; level: Level; mode: Mode; rule: Rule }) => {
     setLevel(options.level);
     setFirst(options.first);
     game.restart(options);
     setStarted(true);
   };
+
+  /*
+   * Đổi chế độ hoặc luật GIỮA VÁN không làm được từ đây — không có nút nào cho
+   * nó, và đó là chủ ý. Cả hai đông cứng theo ván (bất biến 14 · ADR-0025), nên
+   * muốn đổi thì bỏ ván rồi bắt đầu ván mới, đi qua đúng luồng của US-04. Một
+   * hộp xác nhận ở đây sẽ là con đường thứ hai tới cùng một chỗ.
+   */
 
   /**
    * "Chơi lại" đưa về màn chọn mức, và phải DỌN ván cũ.
@@ -125,6 +160,7 @@ export function Home() {
 
   const reviewProps = {
     moves: game.state.moves,
+    pieceSet: settings.pieceSet,
     // `reviewing` đã canh `reviewAt !== null` ở mọi chỗ dùng; `?? 0` chỉ để chiều TS.
     at: reviewAt ?? 0,
     onGoto: game.gotoMove,
@@ -137,7 +173,7 @@ export function Home() {
     canHint:
       started &&
       status.kind === 'playing' &&
-      game.state.toMove === 'human' &&
+      game.mode[game.state.toMove] === 'human' &&
       !game.thinking &&
       !game.hinting,
     canResign: started && status.kind === 'playing',
@@ -149,6 +185,7 @@ export function Home() {
 
   const winProps = {
     status,
+    mode: game.mode,
     moveCount: total,
     onPlayAgain: playAgain,
     onReview: startReview,
@@ -163,6 +200,7 @@ export function Home() {
         trong file này: effect của con chạy trước effect của cha và theo đúng thứ tự
         con, nên xê dịch mấy dòng dưới đây là xê dịch thứ tự chạy thật.
       */}
+      <ApplyTheme theme={settings.theme} loaded={settingsLoaded} />
       <ApplyDefaultLevel
         loaded={settingsLoaded}
         started={started}
@@ -186,12 +224,14 @@ export function Home() {
         state={game.state}
         first={first}
         level={level}
+        mode={game.mode}
         onSave={persistence.save}
       />
       <RecordResult
         status={status}
         moveCount={total}
         level={level}
+        mode={game.mode}
         onRecord={persistence.record}
       />
       <PlayMoveSound
@@ -199,10 +239,13 @@ export function Home() {
         started={started}
         moves={game.state.moves}
         status={status}
+        mode={game.mode}
       />
 
       <Header
-        levelLabel={LEVEL_LABEL[level]}
+        badge={
+          hasEngine(game.mode) ? LEVEL_LABEL[level] : strings.modeHotseat
+        }
         soundOn={settings.sound}
         onToggleSound={() => updateSettings({ ...settings, sound: !settings.sound })}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -210,11 +253,43 @@ export function Home() {
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <div className="relative flex min-h-0 flex-1 flex-col">
+          {/*
+            Thanh hai ghế nằm TRONG cột bàn, không ở ngoài: ở 1440 nó sẽ trải hết
+            cửa sổ và vạch chia giữa hai ghế rơi vào giữa CỬA SỔ chứ không giữa BÀN
+            — mất đúng phép so "nửa nào sáng hơn" mà ADR-0028 dựa vào. Thấy được
+            bằng mắt ở khổ 1440, không thấy được bằng test.
+
+            Nó render VÔ ĐIỀU KIỆN và tự ẩn nội dung khi chưa vào ván, nên chiều cao
+            khung bàn KHÔNG ĐỔI — xem ghi chú trong `SeatBar`.
+          */}
+          <SeatBar
+            state={game.state}
+            mode={game.mode}
+            thinking={game.thinking}
+            pieceSet={settings.pieceSet}
+            visible={started}
+          />
           <BoardStage board={board} moves={shownMoves} onHint={game.askHint} onUndo={undo} />
-          {!started && (
+          {/*
+            CHỜ cài đặt đọc xong mới dựng màn bắt đầu.
+
+            `StartOverlay` chốt `defaultLevel` và `defaultRule` vào `useState` ở lần
+            render đầu, mà lần đó `useSettings` còn đang trả `DEFAULT_SETTINGS` — nó chỉ
+            đọc `localStorage` trong một effect (ADR-0001: bản build tĩnh không có
+            storage lúc build). Dựng sớm thì hai mục "mặc định" trong cài đặt KHÔNG ÁP
+            cho ván đầu sau mỗi lần tải trang, và chỉ đúng từ ván thứ hai — lúc "Chơi
+            lại" dựng lại overlay. Cùng loại lỗi thứ tự khởi động như cú nháy giao diện
+            mà `NFR-PERF-10` bắt được.
+
+            Chờ ở đây rẻ hơn đồng bộ prop vào state: một `useEffect` sync sẽ ghi đè lựa
+            chọn người chơi vừa bấm nếu cài đặt đọc xong muộn hơn cú bấm đó.
+          */}
+          {!started && settingsLoaded && (
             <StartOverlay
               stats={persistence.stats}
               defaultLevel={settings.defaultLevel}
+              defaultRule={settings.defaultRule}
+              pieceSet={settings.pieceSet}
               onStart={start}
             />
           )}
@@ -232,8 +307,8 @@ export function Home() {
 
           {!reviewing && (
             <div className="lg:hidden">
-              <CursorLive cursor={board.cursor} moves={shownMoves} />
-              <StatusLine
+              <CursorLive cursor={board.cursor} moves={shownMoves} mode={game.mode} />
+              <NoticeLine
                 state={game.state}
                 thinking={game.thinking}
                 notice={game.notice}
@@ -255,15 +330,26 @@ export function Home() {
             <ReviewPane variant="panel" {...reviewProps} />
           ) : (
             <>
-              <StatusLine
+              <NoticeLine
                 state={game.state}
                 thinking={game.thinking}
                 notice={game.notice}
                 variant="panel"
               />
-              <MoveList moves={game.state.moves} currentAt={null} variant="panel" />
-              <CursorLive cursor={board.cursor} moves={shownMoves} />
-              <StatsPanel stats={persistence.stats} level={level} />
+              <MoveList
+                moves={game.state.moves}
+                currentAt={null}
+                variant="panel"
+                pieceSet={settings.pieceSet}
+              />
+              <CursorLive cursor={board.cursor} moves={shownMoves} mode={game.mode} />
+              {/*
+                Hot-seat không vào thống kê (overview.md §4), nên một bảng "Dễ ·
+                Thường · Khó" ở đây nói về một cái máy không tham gia ván nào.
+              */}
+              {hasEngine(game.mode) && (
+                <StatsPanel stats={persistence.stats} level={level} />
+              )}
               <WinSheet {...winProps} variant="panel" />
               <Controls orientation="column" {...controlProps} />
             </>

@@ -20,8 +20,8 @@ function givePalette(el: HTMLElement) {
     '--paper': '#f7f3e8',
     '--rule-minor': '#dcd3be',
     '--rule-major': '#c7bca3',
-    '--mark-human': '#12100e',
-    '--mark-ai': '#b4453c',
+    '--mark-one': '#12100e',
+    '--mark-two': '#b4453c',
     '--win': '#15803d',
     '--win-casing': '#f7f3e8',
     '--focus': '#1d4ed8',
@@ -98,7 +98,7 @@ const press = (
   return prevented;
 };
 
-const moveAt = (x: number, y: number): Move => ({ at: { x, y }, side: 'human' });
+const moveAt = (x: number, y: number): Move => ({ at: { x, y }, side: 'one' });
 
 describe('useBoardCanvas — con trỏ bàn phím (ADR-0020)', () => {
   it('lần bấm mũi tên ĐẦU TIÊN chỉ đặt con trỏ, không dịch nó', () => {
@@ -199,7 +199,7 @@ describe('useBoardCanvas — đánh quân bằng bàn phím', () => {
     const onPlace = vi.fn();
     const { ref } = mountBoard({
       moves: [moveAt(0, 0)],
-      status: { kind: 'resigned', by: 'human' },
+      status: { kind: 'resigned', by: 'one' },
       onPlace,
     });
     press(ref, 'Enter');

@@ -48,7 +48,7 @@ test('cài đặt sống qua reload, và nó là seam RIÊNG (US-04 · FR-16 · 
     Object.keys(window.localStorage).filter((k) => k.startsWith('gomoku:')),
   );
   // Khoá cài đặt CỐ Ý không mang tiền tố chủ sở hữu — đó là điều làm nó thuộc về máy.
-  expect(key).toContain('gomoku:v1:settings');
+  expect(key).toContain('gomoku:v2:settings');
 
   await page.reload();
   await page.getByRole('button', { name: 'Cài đặt' }).click();

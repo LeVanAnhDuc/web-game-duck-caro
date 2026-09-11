@@ -1,4 +1,4 @@
-import type { Level, Move, Point, Side } from '@/game/core/types';
+import type { Level, Move, Point, Rule, Side } from '@/game/core/types';
 import type { Engine } from './Engine';
 import { LEVELS } from './levels';
 import type { Rng } from './rng';
@@ -16,8 +16,13 @@ import { search } from './search';
  */
 export function createLocalEngine(rng: Rng): Engine {
   return {
-    async bestMove(moves: readonly Move[], side: Side, level: Level): Promise<Point> {
-      return search(moves, side, { ...LEVELS[level], rng }).at;
+    async bestMove(
+      moves: readonly Move[],
+      side: Side,
+      level: Level,
+      rule: Rule,
+    ): Promise<Point> {
+      return search(moves, side, { ...LEVELS[level], rng, rule }).at;
     },
   };
 }

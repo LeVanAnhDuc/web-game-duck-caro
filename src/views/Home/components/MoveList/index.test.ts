@@ -5,19 +5,25 @@ import { MoveList } from './index';
 import type { Move } from '@/game/core/types';
 
 const moves: Move[] = [
-  { at: { x: 0, y: 0 }, side: 'human' },
-  { at: { x: 1, y: 0 }, side: 'ai' },
-  { at: { x: -12, y: 7 }, side: 'human' },
-  { at: { x: 2, y: 2 }, side: 'ai' },
+  { at: { x: 0, y: 0 }, side: 'one' },
+  { at: { x: 1, y: 0 }, side: 'two' },
+  { at: { x: -12, y: 7 }, side: 'one' },
+  { at: { x: 2, y: 2 }, side: 'two' },
 ];
 
 // Props viết inline trong signature (R-16), nên test lấy kiểu từ chính component —
 // cùng lối `Parameters<typeof X>[0]` mà test của ReviewBar đã dùng.
-function render(props: Parameters<typeof MoveList>[0]) {
+/*
+ * `pieceSet` có mặc định ở đây chứ không ở component: bộ test này đo VAI TRÒ của
+ * hàng (chỉ đọc 32px so với bấm được 44px — ADR-0018), không đo hình quân. Hình quân
+ * có bộ test riêng ở `game/render/pieceSets.test.ts`.
+ */
+function render(props: Omit<Parameters<typeof MoveList>[0], 'pieceSet'>) {
+  const full: Parameters<typeof MoveList>[0] = { pieceSet: 'pencil', ...props };
   const host = document.createElement('div');
   document.body.appendChild(host);
   act(() => {
-    createRoot(host).render(createElement(MoveList, props));
+    createRoot(host).render(createElement(MoveList, full));
   });
   return host;
 }

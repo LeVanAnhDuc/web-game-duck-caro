@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { GameStatus, Move, Point } from '@/game/core/types';
+import type { GameStatus, Move, Point, Side } from '@/game/core/types';
 import {
   CELL_DEFAULT_DESKTOP,
   CELL_DEFAULT_MOBILE,
@@ -14,6 +14,8 @@ import {
   type Camera,
 } from '@/game/render/camera';
 import { readPalette, type Palette } from '@/game/render/palette';
+import { DEFAULT_PIECE_SET, type PieceSet } from '@/game/render/pieceSets';
+import { THEME_ATTR } from '@/game/render/theme';
 import { drawFrame } from '@/game/render/renderer';
 import { advanceGesture, beginGesture, isDrag, type Gesture } from './pointerGesture';
 
@@ -53,6 +55,13 @@ export function useBoardCanvas(args: {
   moves: readonly Move[];
   status: GameStatus;
   onPlace(at: Point): void;
+  /** Bộ quân đang chọn (FR-20). Thuần trình bày — không ảnh hưởng ván nào. */
+  pieceSet?: PieceSet;
+  /**
+   * Ghế ĐANG ĐI. Quân xem trước mang hình và màu của ghế này (ADR-0028) — đó là
+   * tín hiệu "tới lượt ai" thứ hai, và là tín hiệu nằm đúng chỗ mắt đang nhìn.
+   */
+  previewSide?: Side;
 }): BoardCanvas {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
@@ -83,6 +92,17 @@ export function useBoardCanvas(args: {
       canvas.height = Math.round(h * dpr);
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
+      /*
+       * Chỉ đưa về giữa ở LẦN ĐẦU. Không bao giờ tự dịch khung nhìn sau đó — kể cả
+       * khi bàn còn trống.
+       *
+       * Đã thử thêm `|| moves.length === 0` để chữa một bug khác (khung bàn thụt 56px
+       * lúc vào ván) và **bỏ**: nó đặt lại cả mức phóng ở mọi lần resize khi bàn
+       * trống, nên thanh địa chỉ trên điện thoại co lại là mất pan/zoom người chơi
+       * vừa đặt, và ở chế độ xem lại đứng tại nước 0 thì bàn đếm là trống nên camera
+       * bị kéo về gốc. Bug kia đã được chữa đúng chỗ của nó: `SeatBar` giữ chiều cao
+       * khung bàn KHÔNG ĐỔI.
+       */
       if (!centred.current) {
         centred.current = true;
         const cell = w <= MOBILE_MAX_WIDTH ? CELL_DEFAULT_MOBILE : CELL_DEFAULT_DESKTOP;
@@ -99,15 +119,39 @@ export function useBoardCanvas(args: {
     return () => observer.disconnect();
   }, []);
 
-  // Đổi chế độ sáng/tối thì đọc lại palette. Nhờ vậy chế độ tối là việc của
-  // `globals.css` và canvas tự đi theo, không phải sửa code (MASTER.md §1–2).
+  /*
+   * Đọc lại palette khi giao diện đổi. Canvas đọc CSS custom property nên nó đi
+   * theo `globals.css` miễn phí — nhưng nó KHÔNG tự biết lúc nào cần đọc lại, và
+   * đó là cái bẫy: bảng màu của DOM đã đổi trong khi quân trên bàn thì chưa.
+   *
+   * HAI nguồn, cần cả hai (ADR-0026):
+   * - `prefers-color-scheme` cho trạng thái `'system'`, khi người dùng đổi thiết
+   *   lập hệ điều hành trong lúc trang đang mở;
+   * - `data-theme` trên `<html>` cho lựa chọn tay. Thiếu cái này thì bấm Sáng/Tối
+   *   trong cài đặt làm đổi cả trang TRỪ bàn cờ.
+   */
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas == null || typeof window.matchMedia !== 'function') return;
-    const query = window.matchMedia('(prefers-color-scheme: dark)');
+    if (canvas == null) return;
     const reread = () => setPalette(readPalette(canvas));
-    query.addEventListener('change', reread);
-    return () => query.removeEventListener('change', reread);
+
+    const query =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia('(prefers-color-scheme: dark)')
+        : null;
+    query?.addEventListener('change', reread);
+
+    const observer =
+      typeof MutationObserver === 'function' ? new MutationObserver(reread) : null;
+    observer?.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: [THEME_ATTR],
+    });
+
+    return () => {
+      query?.removeEventListener('change', reread);
+      observer?.disconnect();
+    };
   }, []);
 
   // Một khung một lần, khi có gì đổi. Không có vòng rAF chạy không tải: bàn chỉ đổi
@@ -124,13 +168,23 @@ export function useBoardCanvas(args: {
       moves: args.moves,
       status: args.status,
       preview,
-      previewSide: 'human',
+      previewSide: args.previewSide ?? 'one',
       cursor,
       w: canvas.width / dpr,
       h: canvas.height / dpr,
       palette,
+      pieceSet: args.pieceSet ?? DEFAULT_PIECE_SET,
     });
-  }, [cam, args.moves, args.status, preview, cursor, palette]);
+  }, [
+    cam,
+    args.moves,
+    args.status,
+    args.pieceSet,
+    args.previewSide,
+    preview,
+    cursor,
+    palette,
+  ]);
 
   // Ván mới thì con trỏ về `null`, để lần bấm phím sau lại bắt đầu từ ô (0,0). Giữ
   // con trỏ cũ nghĩa là nó trỏ vào một ô của ván đã biến mất.

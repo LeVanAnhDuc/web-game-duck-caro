@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { GameState, Level, Side } from '@/game/core/types';
+import type { GameState, Level, Mode, Side } from '@/game/core/types';
 import type { GameRepository } from '@/game/storage/GameRepository';
 import { EMPTY_STATS, type GameResult, type SavedGame, type StatsByLevel } from '@/game/storage/types';
 
@@ -9,7 +9,7 @@ export type UsePersistence = {
   /** `undefined` = chưa đọc xong. `null` = đọc xong và không có ván nào. */
   readonly restored: SavedGame | null | undefined;
   readonly stats: StatsByLevel;
-  save(state: GameState, first: Side, level: Level): void;
+  save(state: GameState, first: Side, level: Level, mode: Mode): void;
   clearGame(): void;
   record(level: Level, result: GameResult): void;
   clearAll(): void;
@@ -53,7 +53,7 @@ export function usePersistence(repository: GameRepository): UsePersistence {
   }, [repository]);
 
   const save = useCallback(
-    (state: GameState, first: Side, level: Level) => {
+    (state: GameState, first: Side, level: Level, mode: Mode) => {
       // Ván chưa có nước nào, hoặc đã kết thúc, thì không có gì để tiếp tục.
       if (state.moves.length === 0 || state.status.kind !== 'playing') {
         void repository.clearCurrentGame();
@@ -63,6 +63,9 @@ export function usePersistence(repository: GameRepository): UsePersistence {
         moves: state.moves,
         first,
         level,
+        mode,
+        // Luật lấy từ CHÍNH VÁN, không từ cài đặt — bất biến 14.
+        rule: state.rule,
         // UTC (NFR-I18N-02). Đổi múi giờ chỉ xảy ra ở tầng hiển thị.
         savedAt: new Date().toISOString(),
       });

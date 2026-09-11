@@ -2,8 +2,8 @@ export const PALETTE_VARS = [
   '--paper',
   '--rule-minor',
   '--rule-major',
-  '--mark-human',
-  '--mark-ai',
+  '--mark-one',
+  '--mark-two',
   '--win',
   '--win-casing',
   '--focus',
@@ -14,8 +14,8 @@ export type Palette = {
   readonly paper: string;
   readonly ruleMinor: string;
   readonly ruleMajor: string;
-  readonly markHuman: string;
-  readonly markAi: string;
+  readonly markOne: string;
+  readonly markTwo: string;
   readonly win: string;
   readonly winCasing: string;
   readonly focus: string;
@@ -43,8 +43,8 @@ export function readPalette(el: HTMLElement): Palette {
     paper: read('--paper'),
     ruleMinor: read('--rule-minor'),
     ruleMajor: read('--rule-major'),
-    markHuman: read('--mark-human'),
-    markAi: read('--mark-ai'),
+    markOne: read('--mark-one'),
+    markTwo: read('--mark-two'),
     win: read('--win'),
     winCasing: read('--win-casing'),
     focus: read('--focus'),

@@ -1,5 +1,5 @@
 import { markAt, type Board } from '@/game/core/board';
-import { WIN_LENGTH, type Point, type Side } from '@/game/core/types';
+import { WIN_LENGTH, type Point, type Rule, type Side } from '@/game/core/types';
 
 /** Số ô mỗi bên khi trích một dải quanh một nước. 13 ô là đủ cho mọi mẫu quan tâm. */
 export const LINE_RADIUS = 6;
@@ -38,15 +38,20 @@ export function lineAround(board: Board, at: Point, dir: Point, side: Side): str
  * Đoạn sống chứa ô giữa: cắt dải tại mọi quân địch, rồi hỏi đoạn còn lại có đủ chỗ
  * cho một chuỗi năm THẮNG hay không.
  *
- * Đây là chỗ luật caro Việt sống (ADR-0003). Đoạn bị địch chặn cả hai đầu cần độ
- * dài ≥ 6, vì năm quân liền còn phải chừa ít nhất một ô không phải quân địch ở một
- * đầu mới thắng. Chặn một đầu — hoặc chạm mép cửa sổ, tức là còn kéo dài ra ngoài —
- * thì cần ≥ 5.
+ * Đây là chỗ LUẬT sống trong engine (ADR-0003 · ADR-0025), và nó là đúng một con số.
+ * Luật `blocked`: đoạn bị địch chặn cả hai đầu cần độ dài ≥ 6, vì năm quân liền còn
+ * phải chừa ít nhất một ô không phải quân địch ở một đầu mới thắng. Luật `free`: chặn
+ * hai đầu vẫn thắng, nên ≥ 5 là đủ — giống mọi đoạn khác. Chặn một đầu, hoặc chạm mép
+ * cửa sổ (tức còn kéo dài ra ngoài), thì cần ≥ 5 ở cả hai luật.
+ *
+ * Thiếu tham số này thì engine chấm một đoạn năm bị chặn là VÔ HẠI trong khi ở luật
+ * `free` nó là thua ngay — engine vẫn đánh, chỉ là đánh sai. ADR-0015 đã dạy đúng bài
+ * này một lần.
  *
  * Để bảng mẫu tự lo việc này thì phải liệt kê từng thế chết (`OMMM.O`, `OMM.MO`, …)
  * và chắc chắn sót. Cắt đoạn thì `OMMMMMO` không cần một dòng nào trong bảng.
  */
-export function liveSegment(line: string): string | null {
+export function liveSegment(line: string, rule: Rule): string | null {
   const centre = LINE_RADIUS;
   if (line[centre] === 'O') return null;
 
@@ -57,7 +62,8 @@ export function liveSegment(line: string): string | null {
 
   const blockedLeft = start > 0;
   const blockedRight = end < line.length - 1;
-  const needed = blockedLeft && blockedRight ? WIN_LENGTH + 1 : WIN_LENGTH;
+  const bothBlocked = blockedLeft && blockedRight;
+  const needed = rule === 'blocked' && bothBlocked ? WIN_LENGTH + 1 : WIN_LENGTH;
 
   const segment = line.slice(start, end + 1);
   return segment.length >= needed ? segment : null;
@@ -85,7 +91,13 @@ export function scoreSegment(segment: string): number {
 }
 
 /** Điểm đe doạ của `side` dọc một hướng qua `at`. Bàn phải ĐÃ có quân ở `at`. */
-export function scoreLine(board: Board, at: Point, dir: Point, side: Side): number {
-  const segment = liveSegment(lineAround(board, at, dir, side));
+export function scoreLine(
+  board: Board,
+  at: Point,
+  dir: Point,
+  side: Side,
+  rule: Rule,
+): number {
+  const segment = liveSegment(lineAround(board, at, dir, side), rule);
   return segment === null ? 0 : scoreSegment(segment);
 }

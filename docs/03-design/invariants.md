@@ -2,7 +2,7 @@
 
 > **Trả lời:** Sửa gì thì hệ thống sai **âm thầm** — test vẫn xanh mà kết quả vẫn sai?
 > **Trạng thái:** 🟢 đủ
-> **Cập nhật:** 2026-09-11 · commit —
+> **Cập nhật:** 2026-09-11 · commit — *(mốc 8: thêm 14 · 15 · 16, sửa 3 · 6)*
 > **Cập nhật khi:** phát hiện một bất biến mới — thường là ngay sau khi ai đó vừa phá nó
 
 <!-- CÁCH ĐIỀN
@@ -27,14 +27,17 @@ này không có server, không có datastore, không có tiền. Để chúng l�
 | --- | --- | --- |
 | 1 | `moves` là **nguồn đúng duy nhất** của một ván. Bàn là chỉ mục dẫn xuất, không bao giờ được sửa trực tiếp (ADR-0002) | Undo lệch một nước, hoặc ván lưu lại khác ván đang xem. Test dựng bàn trực tiếp vẫn xanh |
 | 2 | Bàn **không có biên**. Không code nào giả định biên, không code nào lặp qua "mọi ô" — chỉ lặp qua quân đã đánh hoặc một cửa sổ quanh một điểm. Ô ngoài map là ô **trống**, không phải ô không hợp lệ | Treo hoặc hết bộ nhớ khi người chơi kéo bàn ra xa; hoặc luật thắng coi khoảng trống ngoài map là bị chặn |
-| 3 | Thắng xét trên **đoạn cực đại** cùng màu chứa nước vừa đánh, không trên cửa sổ 5 ô trượt (ADR-0003) | Chuỗi 6 bị chặn hai đầu được tính là thắng. Đây là lỗi mà mọi test viết theo cửa sổ 5 ô đều bỏ qua |
+| 3 | Thắng xét trên **đoạn cực đại** cùng ghế chứa nước vừa đánh, không trên cửa sổ 5 ô trượt (ADR-0003). Luật chỉ quyết `openEnds` có được xét hay không, **không** đổi cách quét (ADR-0025) | Ở luật caro Việt, chuỗi 6 bị chặn hai đầu được tính là thắng. Đây là lỗi mà mọi test viết theo cửa sổ 5 ô đều bỏ qua |
 | 4 | `game/core` không import `render`, `ai`, `storage`, React hay DOM. `game/ai` chỉ import `core` | Mất khả năng test luật và AI không cần browser — phát hiện ra lúc đã viết xong nửa bộ test |
 | 5 | UI **không bao giờ** gọi `localStorage` trực tiếp. Có đúng **HAI** seam: `GameRepository` cho dữ liệu của NGƯỜI (ADR-0006) và `settingsStore` cho cài đặt của MÁY (ADR-0019). Không có seam thứ ba | Seam bị chọc lỗ. Ngày ghép Ducker ID, một phần dữ liệu vẫn nằm lại trên máy và không ai biết phần nào |
-| 6 | Worker **vô trạng thái**: mỗi yêu cầu gửi cả `moves`, worker dựng lại bàn (ADR-0004) | Sau một lần undo, worker nghĩ trên một thế bàn khác thế bàn người chơi đang thấy |
+| 6 | Worker **vô trạng thái**: mỗi yêu cầu gửi cả `moves` **và `rule`**, worker dựng lại bàn (ADR-0004 · ADR-0025) | Sau một lần undo, worker nghĩ trên một thế bàn khác thế bàn người chơi đang thấy. Thiếu `rule` thì nó nghĩ đúng trên một luật khác luật đang chơi |
 | 7 | Mọi kết quả từ worker phải khớp `requestId` hiện tại, không khớp thì **bỏ** | Nước của máy xuất hiện sau khi người chơi đã hoàn nước — bàn nhận một nước từ quá khứ |
 | 8 | Lượng giá là **tăng dần** theo 4 đường qua nước vừa đánh. Không lặp qua mọi quân để tính lại | Mỗi chuỗi bị đếm nhiều lần, nên điểm sai theo tỉ lệ — AI vẫn đánh, chỉ là đánh kém |
-| 9 | `search` nhận `deadline` và độ sâu **tiêm từ ngoài**. Test ghim độ sâu, không ghim milliseconds | Test xanh trên máy dev, đỏ ngẫu nhiên trên CI, và không ai tìm ra vì sao |
+| 9 | `search` nhận `deadline` và độ sâu **tiêm từ ngoài**. Test ghim độ sâu, không ghim milliseconds — kể cả ngưỡng `testTimeout` của harness, vốn là một cái đồng hồ không ai viết ra | Test xanh trên máy dev, đỏ ngẫu nhiên trên CI, và không ai tìm ra vì sao. Đã xảy ra ở mốc 8: bộ chiến thuật bị vitest kill ở 5000ms mặc định khi máy tải nặng, và nó hiện ra y như một đáp án sai |
 | 10 | Nguồn ngẫu nhiên **tiêm từ ngoài** và seed được (ADR-0005) | E2E xanh đỏ tuỳ lượt; bộ test mất niềm tin trong một tuần |
 | 11 | Đổi toạ độ màn hình ↔ toạ độ bàn **chỉ** đi qua `render/camera`. Không nơi nào tự nhân chia lại | Hit-test lệch khỏi chỗ vẽ ở mức phóng khác mặc định. Ở mức mặc định vẫn đúng, nên thử nhanh không thấy |
 | 12 | Mốc thời gian lưu ở **UTC**; đổi múi giờ chỉ ở tầng hiển thị | Ván lưu và thống kê lệch một ngày ở biên múi giờ. Test viết theo giờ máy vẫn xanh |
+| 14 | Luật xét một ván lấy từ **chính ván đó** (`SavedGame.rule`), không lấy từ `settingsStore`. Cài đặt chỉ giữ `defaultRule` để điền sẵn màn bắt đầu (ADR-0025) | Mở lại một ván lưu sau khi đổi cài đặt cho **kết quả khác** trên cùng chuỗi nước. Ván đang chơi vẫn đúng, nên thử nhanh không thấy |
+| 15 | `Side` là cái GHẾ. Không code nào suy ra "đây là máy" từ `side === 'two'` — chỉ `mode[side] === 'engine'` mới trả lời được (ADR-0024) | Hot-seat gọi engine cho người thứ hai, hoặc mọi chuỗi hiển thị gọi một người là "Máy". Cả hai đều đúng về kiểu nên test vẫn xanh |
+| 16 | Bộ quân chỉ đổi **hình**, không đổi màu: mọi bộ dùng đúng `--mark-one` / `--mark-two` (ADR-0027) | Một bộ đưa hex mới vào sản phẩm, vượt ngoài mọi phép đo tương phản của `MASTER.md` §1 và §2 |
 | 13 | Ghost trong `views/Home` render **vô điều kiện** và giữ **đúng thứ tự** các `useEffect` mà chúng thay thế; mỗi khoá chống chạy lại (`useRef`) nằm trong cùng ghost với effect của nó (ADR-0023) | Gắn ghost sau một `&&` là dựng lại đối tượng nó sở hữu mỗi lần điều kiện đổi (âm thanh); xê dịch thứ tự là đổi thứ tự lưu ván / ghi thống kê / phát tiếng; tách khoá khỏi effect là một ván thắng đếm thành ba. Cả ba đều để test xanh |

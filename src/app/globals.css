@@ -17,8 +17,8 @@
   --ink: #2a2a28;
   --ink-strong: #12100e;
   --ink-muted: #6b6459;
-  --mark-human: #12100e;
-  --mark-ai: #b4453c;
+  --mark-one: #12100e;
+  --mark-two: #b4453c;
   --win: #15803d;
   --win-casing: #f7f3e8;
   --focus: #1d4ed8;
@@ -27,8 +27,21 @@
   color-scheme: light dark;
 }
 
+/*
+ * Ba tầng, và THỨ TỰ LÀ BẮT BUỘC (ADR-0026 · FR-19):
+ *
+ *   1. `:root` ở trên — bảng sáng, luôn là nền.
+ *   2. `@media` + `:not([data-theme='light'])` — đi theo máy, TRỪ khi người chơi đã
+ *      chọn Sáng bằng tay.
+ *   3. `[data-theme='dark']` — lựa chọn tay, phải đứng SAU khối `@media` mới thắng
+ *      được ở cả hai chiều.
+ *
+ * `'system'` là KHÔNG có thuộc tính `data-theme`, không phải `data-theme="system"` —
+ * đó là lý do tầng 2 viết bằng `:not(...)`. Xem `game/render/theme.applyTheme`.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
     --paper: #191c20;
     --paper-raised: #22262c;
     --rule-minor: #333a42;
@@ -36,14 +49,38 @@
     --ink: #e8e6e1;
     --ink-strong: #fdfcfa;
     --ink-muted: #9aa3ad;
-    --mark-human: #e6edf5;
-    --mark-ai: #ce6a62;
+    --mark-one: #e6edf5;
+    --mark-two: #ce6a62;
     --win: #4ade80;
     --win-casing: #191c20;
     --focus: #7aa7ff;
     --border: #6b7684;
     --danger: #f2938c;
   }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #191c20;
+  --paper-raised: #22262c;
+  --rule-minor: #333a42;
+  --rule-major: #4a535d;
+  --ink: #e8e6e1;
+  --ink-strong: #fdfcfa;
+  --ink-muted: #9aa3ad;
+  --mark-one: #e6edf5;
+  --mark-two: #ce6a62;
+  --win: #4ade80;
+  --win-casing: #191c20;
+  --focus: #7aa7ff;
+  --border: #6b7684;
+  --danger: #f2938c;
+}
+
+/* Chọn Sáng bằng tay: `color-scheme` phải theo, nếu không thanh cuộn và ô tick của
+   trình duyệt vẫn vẽ theo thiết lập hệ điều hành và chỏi với cả trang. */
+:root[data-theme='light'] {
+  color-scheme: light;
 }
 
 html,

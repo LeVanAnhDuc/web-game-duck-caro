@@ -1,6 +1,7 @@
 'use client';
 
 // types
+import type { PieceSet } from '@/game/appearance/types';
 import type { Move } from '@/game/core/types';
 // components
 import { MoveList } from '../MoveList';
@@ -24,6 +25,7 @@ export function ReviewPane({
   moves,
   at,
   variant,
+  pieceSet,
   onGoto,
   onRecenter,
   onExit,
@@ -31,6 +33,7 @@ export function ReviewPane({
   moves: readonly Move[];
   at: number;
   variant: 'panel' | 'sheet';
+  pieceSet: PieceSet;
   onGoto(n: number): void;
   onRecenter(): void;
   onExit(): void;
@@ -50,7 +53,13 @@ export function ReviewPane({
           {strings.reviewPosition(at, total)}
         </p>
       </div>
-      <MoveList moves={moves} currentAt={at} variant={variant} onPick={onGoto} />
+      <MoveList
+        moves={moves}
+        currentAt={at}
+        variant={variant}
+        pieceSet={pieceSet}
+        onPick={onGoto}
+      />
       <ReviewBar
         at={at}
         total={total}

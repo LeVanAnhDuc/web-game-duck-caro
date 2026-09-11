@@ -1,4 +1,4 @@
-import type { Level, Move, Point, Side } from '@/game/core/types';
+import type { Level, Move, Point, Rule, Side } from '@/game/core/types';
 
 /**
  * Ranh giới của AI. Được để **async từ mốc 2** dù engine tạm lúc đó chạy đồng bộ,
@@ -7,5 +7,10 @@ import type { Level, Move, Point, Side } from '@/game/core/types';
  * `GameRepository` ở ADR-0006.
  */
 export interface Engine {
-  bestMove(moves: readonly Move[], side: Side, level: Level): Promise<Point>;
+  bestMove(
+    moves: readonly Move[],
+    side: Side,
+    level: Level,
+    rule: Rule,
+  ): Promise<Point>;
 }

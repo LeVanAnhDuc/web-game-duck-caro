@@ -1,4 +1,4 @@
-import type { Level, Move, Point, Side } from '@/game/core/types';
+import type { Level, Move, Point, Rule, Side } from '@/game/core/types';
 import type { Engine } from './Engine';
 import { createLocalEngine } from './localEngine';
 import type { ThinkRequest, WorkerResponse } from './protocol';
@@ -53,7 +53,12 @@ export function createWorkerEngine(rng: Rng): WorkerEngine {
   };
 
   return {
-    bestMove(moves: readonly Move[], side: Side, level: Level): Promise<Point> {
+    bestMove(
+      moves: readonly Move[],
+      side: Side,
+      level: Level,
+      rule: Rule,
+    ): Promise<Point> {
       const requestId = (nextId += 1);
       const request: ThinkRequest = {
         type: 'think',
@@ -61,6 +66,7 @@ export function createWorkerEngine(rng: Rng): WorkerEngine {
         moves,
         side,
         level,
+        rule,
         // Seed đi kèm từng yêu cầu vì worker vô trạng thái: nó không giữ RNG giữa
         // hai lần nghĩ, nên nguồn ngẫu nhiên vẫn nằm ngoài nó (bất biến 10).
         seed: Math.floor(rng() * 0xffffffff),

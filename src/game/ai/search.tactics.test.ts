@@ -1,4 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+/*
+ * NGƯỠNG THỜI GIAN CỦA HARNESS, không phải của search.
+ *
+ * Bộ này ghim ĐỘ SÂU chứ không ghim milliseconds (bất biến 9) — `deadlineMs` để 10⁷ms
+ * nên hạn giờ của chính `search` không bao giờ nổ. Nhưng vitest có ngưỡng riêng mặc
+ * định **5000ms**, và đó là một phụ thuộc đồng hồ ẩn mà bất biến 9 cấm: trên máy rảnh
+ * ca chậm nhất ở đây mất ~3.0s, nên nó chỉ còn 2s dư. Khi máy chạy nhiều việc song
+ * song thì nó vượt 5s và vitest KILL test — hiện ra đúng như một ca đỏ, dù đáp án vẫn
+ * đúng. Đã gặp hai lần ở mốc 8, ở hai ca khác nhau, cả hai đều đỏ ở ~5.2s.
+ *
+ * Nới ngưỡng này KHÔNG làm bộ test yếu đi: không ca nào ở đây khẳng định điều gì về
+ * thời gian. Ngưỡng hiệu năng thật là `NFR-PERF-06`, và nó được đo riêng.
+ */
+vi.setConfig({ testTimeout: 60_000 });
 import type { Move, Point, Side } from '@/game/core/types';
 import { makeRng } from './rng';
 import { search, type SearchParams } from './search';
@@ -25,8 +40,8 @@ function movesFrom(rows: readonly string[], origin: Point = { x: 0, y: 0 }): Mov
   rows.forEach((row, dy) => {
     [...row].forEach((ch, dx) => {
       const cell: Point = { x: origin.x + dx, y: origin.y + dy };
-      if (ch === 'x') moves.push({ at: cell, side: 'human' });
-      if (ch === 'o') moves.push({ at: cell, side: 'ai' });
+      if (ch === 'x') moves.push({ at: cell, side: 'one' });
+      if (ch === 'o') moves.push({ at: cell, side: 'two' });
     });
   });
   return moves;
@@ -34,7 +49,7 @@ function movesFrom(rows: readonly string[], origin: Point = { x: 0, y: 0 }): Mov
 
 const at = (x: number, y: number): Point => ({ x, y });
 
-const AI: Side = 'ai';
+const AI: Side = 'two';
 
 /**
  * Ngân sách lớn tới mức không bao giờ chạm tới: test ghim ĐỘ SÂU chứ không ghim
@@ -55,6 +70,7 @@ function searchParams(depth: number, seed: number): SearchParams {
     topKRoot: 24,
     topKInner: 16,
     rng: makeRng(seed),
+    rule: 'blocked',
     blindRate: 0,
     pickFromTop: 1,
   };

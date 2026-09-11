@@ -1,5 +1,12 @@
 import { keyOf } from '@/game/core/board';
-import { DIRECTIONS, opponentOf, type Mark, type Point, type Side } from '@/game/core/types';
+import {
+  DIRECTIONS,
+  opponentOf,
+  type Mark,
+  type Point,
+  type Rule,
+  type Side,
+} from '@/game/core/types';
 import { scoreLine } from './patterns';
 
 /**
@@ -21,9 +28,14 @@ export function unplace(board: WorkingBoard, at: Point): void {
 }
 
 /** Tổng điểm đe doạ của `side` qua `at` trên cả 4 trục. Bàn phải ĐÃ có quân ở `at`. */
-export function threatScore(board: WorkingBoard, at: Point, side: Side): number {
+export function threatScore(
+  board: WorkingBoard,
+  at: Point,
+  side: Side,
+  rule: Rule,
+): number {
   let total = 0;
-  for (const dir of DIRECTIONS) total += scoreLine(board, at, dir, side);
+  for (const dir of DIRECTIONS) total += scoreLine(board, at, dir, side, rule);
   return total;
 }
 
@@ -44,12 +56,13 @@ export function moveValue(
   board: WorkingBoard,
   at: Point,
   side: Side,
+  rule: Rule,
   tilt: number = DEFENCE_TILT,
 ): number {
   place(board, at, side);
-  const attack = threatScore(board, at, side);
+  const attack = threatScore(board, at, side, rule);
   place(board, at, opponentOf(side));
-  const denied = tilt === 0 ? 0 : threatScore(board, at, opponentOf(side));
+  const denied = tilt === 0 ? 0 : threatScore(board, at, opponentOf(side), rule);
   unplace(board, at);
   return attack + tilt * denied;
 }

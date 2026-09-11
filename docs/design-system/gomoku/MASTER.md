@@ -49,8 +49,8 @@ Mọi con số dưới đây **đã được tính**, không ước lượng. C�
 | Chữ thường | `--ink` | `#2A2A28` | 12.97:1 vs giấy ✓ |
 | Chữ đậm / tiêu đề | `--ink-strong` | `#12100E` | 17.12:1 vs giấy ✓ |
 | Chữ mờ, phụ | `--ink-muted` | `#6B6459` | 5.27:1 vs giấy ✓ |
-| **Quân người chơi (X)** | `--mark-human` | `#12100E` | **17.12:1** vs giấy ✓ |
-| **Quân máy (O)** | `--mark-ai` | `#B4453C` | **4.91:1** vs giấy ✓ · **3.49:1** vs quân người ✓ |
+| **Quân ghế một** | `--mark-one` | `#12100E` | **17.12:1** vs giấy ✓ |
+| **Quân ghế hai** | `--mark-two` | `#B4453C` | **4.91:1** vs giấy ✓ · **3.49:1** vs quân ghế một ✓ |
 | Nét gạch chuỗi thắng | `--win` | `#15803D` | 4.52:1 vs giấy ✓ |
 | Viền nét gạch (casing) | `--win-casing` | `#F7F3E8` | 4.91:1 vs O · 17.12:1 vs X ✓ |
 | Vòng con trỏ bàn phím / focus | `--focus` | `#1D4ED8` | 6.04:1 vs giấy ✓ |
@@ -70,8 +70,8 @@ Chế độ tối không phải đảo màu giấy, mà là **đổi vật liệ
 | Chữ thường | `--ink` | `#E8E6E1` | 13.71:1 ✓ |
 | Chữ đậm / tiêu đề / nền nút chính | `--ink-strong` | `#FDFCFA` | 16.67:1 vs bảng ✓ · chữ `#191C20` trên nút này 16.67:1 ✓ |
 | Chữ mờ | `--ink-muted` | `#9AA3AD` | 6.69:1 ✓ |
-| **Quân người chơi (X)** | `--mark-human` | `#E6EDF5` | **14.49:1** ✓ |
-| **Quân máy (O)** | `--mark-ai` | `#CE6A62` | **4.77:1** ✓ · **3.04:1** vs quân người ✓ |
+| **Quân ghế một** | `--mark-one` | `#E6EDF5` | **14.49:1** ✓ |
+| **Quân ghế hai** | `--mark-two` | `#CE6A62` | **4.77:1** ✓ · **3.04:1** vs quân ghế một ✓ |
 | Nét gạch chuỗi thắng | `--win` | `#4ADE80` | 9.81:1 ✓ |
 | Viền nét gạch | `--win-casing` | `#191C20` | 4.77:1 vs O · 14.49:1 vs X ✓ |
 | Focus | `--focus` | `#7AA7FF` | 7.16:1 ✓ |

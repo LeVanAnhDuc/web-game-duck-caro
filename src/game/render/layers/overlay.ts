@@ -1,5 +1,6 @@
 import { cellCenterToScreen, cellToScreen, type Camera } from '../camera';
 import type { Palette } from '../palette';
+import { DEFAULT_PIECE_SET, type PieceSet } from '../pieceSets';
 import { drawMark } from './marks';
 import type { Move, Point, Side } from '@/game/core/types';
 
@@ -45,8 +46,9 @@ export function drawPreview(
   at: Point,
   side: Side,
   palette: Palette,
+  set: PieceSet = DEFAULT_PIECE_SET,
 ): void {
-  drawMark(ctx, cam, at, side, palette, PREVIEW_ALPHA);
+  drawMark(ctx, cam, at, side, palette, PREVIEW_ALPHA, set);
 }
 
 /**

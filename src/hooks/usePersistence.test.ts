@@ -2,7 +2,14 @@ import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { describe, expect, it } from 'vitest';
 import { createGame, applyMove } from '@/game/core/game';
-import type { GameState, Level, Move, Point, Side } from '@/game/core/types';
+import {
+  VS_AI,
+  type GameState,
+  type Level,
+  type Move,
+  type Point,
+  type Side,
+} from '@/game/core/types';
 import type { GameRepository } from '@/game/storage/GameRepository';
 import { EMPTY_STATS, type GameResult, type SavedGame, type StatsByLevel } from '@/game/storage/types';
 import { usePersistence, type UsePersistence } from './usePersistence';
@@ -68,10 +75,10 @@ const at = (x: number, y: number): Point => ({ x, y });
 
 /** Ván đang chơi thật, dựng qua `core/game` nên nó luôn hợp lệ. */
 function playingGame(): GameState {
-  let state = createGame('human');
+  let state = createGame('one');
   for (const [point, side] of [
-    [at(0, 0), 'human'],
-    [at(3, 3), 'ai'],
+    [at(0, 0), 'one'],
+    [at(3, 3), 'two'],
   ] as const) {
     const result = applyMove(state, point, side as Side);
     if (!result.ok) throw new Error('nuoc khong hop le trong fixture');
@@ -81,9 +88,11 @@ function playingGame(): GameState {
 }
 
 const SAVED: SavedGame = {
-  moves: [{ at: at(0, 0), side: 'human' }] as Move[],
-  first: 'human',
+  moves: [{ at: at(0, 0), side: 'one' }] as Move[],
+  first: 'one',
   level: 'hard' as Level,
+  mode: VS_AI,
+  rule: 'blocked',
   savedAt: '2026-09-04T00:00:00.000Z',
 };
 
@@ -119,7 +128,7 @@ describe('usePersistence — lưu ván', () => {
     const ref = mountHook(fake.repository);
     await act(async () => {});
     await act(async () => {
-      ref.current?.save(playingGame(), 'human', 'hard');
+      ref.current?.save(playingGame(), 'one', 'hard', VS_AI);
     });
     expect(fake.countOf('saveCurrentGame')).toBe(1);
     expect(fake.currentGame()?.moves).toHaveLength(2);
@@ -130,7 +139,7 @@ describe('usePersistence — lưu ván', () => {
     const ref = mountHook(fake.repository);
     await act(async () => {});
     await act(async () => {
-      ref.current?.save(createGame('human'), 'human', 'hard');
+      ref.current?.save(createGame('one'), 'one', 'hard', VS_AI);
     });
     expect(fake.countOf('saveCurrentGame')).toBe(0);
     expect(fake.countOf('clearCurrentGame')).toBe(1);
@@ -143,10 +152,10 @@ describe('usePersistence — lưu ván', () => {
     await act(async () => {});
     const finished: GameState = {
       ...playingGame(),
-      status: { kind: 'resigned', by: 'human' },
+      status: { kind: 'resigned', by: 'one' },
     };
     await act(async () => {
-      ref.current?.save(finished, 'human', 'hard');
+      ref.current?.save(finished, 'one', 'hard', VS_AI);
     });
     expect(fake.countOf('saveCurrentGame')).toBe(0);
     expect(fake.currentGame()).toBeNull();
@@ -157,7 +166,7 @@ describe('usePersistence — lưu ván', () => {
     const ref = mountHook(fake.repository);
     await act(async () => {});
     await act(async () => {
-      ref.current?.save(playingGame(), 'human', 'normal');
+      ref.current?.save(playingGame(), 'one', 'normal', VS_AI);
     });
     expect(fake.currentGame()?.savedAt).toMatch(/Z$/);
   });

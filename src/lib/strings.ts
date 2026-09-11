@@ -5,13 +5,31 @@
  * (`overview.md` §Non-Goals), nhưng gom về một file nên thêm tiếng Anh sau là thêm
  * một file, không phải một đợt truy tìm chuỗi trong JSX.
  */
+import type { Mode, Side } from '@/game/core/types';
+
 /** Dấu trừ thật U+2212 thay cho dấu gạch bàn phím. */
 const minus = (v: number): string => String(v).replace('-', '−');
 
 export const strings = {
   appName: 'Duck Caro',
   appTagline:
-    'Đánh caro với máy trên một bàn không có biên. Năm quân liền là thắng — trừ khi bị chặn cả hai đầu.',
+    'Đánh caro trên một bàn không có biên — với máy, hoặc với người ngồi cạnh.',
+
+  /* --- Mốc 8: chế độ, ghế, luật (FR-17 · FR-18) --- */
+  labelMode: 'Chế độ',
+  modeVsAi: 'Đấu máy',
+  modeHotseat: 'Hai người',
+  playerOne: 'Người 1',
+  playerTwo: 'Người 2',
+  you: 'Bạn',
+  machine: 'Máy',
+
+  labelRule: 'Luật thắng',
+  ruleBlocked: 'Caro Việt',
+  ruleFree: 'Tự do',
+  /* Tên luật một mình không nói được luật, nên hai dòng này luôn đi kèm nó. */
+  ruleBlockedHint: 'Năm quân liền là thắng — trừ khi bị chặn cả hai đầu.',
+  ruleFreeHint: 'Năm quân liền là thắng, kể cả khi bị chặn cả hai đầu.',
 
   levelEasy: 'Dễ',
   levelNormal: 'Thường',
@@ -106,4 +124,40 @@ export const strings = {
     `Con trỏ ở ${minus(x)}, ${minus(y)}. Ô này là quân của bạn.`,
   cursorTakenAi: (x: number, y: number) =>
     `Con trỏ ở ${minus(x)}, ${minus(y)}. Ô này là quân của máy.`,
+
+  /** Thay `cursorTakenYou` / `cursorTakenAi`: tên ghế đến từ `Mode` (bất biến 15). */
+  cursorTakenBy: (who: string, x: number, y: number) =>
+    `Con trỏ ở ${minus(x)}, ${minus(y)}. Ô này là quân của ${who.toLowerCase()}.`,
+
+  /**
+   * Tên một ghế, ĐỌC TỪ `Mode` (ADR-0024). Đây là chỗ duy nhất biết khi nào một ghế
+   * được gọi là "Máy" — bất biến 15 cấm mọi nơi khác suy ra điều đó từ tên ghế.
+   */
+  seatName: (side: Side, mode: Mode): string => {
+    if (mode[side] === 'engine') return 'Máy';
+    return mode[side === 'one' ? 'two' : 'one'] === 'engine'
+      ? 'Bạn'
+      : side === 'one'
+        ? 'Người 1'
+        : 'Người 2';
+  },
+
+  turnOf: (who: string) => `Lượt ${who}`,
+  seatMovedAt: (who: string, x: number, y: number) => `${who} đánh ở ${x}, ${y}.`,
+  seatWonAt: (who: string, x: number, y: number) =>
+    `${who} đánh ở ${x}, ${y} và thắng.`,
+  seatWins: (who: string) => `${who} thắng`,
+  seatResigned: (who: string) => `${who} đã bỏ ván`,
+
+  /* --- Mốc 8: giao diện và bộ quân (FR-19 · FR-20) --- */
+  settingsTheme: 'Giao diện',
+  themeLight: 'Sáng',
+  themeDark: 'Tối',
+  themeSystem: 'Theo máy',
+  settingsPieces: 'Bộ quân',
+  piecePencil: 'Bút chì',
+  pieceSolid: 'Đặc/rỗng',
+  pieceGeo: 'Hình học',
+  pieceDuck: 'Vịt',
+  settingsDefaultRule: 'Luật mặc định',
 } as const;
