@@ -1,5 +1,8 @@
-import { buildBoard, markAt } from '@/game/core/board';
+// types
 import type { Move, Point } from '@/game/core/types';
+// game
+import { buildBoard, markAt } from '@/game/core/board';
+// others
 import { strings } from '@/lib/strings';
 
 /**

@@ -2,7 +2,7 @@
 
 > **Trả lời:** Sửa gì thì hệ thống sai **âm thầm** — test vẫn xanh mà kết quả vẫn sai?
 > **Trạng thái:** 🟢 đủ
-> **Cập nhật:** 2026-09-08 · commit —
+> **Cập nhật:** 2026-09-11 · commit —
 > **Cập nhật khi:** phát hiện một bất biến mới — thường là ngay sau khi ai đó vừa phá nó
 
 <!-- CÁCH ĐIỀN
@@ -37,3 +37,4 @@ này không có server, không có datastore, không có tiền. Để chúng l�
 | 10 | Nguồn ngẫu nhiên **tiêm từ ngoài** và seed được (ADR-0005) | E2E xanh đỏ tuỳ lượt; bộ test mất niềm tin trong một tuần |
 | 11 | Đổi toạ độ màn hình ↔ toạ độ bàn **chỉ** đi qua `render/camera`. Không nơi nào tự nhân chia lại | Hit-test lệch khỏi chỗ vẽ ở mức phóng khác mặc định. Ở mức mặc định vẫn đúng, nên thử nhanh không thấy |
 | 12 | Mốc thời gian lưu ở **UTC**; đổi múi giờ chỉ ở tầng hiển thị | Ván lưu và thống kê lệch một ngày ở biên múi giờ. Test viết theo giờ máy vẫn xanh |
+| 13 | Ghost trong `views/Home` render **vô điều kiện** và giữ **đúng thứ tự** các `useEffect` mà chúng thay thế; mỗi khoá chống chạy lại (`useRef`) nằm trong cùng ghost với effect của nó (ADR-0023) | Gắn ghost sau một `&&` là dựng lại đối tượng nó sở hữu mỗi lần điều kiện đổi (âm thanh); xê dịch thứ tự là đổi thứ tự lưu ván / ghi thống kê / phát tiếng; tách khoá khỏi effect là một ván thắng đếm thành ba. Cả ba đều để test xanh |

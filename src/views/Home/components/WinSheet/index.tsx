@@ -1,5 +1,8 @@
+// libs
 import { History } from 'lucide-react';
+// types
 import type { GameStatus } from '@/game/core/types';
+// others
 import { strings } from '@/lib/strings';
 
 function titleFor(status: GameStatus): string {

@@ -1,8 +1,11 @@
 'use client';
 
-import { placeConfirmButton } from '@/game/render/layers/overlay';
-import type { BoardCanvas } from '@/hooks/useBoardCanvas';
+// types
 import type { Move } from '@/game/core/types';
+import type { BoardCanvas } from '@/hooks';
+// game
+import { placeConfirmButton } from '@/game/render/layers/overlay';
+// others
 import { strings } from '@/lib/strings';
 
 /** Khớp `min-h-11` + `px-4` của chính nút bên dưới. Đổi lớp thì đổi cả đây. */

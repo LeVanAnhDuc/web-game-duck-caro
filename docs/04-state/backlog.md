@@ -2,7 +2,7 @@
 
 > **Trả lời:** Đang làm gì, tiếp theo làm gì, và đang nợ những gì?
 > **Trạng thái:** 🟢 đủ
-> **Cập nhật:** 2026-09-08 · commit —
+> **Cập nhật:** 2026-09-11 · commit —
 > **Cập nhật khi:** bắt đầu/kết thúc một việc · brainstorm ra việc mới · cố ý đi đường tắt
 
 <!-- CÁCH ĐIỀN
@@ -17,6 +17,15 @@ KHÔNG chứa: tính năng ngoài phạm vi (-> 01-product/overview.md §Non-Goa
 -->
 
 ## Đang làm
+
+**Áp bộ quy ước code rút từ `quapp-developer-frontend`** (2026-09-11, nhánh
+`refactor/code-conventions`). 22 rule nằm ở [`docs/03-design/code-conventions.md`](../03-design/code-conventions.md),
+quyết định và phần bị bác nằm ở ADR-0023. Đã xong: tách `views/Home/components/` khỏi
+`mains/`, sáu `ghosts/`, gộp JSX xem lại trùng lặp thành `ReviewPane`, barrel
+`hooks/index.ts`, bốn luật ESLint mới + `.githooks/pre-commit`.
+
+**Còn nợ của đợt này:** nhãn khối import (R-11) mới áp cho tầng `views/`; `game/` và
+`hooks/` chưa. Đó là quy ước thủ công, không script nào ép được — xem §Nợ kỹ thuật.
 
 **Đổi thương hiệu sang `Duck Caro`** (2026-09-08). Repo GitHub đổi từ
 `web-game-gomoku` thành `web-game-duck-caro`; GitHub giữ redirect cho URL repo cũ,
@@ -77,3 +86,4 @@ chưa làm: `NFR-PERF-05` và `NFR-PERF-07` cần một **điện thoại thật
 | Dữ liệu lưu không migrate giữa các version khoá (ADR-0006) | Đổi cấu trúc lưu là mất ván đang chơi và mất thống kê | v1 chưa có người chơi thật để mất dữ liệu | Ngay trước lần đổi cấu trúc lưu đầu tiên sau khi game có người chơi thật |
 | ADR-0002 và ADR-0007 mang chữ đã lỗi (`Stone`, "giao điểm") | Người đọc hai ADR đó phải đọc kèm ADR-0009 | `decisions/README.md` quy định ADR `accepted` là append-only. Một bản ghi sửa được thì không còn là bản ghi | Không bao giờ — đây là cái giá cố định của append-only, ghi ở đây để không ai "dọn" nó |
 | Resize cửa sổ có thể đẩy thế trận ra ngoài khung nhìn | Người chơi phải bấm "Giữa" để thấy lại. **Nút đó phải có MỌI CHẾ ĐỘ** — mốc 5 từng ẩn nó trong chế độ xem lại và làm người chơi mắc kẹt | Tự dịch khung nhìn khi resize là giật màn hình của người đang chơi — cái đó tệ hơn | Nếu người chơi phản hồi rằng bàn "biến mất" sau khi quay ngang máy |
+| Nhãn khối import (R-11) mới áp cho `src/views/`, chưa áp cho `src/game/` và `src/hooks/` | Nửa codebase có nhãn, nửa không | Áp hết là chạm ~50 file chỉ để thêm comment, trong cùng một commit refactor đã chạm 25 file — lẫn hai loại thay đổi vào nhau thì review không còn đọc được. R-11 cũng là rule THỦ CÔNG, không luật lint nào giữ được nó | Khi thêm `eslint-plugin-import` với `import/order` — lúc đó máy áp một lần cho cả cây, và nhãn chữ thành thừa |

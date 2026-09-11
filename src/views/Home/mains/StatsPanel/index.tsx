@@ -1,5 +1,8 @@
+// types
 import type { Level } from '@/game/core/types';
+// game
 import { totalGames, type LevelStats, type StatsByLevel } from '@/game/storage/types';
+// others
 import { strings } from '@/lib/strings';
 
 const LEVEL_ORDER: readonly Level[] = ['easy', 'normal', 'hard'];

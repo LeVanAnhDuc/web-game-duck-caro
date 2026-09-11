@@ -1,9 +1,12 @@
 'use client';
 
+// libs
 import { useState } from 'react';
 import { X } from 'lucide-react';
+// types
 import type { Level } from '@/game/core/types';
 import type { Settings } from '@/game/settings/settingsStore';
+// others
 import { strings } from '@/lib/strings';
 
 const LEVELS: readonly { readonly id: Level; readonly label: string }[] = [

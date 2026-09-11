@@ -1,7 +1,10 @@
 'use client';
 
+// libs
 import { useEffect, useRef } from 'react';
+// types
 import type { Move, Side } from '@/game/core/types';
+// others
 import { strings } from '@/lib/strings';
 
 /** Glyph `X`/`O` là SVG, không phải ký tự — MASTER.md §9 cấm dingbat làm icon. */
@@ -40,7 +43,12 @@ function SideGlyph({ side }: { side: Side }) {
 const ROW =
   'grid grid-cols-[2.5rem_1.25rem_1fr] items-center gap-2 rounded-md px-2 text-left font-mono text-sm';
 
-export type MoveListProps = {
+export function MoveList({
+  moves,
+  currentAt,
+  variant,
+  onPick,
+}: {
   moves: readonly Move[];
   /** Nước đang xem trong chế độ xem lại; `null` khi đang chơi. */
   currentAt: number | null;
@@ -51,9 +59,7 @@ export type MoveListProps = {
    * chứ không theo khổ màn — vai trò là tiêu chí ổn định hơn.
    */
   onPick?: (n: number) => void;
-};
-
-export function MoveList({ moves, currentAt, variant, onPick }: MoveListProps) {
+}) {
   const clickable = onPick !== undefined;
   const scrollTo = useRef<HTMLLIElement | null>(null);
 

@@ -30,6 +30,7 @@
 | [ADR-0020](0020-keyboard-cursor-with-shift-to-pan.md) | Mũi tên dịch con trỏ; Shift + mũi tên kéo bàn | 2026-09-08 | accepted |
 | [ADR-0021](0021-sound-is-synthesised-and-silence-is-valid.md) | Âm thanh tổng hợp bằng WebAudio, và im lặng là một trạng thái hợp lệ | 2026-09-08 | accepted |
 | [ADR-0022](0022-e2e-runs-against-the-static-build.md) | E2E chạy trên bản build tĩnh, không trên dev server | 2026-09-08 | accepted |
+| [ADR-0023](0023-adopt-the-quapp-view-conventions.md) | Nhận quy ước tầng view của `quapp-developer-frontend`, bác phần thuộc về tầng dữ liệu | 2026-09-11 | accepted |
 <!-- END:auto -->
 
 Trạng thái: `accepted` · `superseded by ADR-00xx` · `deprecated`

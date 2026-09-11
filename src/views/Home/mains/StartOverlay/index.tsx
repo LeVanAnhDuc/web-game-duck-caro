@@ -1,8 +1,12 @@
 'use client';
 
+// libs
 import { useState } from 'react';
+// types
 import type { Level, Side } from '@/game/core/types';
+// game
 import { totalGames, type StatsByLevel } from '@/game/storage/types';
+// others
 import { strings } from '@/lib/strings';
 
 const LEVELS: readonly { readonly id: Level; readonly label: string }[] = [

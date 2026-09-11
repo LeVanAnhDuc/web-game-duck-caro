@@ -1,20 +1,10 @@
+// libs
 import { Crosshair, Flag, Lightbulb, RotateCcw } from 'lucide-react';
+// others
 import { strings } from '@/lib/strings';
 
 const BASE =
   'flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-edge bg-raised text-sm font-semibold hover:bg-paper disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-raised';
-
-export type ControlsProps = {
-  /** `row` = thanh dưới trên mobile/tablet · `column` = cột phải trên desktop. */
-  orientation: 'row' | 'column';
-  canUndo: boolean;
-  canHint: boolean;
-  canResign: boolean;
-  onUndo(): void;
-  onHint(): void;
-  onRecenter(): void;
-  onResign(): void;
-};
 
 export function Controls({
   orientation,
@@ -25,7 +15,17 @@ export function Controls({
   onHint,
   onRecenter,
   onResign,
-}: ControlsProps) {
+}: {
+  /** `row` = thanh dưới trên mobile/tablet · `column` = cột phải trên desktop. */
+  orientation: 'row' | 'column';
+  canUndo: boolean;
+  canHint: boolean;
+  canResign: boolean;
+  onUndo(): void;
+  onHint(): void;
+  onRecenter(): void;
+  onResign(): void;
+}) {
   const column = orientation === 'column';
   const shape = column ? `${BASE} w-full px-4` : `${BASE} flex-1 px-2 sm:px-4`;
 

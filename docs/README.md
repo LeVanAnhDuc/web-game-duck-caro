@@ -13,8 +13,9 @@
 | [`03-design/architecture.md`](03-design/architecture.md) | Hệ thống ghép lại thế nào, ranh giới giữa các phần ở đâu? | 🟢 đủ | thêm/bỏ một module hoặc service · đổi cách hai module nói … |
 | [`03-design/invariants.md`](03-design/invariants.md) | Sửa gì thì hệ thống sai **âm thầm** — test vẫn xanh mà kết… | 🟢 đủ | phát hiện một bất biến mới — thường là ngay sau khi ai đó … |
 | [`04-state/backlog.md`](04-state/backlog.md) | Đang làm gì, tiếp theo làm gì, và đang nợ những gì? | 🟢 đủ | bắt đầu/kết thúc một việc · brainstorm ra việc mới · cố ý … |
+| [`03-design/code-conventions.md`](03-design/code-conventions.md) | Code mới đặt ở thư mục nào, đặt tên ra sao, viết theo khuô… | 🟢 đủ — đã chốt và đã áp dụng vào `src/` (AD… | chốt/bác một rule · thêm một tầng thư mục mới · đổi cấu hì… |
 | [`design-system/gomoku/MASTER.md`](design-system/gomoku/MASTER.md) | — | — | — |
-| [`decisions/`](decisions/README.md) | Tại sao lại làm thế này? | 22 ADR | mỗi quyết định kỹ thuật |
+| [`decisions/`](decisions/README.md) | Tại sao lại làm thế này? | 23 ADR | mỗi quyết định kỹ thuật |
 | [`../.env.example`](../.env.example) | cần biến nào để chạy được dự án này? | ⚪ chưa áp dụng — dự án không đọc biến môi tr… | code đọc một biến mới (process.env.X / import.meta.env.X /… |
 <!-- END:auto -->
 

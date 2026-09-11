@@ -1,7 +1,7 @@
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { describe, expect, it, vi } from 'vitest';
-import { MoveList, type MoveListProps } from './index';
+import { MoveList } from './index';
 import type { Move } from '@/game/core/types';
 
 const moves: Move[] = [
@@ -11,7 +11,9 @@ const moves: Move[] = [
   { at: { x: 2, y: 2 }, side: 'ai' },
 ];
 
-function render(props: MoveListProps) {
+// Props viết inline trong signature (R-16), nên test lấy kiểu từ chính component —
+// cùng lối `Parameters<typeof X>[0]` mà test của ReviewBar đã dùng.
+function render(props: Parameters<typeof MoveList>[0]) {
   const host = document.createElement('div');
   document.body.appendChild(host);
   act(() => {

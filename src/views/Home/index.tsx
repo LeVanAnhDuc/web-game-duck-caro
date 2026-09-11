@@ -1,28 +1,36 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { createWorkerEngine } from '@/game/ai/workerEngine';
-import { browserAudioCtor, createAudio } from '@/game/audio';
-import { makeRng } from '@/game/ai/rng';
+// libs
+import { useEffect, useMemo, useState } from 'react';
+// types
 import type { GameStatus, Level, Side } from '@/game/core/types';
+// game
+import { makeRng } from '@/game/ai/rng';
+import { createWorkerEngine } from '@/game/ai/workerEngine';
 import { createLocalGameRepository } from '@/game/storage/localGameRepository';
-import type { GameResult } from '@/game/storage/types';
-import { useBoardCanvas } from '@/hooks/useBoardCanvas';
-import { useGame } from '@/hooks/useGame';
-import { useSettings } from '@/hooks/useSettings';
-import { usePersistence } from '@/hooks/usePersistence';
-import { strings } from '@/lib/strings';
+// hooks
+import { useBoardCanvas, useGame, usePersistence, useSettings } from '@/hooks';
+// components
+import { Controls } from './components/Controls';
+import { CursorLive } from './components/CursorLive';
+import { MoveList } from './components/MoveList';
+import { ReviewPane } from './components/ReviewPane';
+import { StatusLine } from './components/StatusLine';
+import { WinSheet } from './components/WinSheet';
 import { BoardStage } from './mains/BoardStage';
-import { Controls } from './mains/Controls';
-import { CursorLive } from './mains/CursorLive';
 import { Header } from './mains/Header';
-import { MoveList } from './mains/MoveList';
-import { ReviewBar } from './mains/ReviewBar';
 import { SettingsSheet } from './mains/SettingsSheet';
 import { StartOverlay } from './mains/StartOverlay';
 import { StatsPanel } from './mains/StatsPanel';
-import { StatusLine } from './mains/StatusLine';
-import { WinSheet } from './mains/WinSheet';
+// ghosts
+import { ApplyDefaultLevel } from './ghosts/ApplyDefaultLevel';
+import { PlayMoveSound } from './ghosts/PlayMoveSound';
+import { RecordResult } from './ghosts/RecordResult';
+import { ResumeSavedGame } from './ghosts/ResumeSavedGame';
+import { SaveGame } from './ghosts/SaveGame';
+import { ShowHintPreview } from './ghosts/ShowHintPreview';
+// others
+import { strings } from '@/lib/strings';
 
 const LEVEL_LABEL: Record<Level, string> = {
   easy: strings.levelEasy,
@@ -35,18 +43,6 @@ const ENGINE_SEED = 1;
 
 const PLAYING: GameStatus = { kind: 'playing' };
 
-/** Đầu chế độ xem lại — thay chỗ dòng lượt, vì lúc này không có lượt của ai cả. */
-function ReviewHead({ at, total }: { at: number; total: number }) {
-  return (
-    <div className="flex flex-none items-center justify-between gap-2 border-b border-edge p-4">
-      <p className="text-sm font-semibold text-ink-strong">{strings.reviewing}</p>
-      <p className="font-mono text-sm text-ink-muted">
-        {strings.reviewPosition(at, total)}
-      </p>
-    </div>
-  );
-}
-
 export function Home() {
   const [started, setStarted] = useState(false);
   const [level, setLevel] = useState<Level>('normal');
@@ -54,15 +50,6 @@ export function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { settings, loaded: settingsLoaded, update: updateSettings } = useSettings();
-
-  /*
-   * Âm thanh dựng MỘT lần cho cả phiên, nhưng `AudioContext` bên trong chỉ sinh ra ở
-   * tiếng đầu tiên — tức ở một cử chỉ người dùng (ADR-0021).
-   */
-  const audio = useMemo(() => createAudio(browserAudioCtor()), []);
-  useEffect(() => {
-    audio.setEnabled(settings.sound);
-  }, [audio, settings.sound]);
 
   const engine = useMemo(() => createWorkerEngine(makeRng(ENGINE_SEED)), []);
   // Worker phải bị đóng khi component rời đi, nếu không mỗi lần hot-reload để lại
@@ -74,17 +61,6 @@ export function Home() {
   const persistence = usePersistence(repository);
 
   const game = useGame(engine, { first: 'human', level });
-
-  /*
-   * Mức khó mặc định chỉ áp khi CHƯA vào ván nào. Áp giữa ván sẽ đổi mức của ván đang
-   * chơi mà không hỏi gì, và `journeys.md` §US-04 chỉ đúng tên lỗi đó.
-   */
-  const appliedDefault = useRef(false);
-  useEffect(() => {
-    if (appliedDefault.current || !settingsLoaded || started) return;
-    appliedDefault.current = true;
-    setLevel(settings.defaultLevel);
-  }, [settingsLoaded, started, settings.defaultLevel]);
 
   const status = game.state.status;
   const reviewAt = game.reviewAt;
@@ -108,91 +84,10 @@ export function Home() {
     onPlace: game.place,
   });
 
-  // Gợi ý về thì đẩy vào quân xem trước. `useGame` không biết gì về canvas, và
-  // `useBoardCanvas` không biết gì về engine — chỗ nối hai bên là đúng ở đây.
-  useEffect(() => {
-    if (game.hint !== null) board.showPreview(game.hint);
-    // `board` đổi mỗi render; chỉ `hint` mới là tín hiệu thật.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game.hint]);
-
-  /**
-   * Tiếp tục ván dở, đúng MỘT lần khi đọc xong.
-   *
-   * Ván lưu hỏng thì `resume` trả `false`, và ván đó bị xoá — nếu để lại, mỗi lần mở
-   * app là một lần thử dựng lại rồi thất bại.
-   */
-  const resumeTried = useRef(false);
-  useEffect(() => {
-    if (resumeTried.current || persistence.restored === undefined) return;
-    resumeTried.current = true;
-    const saved = persistence.restored;
-    if (saved === null) return;
-    if (game.resume(saved)) {
-      setLevel(saved.level);
-      setFirst(saved.first);
-      setStarted(true);
-    } else {
-      persistence.clearGame();
-    }
-    // `game` và `persistence` đổi mỗi render; chỉ `restored` mới là tín hiệu thật.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persistence.restored]);
-
-  // Lưu sau mỗi nước. Ván kết thúc thì `save` tự xoá — không có gì để tiếp tục nữa.
-  useEffect(() => {
-    if (!started) return;
-    persistence.save(game.state, first, level);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game.state, started, first, level]);
-
-  /**
-   * Ghi kết quả vào thống kê, đúng MỘT lần mỗi ván.
-   *
-   * `useEffect` theo `status` chạy lại ở mỗi render có `status` mới, và một ván có
-   * thể render nhiều lần sau khi kết thúc (đổi kích thước cửa sổ, kéo bàn, và từ mốc
-   * 5 là cả tua qua tua lại trong chế độ xem lại). Không có cái khoá này thì một ván
-   * thắng đếm thành ba, và bảng thống kê sai âm thầm — vẫn là số, chỉ là số sai.
-   */
-  const recordedFor = useRef<number | null>(null);
-  useEffect(() => {
-    if (status.kind === 'playing') {
-      recordedFor.current = null;
-      return;
-    }
-    const moveCount = game.state.moves.length;
-    if (recordedFor.current === moveCount) return;
-    recordedFor.current = moveCount;
-
-    const result: GameResult =
-      status.kind === 'resigned' ? 'resign' : status.by === 'human' ? 'win' : 'loss';
-    persistence.record(level, result);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, level]);
-
-  /*
-   * Tiếng đi theo NƯỚC MỚI, không theo `status`: một `useEffect` trên `status` sẽ im
-   * suốt ván và chỉ kêu lúc kết thúc. Khoá theo số nước để resize hay tua lại không
-   * phát lại tiếng — cùng loại khoá như khoá chống đếm trùng thống kê.
-   */
-  const soundedFor = useRef(0);
-  useEffect(() => {
-    const count = game.state.moves.length;
-    if (count === soundedFor.current) return;
-    const grew = count > soundedFor.current;
-    soundedFor.current = count;
-    if (!grew || !started) return;
-
-    if (status.kind === 'won') {
-      if (status.by === 'human') audio.win();
-      else audio.lose();
-      return;
-    }
-    const last = game.state.moves[count - 1];
-    if (last?.side === 'human') audio.place();
-    else if (last?.side === 'ai') audio.reply();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game.state.moves, status, started]);
+  const undo = () => {
+    board.clearPreview();
+    game.undoMove();
+  };
 
   const start = (options: { first: Side; level: Level }) => {
     setLevel(options.level);
@@ -228,6 +123,15 @@ export function Home() {
     board.recenter();
   };
 
+  const reviewProps = {
+    moves: game.state.moves,
+    // `reviewing` đã canh `reviewAt !== null` ở mọi chỗ dùng; `?? 0` chỉ để chiều TS.
+    at: reviewAt ?? 0,
+    onGoto: game.gotoMove,
+    onRecenter: board.recenter,
+    onExit: game.exitReview,
+  };
+
   const controlProps = {
     canUndo: game.state.moves.length > 0 && status.kind === 'playing',
     canHint:
@@ -237,10 +141,7 @@ export function Home() {
       !game.thinking &&
       !game.hinting,
     canResign: started && status.kind === 'playing',
-    onUndo: () => {
-      board.clearPreview();
-      game.undoMove();
-    },
+    onUndo: undo,
     onHint: game.askHint,
     onRecenter: board.recenter,
     onResign: game.giveUp,
@@ -255,6 +156,51 @@ export function Home() {
 
   return (
     <main className="flex h-dvh flex-col">
+      {/*
+        Ghost = component `return null`, chỉ chạy side-effect (R-04).
+
+        Chúng render VÔ ĐIỀU KIỆN, và giữ nguyên THỨ TỰ của các `useEffect` từng nằm
+        trong file này: effect của con chạy trước effect của cha và theo đúng thứ tự
+        con, nên xê dịch mấy dòng dưới đây là xê dịch thứ tự chạy thật.
+      */}
+      <ApplyDefaultLevel
+        loaded={settingsLoaded}
+        started={started}
+        defaultLevel={settings.defaultLevel}
+        onApply={setLevel}
+      />
+      <ShowHintPreview hint={game.hint} onShow={board.showPreview} />
+      <ResumeSavedGame
+        restored={persistence.restored}
+        onResume={(saved) => {
+          if (!game.resume(saved)) return false;
+          setLevel(saved.level);
+          setFirst(saved.first);
+          setStarted(true);
+          return true;
+        }}
+        onCorrupt={persistence.clearGame}
+      />
+      <SaveGame
+        started={started}
+        state={game.state}
+        first={first}
+        level={level}
+        onSave={persistence.save}
+      />
+      <RecordResult
+        status={status}
+        moveCount={total}
+        level={level}
+        onRecord={persistence.record}
+      />
+      <PlayMoveSound
+        enabled={settings.sound}
+        started={started}
+        moves={game.state.moves}
+        status={status}
+      />
+
       <Header
         levelLabel={LEVEL_LABEL[level]}
         soundOn={settings.sound}
@@ -264,15 +210,7 @@ export function Home() {
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <BoardStage
-            board={board}
-            moves={shownMoves}
-            onHint={game.askHint}
-            onUndo={() => {
-              board.clearPreview();
-              game.undoMove();
-            }}
-          />
+          <BoardStage board={board} moves={shownMoves} onHint={game.askHint} onUndo={undo} />
           {!started && (
             <StartOverlay
               stats={persistence.stats}
@@ -281,33 +219,7 @@ export function Home() {
             />
           )}
 
-          {/* Sheet xem lại neo ĐÁY, phủ lên bàn — bàn vẫn thấy được nửa trên. */}
-          {reviewing && (
-            <div className="absolute inset-x-0 bottom-0 flex max-h-[52%] flex-col rounded-t-[10px] border-t border-edge bg-raised shadow-sheet lg:hidden">
-              <div className="flex flex-none items-center justify-between gap-2 px-4 pb-2 pt-4">
-                <p className="text-sm font-semibold text-ink-strong">
-                  {strings.reviewing}
-                </p>
-                <p className="font-mono text-sm text-ink-muted">
-                  {strings.reviewPosition(reviewAt, total)}
-                </p>
-              </div>
-              <MoveList
-                moves={game.state.moves}
-                currentAt={reviewAt}
-                variant="sheet"
-                onPick={game.gotoMove}
-              />
-              <ReviewBar
-                at={reviewAt}
-                total={total}
-                variant="sheet"
-                onGoto={game.gotoMove}
-                onRecenter={board.recenter}
-                onExit={game.exitReview}
-              />
-            </div>
-          )}
+          {reviewing && <ReviewPane variant="sheet" {...reviewProps} />}
 
           {settingsOpen && (
             <SettingsSheet
@@ -340,23 +252,7 @@ export function Home() {
 
         <aside className="hidden w-80 flex-none flex-col border-l border-edge bg-raised shadow-panel lg:flex">
           {reviewing ? (
-            <>
-              <ReviewHead at={reviewAt} total={total} />
-              <MoveList
-                moves={game.state.moves}
-                currentAt={reviewAt}
-                variant="panel"
-                onPick={game.gotoMove}
-              />
-              <ReviewBar
-                at={reviewAt}
-                total={total}
-                variant="panel"
-                onGoto={game.gotoMove}
-                onRecenter={board.recenter}
-                onExit={game.exitReview}
-              />
-            </>
+            <ReviewPane variant="panel" {...reviewProps} />
           ) : (
             <>
               <StatusLine

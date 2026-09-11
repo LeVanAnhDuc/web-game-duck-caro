@@ -1,16 +1,35 @@
 {
   "extends": ["next/core-web-vitals", "prettier"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
   "rules": {
     "no-restricted-imports": [
       "error",
       {
         "patterns": [
           {
-            "group": ["@/game/render/*", "@/hooks/*", "@/views/*", "react", "react-dom"],
+            "group": [
+              "@/game/render",
+              "@/game/render/*",
+              "@/hooks",
+              "@/hooks/*",
+              "@/views",
+              "@/views/*",
+              "react",
+              "react-dom"
+            ],
             "message": "game/core khong duoc import render, hooks, views hay React (bat bien 4). Neu ban dang o ngoai game/core thi bo qua canh bao nay khong duoc — hay sua import."
           }
         ]
       }
+    ],
+    "arrow-body-style": ["error", "as-needed"],
+    "object-shorthand": "warn",
+    "react/jsx-fragments": ["warn", "syntax"],
+    "@typescript-eslint/array-type": ["warn", { "default": "array" }],
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      { "prefer": "type-imports", "fixStyle": "separate-type-imports" }
     ]
   },
   "overrides": [
@@ -26,7 +45,16 @@
           {
             "patterns": [
               {
-                "group": ["@/game/render/*", "@/hooks/*", "@/views/*", "react", "react-dom"],
+                "group": [
+                  "@/game/render",
+                  "@/game/render/*",
+                  "@/hooks",
+                  "@/hooks/*",
+                  "@/views",
+                  "@/views/*",
+                  "react",
+                  "react-dom"
+                ],
                 "message": "game/core va game/ai la TypeScript thuan: khong DOM, khong React, khong render (bat bien 4)."
               }
             ]

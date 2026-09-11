@@ -1,5 +1,6 @@
 'use client';
 
+// libs
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,6 +9,7 @@ import {
   Crosshair,
   X,
 } from 'lucide-react';
+// others
 import { strings } from '@/lib/strings';
 
 const NAV =

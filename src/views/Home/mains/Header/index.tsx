@@ -1,4 +1,6 @@
+// libs
 import { Settings2, Volume2, VolumeX } from 'lucide-react';
+// others
 import { strings } from '@/lib/strings';
 
 /** Wordmark: một `X` mực và một `O` mực — cùng hai hình mang thông tin trên bàn. */

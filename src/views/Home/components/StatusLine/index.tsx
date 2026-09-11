@@ -1,4 +1,6 @@
+// types
 import type { GameState } from '@/game/core/types';
+// others
 import { strings } from '@/lib/strings';
 
 /** Glyph `X`/`O` là SVG, không phải ký tự — MASTER.md §9 cấm dingbat làm icon. */
