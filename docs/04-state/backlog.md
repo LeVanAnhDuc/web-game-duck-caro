@@ -23,7 +23,7 @@ KHÔNG chứa: tính năng ngoài phạm vi (-> 01-product/overview.md §Non-Goa
 [`docs/specs/v2/plan.md`](../specs/v2/plan.md) — **đọc file đó trước**, nó có checkbox;
 thiết kế ở [`design.md`](../specs/v2/design.md); năm quyết định ở ADR-0024 … ADR-0028.
 
-Đang ở: **code xong, đã nhìn tận mắt, code review xong và đã sửa hết.** 317 unit test · 27 E2E (chạy hai lượt lặp: 54/54). Còn lại: mở PR và đóng nhánh.
+Đang ở: **code xong, đã nhìn tận mắt, code review xong và đã sửa hết.** 317 unit test · 27 E2E (chạy hai lượt lặp: 54/54). Đã push `feat/v2-hotseat-rule-theme-pieces` lên origin (7 commit). Còn lại: mở PR bằng tay — `gh` chưa cài trên máy này.
 
 **Hai Non-Goal đã được gỡ có chủ đích** (`overview.md` §4): hot-seat, và luật ngoài caro
 Việt. Đây là cuộc bàn về phạm vi, không phải một lần bỏ qua tài liệu. Đổi lại §4 nhận một
