@@ -2,7 +2,7 @@
 
 > **Trả lời:** Đang làm gì, tiếp theo làm gì, và đang nợ những gì?
 > **Trạng thái:** 🟢 đủ
-> **Cập nhật:** 2026-09-11 · commit —
+> **Cập nhật:** 2026-09-11 · commit — *(mốc 8 mở)*
 > **Cập nhật khi:** bắt đầu/kết thúc một việc · brainstorm ra việc mới · cố ý đi đường tắt
 
 <!-- CÁCH ĐIỀN
@@ -17,6 +17,27 @@ KHÔNG chứa: tính năng ngoài phạm vi (-> 01-product/overview.md §Non-Goa
 -->
 
 ## Đang làm
+
+**Mốc 8 — v2: hot-seat · luật thắng · giao diện · bộ quân** (2026-09-11, nhánh
+`feat/v2-hotseat-rule-theme-pieces`). Kế hoạch và trạng thái từng task nằm ở
+[`docs/specs/v2/plan.md`](../specs/v2/plan.md) — **đọc file đó trước**, nó có checkbox;
+thiết kế ở [`design.md`](../specs/v2/design.md); năm quyết định ở ADR-0024 … ADR-0028.
+
+Đang ở: **tài liệu đã xong, chưa viết dòng code nào.** Task kế tiếp là **1.1** —
+`core/types.ts`.
+
+**Hai Non-Goal đã được gỡ có chủ đích** (`overview.md` §4): hot-seat, và luật ngoài caro
+Việt. Đây là cuộc bàn về phạm vi, không phải một lần bỏ qua tài liệu. Đổi lại §4 nhận một
+Non-Goal mới bó chính chế độ vừa mở: hai cái ghế, không tên người chơi, không đồng hồ,
+không thống kê riêng.
+
+**Đây là đợt phá cấu trúc lưu duy nhất còn rẻ.** `STORAGE_VERSION` lên `v2`, dữ liệu `v1`
+bị bỏ theo ADR-0006 — commit `feat!:`, release major. Lần đổi cấu trúc **kế tiếp** là lần
+phải trả nợ migrate, xem §Nợ kỹ thuật.
+
+**Đang chặn:** không có gì.
+
+---
 
 **Áp bộ quy ước code rút từ `quapp-developer-frontend`** (2026-09-11, nhánh
 `refactor/code-conventions`). 22 rule nằm ở [`docs/03-design/code-conventions.md`](../03-design/code-conventions.md),
@@ -64,8 +85,6 @@ Hai lần tôi tự đo **sai** trong lát này, ghi ra vì cả hai đều là 
 chưa làm: `NFR-PERF-05` và `NFR-PERF-07` cần một **điện thoại thật**, và không có thiết bị.
 Đo trên máy dev một mình đúng là cái mà `overview.md` §6 chỉ tên là chưa đủ.
 
-**Đang chặn:** không có gì.
-
 ## Việc tiếp theo
 
 | Việc | Liên quan | Ưu tiên | Vì sao ưu tiên đó |
@@ -83,6 +102,8 @@ chưa làm: `NFR-PERF-05` và `NFR-PERF-07` cần một **điện thoại thật
 | `ai/patterns.ts` dựng chuỗi ký tự rồi tra regex cho mỗi hướng, mỗi ứng viên, mỗi nút | Đây là chỗ tốn gần như toàn bộ thời gian search (~1ms một nút) | Đã đủ để `NFR-PERF-06` đạt sau khi thu hẹp bề rộng. Tối ưu thêm bây giờ là tối ưu thứ chưa ai đo là thiếu | Khi cần độ sâu hơn 6, hoặc khi bề rộng 10/5 tỏ ra bỏ sót đòn hay |
 | `core/game.applyMove` dựng lại bàn mỗi lần gọi — `O(n)` mỗi nước | Vài chục nghìn phép chèn Map cho một ván dài | **Chưa đo thấy**, và tối ưu trước khi đo là thêm phức tạp đổi lấy một con số chưa ai thấy | Khi đo `NFR-PERF-05` thấy nó xuất hiện trong profile |
 | `.github/workflows/ci.yml` — bước `yarn audit` có `|| true` | Lỗ hổng mức high không làm đỏ CI, chỉ hiện trong log | Yarn classic không có cờ lọc theo mức để chặn đúng ngưỡng của `NFR-SEC-05` | Khi chuyển sang một trình audit chặn được theo mức, hoặc khi có lỗ hổng high thật |
+| Ván **hot-seat không vào thống kê** (FR-12 vẫn ba ô theo mức khó) | Chơi hai người bao nhiêu ván cũng không để lại dấu vết nào | Không mức khó nào đúng cho một ván không có máy tham gia, và `overview.md` §4 đã ghi "không thống kê riêng cho hot-seat" là Non-Goal | Khi có người hỏi "tôi thắng bạn tôi mấy ván" — lúc đó nó là một tính năng, không phải một ô còn thiếu |
+| Ván đấu máy ở luật `free` **đổ chung ô** với luật `blocked` (ADR-0025) | Con số thống kê trộn hai luật, nên nó không đo được "mức khó phân tách thật" của `overview.md` §6 nữa | Tách theo luật là 6 ô, phải dựng lại cả màn thống kê trong một đợt đã chạm 25 file | Ngay trước lần đo tiêu chí thành công số 1 của sản phẩm — phép đo đó cần ô sạch |
 | Dữ liệu lưu không migrate giữa các version khoá (ADR-0006) | Đổi cấu trúc lưu là mất ván đang chơi và mất thống kê | v1 chưa có người chơi thật để mất dữ liệu | Ngay trước lần đổi cấu trúc lưu đầu tiên sau khi game có người chơi thật |
 | ADR-0002 và ADR-0007 mang chữ đã lỗi (`Stone`, "giao điểm") | Người đọc hai ADR đó phải đọc kèm ADR-0009 | `decisions/README.md` quy định ADR `accepted` là append-only. Một bản ghi sửa được thì không còn là bản ghi | Không bao giờ — đây là cái giá cố định của append-only, ghi ở đây để không ai "dọn" nó |
 | Resize cửa sổ có thể đẩy thế trận ra ngoài khung nhìn | Người chơi phải bấm "Giữa" để thấy lại. **Nút đó phải có MỌI CHẾ ĐỘ** — mốc 5 từng ẩn nó trong chế độ xem lại và làm người chơi mắc kẹt | Tự dịch khung nhìn khi resize là giật màn hình của người đang chơi — cái đó tệ hơn | Nếu người chơi phản hồi rằng bàn "biến mất" sau khi quay ngang máy |

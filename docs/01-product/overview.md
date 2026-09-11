@@ -2,7 +2,7 @@
 
 > **Trả lời:** Sản phẩm này là gì, cho ai, và **KHÔNG** làm gì?
 > **Trạng thái:** 🟢 đủ
-> **Cập nhật:** 2026-09-03 · commit —
+> **Cập nhật:** 2026-09-11 · commit —
 > **Cập nhật khi:** định vị đổi · thêm/bớt một Non-Goal · trần chi phí đổi
 
 <!-- CÁCH ĐIỀN
@@ -19,9 +19,10 @@ KHÔNG chứa: danh sách tính năng (-> 02-requirements/scope.md), ngưỡng k
 
 ## 1. Một câu định vị
 
-Duck Caro là game caro đánh với máy, mở link là chơi được ngay — không đăng nhập,
-không chờ ghép đối thủ, và bàn **không có biên** như đánh trên vở ô li, khác với các
-trang caro online vốn khoá bàn ở 15×15 và bắt tạo tài khoản trước khi vào ván đầu.
+Duck Caro là game caro mở link là chơi được ngay — đánh với máy hoặc với người ngồi
+cạnh, không đăng nhập, không chờ ghép đối thủ, và bàn **không có biên** như đánh trên
+vở ô li, khác với các trang caro online vốn khoá bàn ở 15×15 và bắt tạo tài khoản trước
+khi vào ván đầu.
 
 ## 2. Vấn đề đang giải
 
@@ -38,19 +39,28 @@ Người đã biết đánh caro, muốn chơi nhanh vài ván một mình, trê
 trên máy tính giữa hai việc. **Nhóm chính là người chơi giải trí** — họ cần vào ván
 trong vài giây và cần một đối thủ vừa sức, không cần một engine mạnh.
 
+Nhóm thứ hai, mở từ 2026-09-11: **hai người ngồi cạnh nhau chuyền tay một máy.** Cùng
+người đó, chỉ khác là lúc này có bạn — nên họ không cần thêm gì ngoài một bàn cờ và một
+chỉ dấu rõ ràng đang tới lượt ai (ADR-0028).
+
 Không nhắm người chơi thi đấu: họ cần luật quốc tế, cần bàn chuẩn và cần đối thủ người
 thật, ba thứ đều nằm trong Non-Goals.
 
 ## 4. Non-Goals — dứt khoát không làm
 
-- **Không chơi hai người trên cùng một máy (hot-seat).** Mỗi chế độ chơi là một luồng
-  UI và một tập test riêng; v1 chỉ trả lời đúng một câu: đánh với máy.
 - **Không chơi online với người khác.** Không server, không signaling, không ghép cặp —
-  vì trần chi phí hạ tầng là 0đ và mọi hình thức online đều phá trần đó.
+  vì trần chi phí hạ tầng là 0đ và mọi hình thức online đều phá trần đó. *(Chơi hai
+  người **trên cùng một máy** thì có — xem mục dưới.)*
+- **Chế độ hai người dừng ở đúng hai cái ghế.** Không đặt tên người chơi — chỉ "Người 1"
+  và "Người 2"; không đồng hồ đếm giờ; không thống kê riêng cho hot-seat. Cả ba đều
+  nghe hợp lý và cả ba đều kéo theo trạng thái phải lưu, phải hiển thị và phải test,
+  đổi lấy một thứ mà hai người ngồi cạnh nhau tự biết.
 - **Không có tài khoản, đăng nhập hay xếp hạng toàn cầu ở v1.** Chỉ chừa sẵn ranh giới
   lưu trữ để ghép Ducker ID về sau (ADR-0006), không viết code danh tính nào bây giờ.
-- **Không có luật thi đấu quốc tế** — không free-style, không renju, không luật cấm cho
-  quân đi trước. v1 có đúng một luật: caro Việt chặn hai đầu (ADR-0003).
+- **Không có luật thi đấu quốc tế** — không renju, không luật cấm cho quân đi trước,
+  không đổi độ dài chuỗi thắng. Có đúng **hai** luật, chọn khi bắt đầu ván: caro Việt
+  chặn hai đầu (ADR-0003) và tự do (ADR-0025). Luật thứ ba cần một tầng cấu hình thật,
+  không phải thêm một nhánh `if`.
 - **Không cho chọn bàn kích thước cố định.** Bàn luôn vô hạn; thêm lựa chọn 15×15 sẽ
   làm thống kê phải tách theo kích thước và làm AI phải đúng với hai loại biên.
 - **Không có AI mạnh cỡ cao thủ.** Không threat-space search, không VCF/VCT (ADR-0004) —

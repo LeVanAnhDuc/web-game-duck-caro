@@ -31,6 +31,11 @@
 | [ADR-0021](0021-sound-is-synthesised-and-silence-is-valid.md) | Âm thanh tổng hợp bằng WebAudio, và im lặng là một trạng thái hợp lệ | 2026-09-08 | accepted |
 | [ADR-0022](0022-e2e-runs-against-the-static-build.md) | E2E chạy trên bản build tĩnh, không trên dev server | 2026-09-08 | accepted |
 | [ADR-0023](0023-adopt-the-quapp-view-conventions.md) | Nhận quy ước tầng view của `quapp-developer-frontend`, bác phần thuộc về tầng dữ liệu | 2026-09-11 | accepted |
+| [ADR-0024](0024-side-is-a-seat-and-a-controller-sits-in-it.md) | `Side` là cái GHẾ; ai điều khiển ghế là một khái niệm riêng | 2026-09-11 | accepted |
+| [ADR-0025](0025-the-win-rule-is-a-parameter-frozen-per-game.md) | Luật thắng là một tham số, đông cứng theo từng ván, và engine phải biết nó | 2026-09-11 | accepted |
+| [ADR-0026](0026-theme-is-three-states-resolved-before-first-paint.md) | Giao diện có ba trạng thái, và được quyết TRƯỚC lần vẽ đầu tiên | 2026-09-11 | accepted |
+| [ADR-0027](0027-a-piece-set-is-a-pair-of-shapes-never-a-pair-of-colours.md) | Một bộ quân là một cặp HÌNH; màu quân không đổi theo bộ | 2026-09-11 | accepted |
+| [ADR-0028](0028-a-two-seat-bar-replaces-the-status-line.md) | Thanh hai ghế thay `StatusLine`, dùng chung cho cả hai chế độ | 2026-09-11 | accepted |
 <!-- END:auto -->
 
 Trạng thái: `accepted` · `superseded by ADR-00xx` · `deprecated`

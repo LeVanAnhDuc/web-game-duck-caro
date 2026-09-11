@@ -1,8 +1,9 @@
 # Yêu cầu phi chức năng
 
 > **Trả lời:** Ngưỡng nào áp cho **mọi** feature, để không phải nhắc lại từng lần?
-> **Trạng thái:** 🟢 đủ — mọi ngưỡng đã có số đo, trừ NFR-PERF-05 và NFR-PERF-07 còn thiếu một lần đo trên điện thoại THẬT
-> **Cập nhật:** 2026-09-08 · commit —
+> **Trạng thái:** 🟡 một phần — NFR-PERF-05 · NFR-PERF-07 còn thiếu một lần đo trên điện thoại THẬT;
+> NFR-PERF-06 có số cho luật `blocked` nhưng **chưa đo luật `free`**; NFR-A11Y-07 và NFR-PERF-10 mới cấp, chưa đo
+> **Cập nhật:** 2026-09-11 · commit —
 > **Cập nhật khi:** thêm loại tài nguyên mới · thêm nhóm người dùng · sau sự cố sinh ra ngưỡng mới
 
 <!-- CÁCH ĐIỀN
@@ -31,10 +32,11 @@ tái dùng một ID cũ cho một ý nghĩa mới, vì `grep` sẽ trả về c�
 | NFR-PERF-03 | ~~(bỏ)~~ truy vấn N+1 — không có datastore | — |
 | NFR-PERF-04 | ~~(bỏ)~~ index cho cột filter/sort — không có bảng nào | — |
 | NFR-PERF-05 | Kéo và thu phóng bàn giữ 60fps trên máy tầm trung và trên một điện thoại thật | Performance panel của DevTools, ghi lại một lần kéo dài 5s |
-| NFR-PERF-06 | AI trả nước trong ngân sách của mức (Dễ 200ms · Thường 600ms · Khó 1500ms) ở ≥ 95% số nước. Đo 2026-09-04 trên thế bàn trung cuộc, 7 lượt mỗi mức: Dễ **8ms**/độ sâu 2 · Thường **118ms**/độ sâu 4 · Khó **1221ms**/độ sâu 6 (max 1616ms, vượt ~7% vì hạn giờ chỉ kiểm mỗi 128 nút — ADR-0014) | `stats.ms` worker trả về · bench chạy tay trên `search` |
+| NFR-PERF-06 | AI trả nước trong ngân sách của mức (Dễ 200ms · Thường 600ms · Khó 1500ms) ở ≥ 95% số nước. Đo 2026-09-04 trên thế bàn trung cuộc, 7 lượt mỗi mức: Dễ **8ms**/độ sâu 2 · Thường **118ms**/độ sâu 4 · Khó **1221ms**/độ sâu 6 (max 1616ms, vượt ~7% vì hạn giờ chỉ kiểm mỗi 128 nút — ADR-0014). **Đo lại cho CẢ HAI luật (ADR-0025)** — số ở trên là của luật `blocked`; luật `free` chưa đo. | `stats.ms` worker trả về · bench chạy tay trên `search`, chạy hai lượt một luật |
 | NFR-PERF-07 | AI không chiếm main thread quá một frame (16ms) liên tục — mọi việc nặng nằm trong Worker | Performance panel: không có long task nào trên main thread khi AI đang nghĩ |
 | NFR-PERF-08 | First Load JS ≤ **150 kB**. Đo: mốc 4 **114 kB** · mốc 5 **116 kB** · mốc 6 **118 kB** (2026-09-08) | `next build` rồi đọc cột First Load JS |
 | NFR-PERF-09 | Lần tải đầu trên 4G mô phỏng: **LCP ≤ 2.5s** · **load ≤ 4.5s** · **truyền ≤ 700 kB**. Đo 2026-09-08 (5 lần, lấy trung vị): LCP **1.00s** · load **3.17s** · **526 kB**, và lần nào cũng chơi được ngay | `node e2e/measure-load.mjs --runs 5` trên bản build tĩnh (ADR-0022) |
+| NFR-PERF-10 | Trang hiện ra **đã đúng giao diện đã chọn**, không có khung nào vẽ bằng bảng màu kia. Chưa đo — mới cấp 2026-09-11 (ADR-0026) | `e2e`: đặt `localStorage` theme = `dark`, tải bản build tĩnh, đọc `documentElement.dataset.theme` ở `document-start` |
 
 NFR-PERF-08 đã có số thật từ `next build` (114 kB ở mốc 4, 116 kB ở mốc 5), và ngưỡng
 150 kB được chọn từ chính con số đó. NFR-PERF-09 giờ đã có số thật, và ngưỡng được chốt **SAU** khi đo chứ không trước —
@@ -71,7 +73,8 @@ nhìn nếu ngày nào ngưỡng này bị vượt.
 | NFR-A11Y-03 | **Sửa cho khớp bàn vô hạn (ADR-0007).** Mọi nút thật ≥ 44×44px. Ô trên bàn nhỏ hơn thế và không thể lớn hơn, nên bù bằng: hit-test bắt tâm ô gần nhất trong một bán kính rộng hơn ô, cộng bước xác nhận trên cảm ứng | Review mockup cho các nút · test hit-test ở nhiều mức phóng |
 | NFR-A11Y-04 | Mọi input trong cài đặt có label liên kết; thông báo đọc được bởi screen reader | Review |
 | NFR-A11Y-05 | Tôn trọng `prefers-reduced-motion` — camera nhảy thẳng thay vì trượt, không có animation thắng | Bật thiết lập rồi thử tay |
-| NFR-A11Y-06 | Canvas có nhãn, và có vùng `aria-live="polite"` đọc mỗi nước đi kèm toạ độ, cùng kết quả ván | Thử với screen reader một lượt |
+| NFR-A11Y-06 | Canvas có nhãn, và có vùng `aria-live="polite"` đọc mỗi nước đi kèm toạ độ, cùng kết quả ván. Ở hot-seat vùng này cũng đọc **ghế nào đang tới lượt** (ADR-0028) | Thử với screen reader một lượt |
+| NFR-A11Y-07 | **Mỗi bộ quân** (FR-20): hai hình phân biệt được khi ảnh bị **xám hoá**, và ở ô **16px** (`--cell-min`). Chưa đo — mới cấp 2026-09-11 (ADR-0027) | Chụp bàn ở mức phóng nhỏ nhất cho từng bộ, xám hoá, nhìn tận mắt · kiểm ở cả hai giao diện |
 
 ## i18n
 

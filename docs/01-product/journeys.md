@@ -2,7 +2,7 @@
 
 > **Trả lời:** Người dùng đi qua những luồng nào từ đầu đến cuối?
 > **Trạng thái:** 🟢 đủ
-> **Cập nhật:** 2026-09-03 · commit —
+> **Cập nhật:** 2026-09-11 · commit —
 > **Cập nhật khi:** có luồng người dùng mới · một luồng cũ đổi bản chất
 
 <!-- CÁCH ĐIỀN
@@ -122,3 +122,78 @@ tính là **bỏ ván** — vì mỗi kết quả phải thuộc về đúng m�
 - Bỏ ván không được đếm, khiến tổng số ván không khớp tổng thắng + thua.
 
 **Chức năng liên quan:** FR-05 · FR-12 · FR-13 · FR-16
+
+---
+
+## US-05 · Chơi hai người trên cùng một máy
+
+**Bối cảnh:** Hai người ngồi cạnh nhau, một cái điện thoại hoặc một cái laptop, chuyền
+tay nhau đánh. Không ai muốn tạo tài khoản, không ai muốn đợi ghép cặp.
+
+**Các bước:**
+
+1. Ở màn bắt đầu, chọn chế độ **Hai người**. Mục mức khó biến mất — không có máy nào để
+   đặt mức.
+2. Chọn luật thắng: caro Việt (chặn hai đầu thì không tính) hoặc tự do (chặn vẫn thắng).
+   Dòng giải thích bên dưới đổi theo lựa chọn, vì tên luật một mình không nói được luật.
+3. Chọn ai đi trước: Người 1 hay Người 2.
+4. Đánh luân phiên. Sau mỗi nước, chỉ dấu lượt đổi sang ghế kia, và quân xem trước ở con
+   trỏ đổi sang hình của ghế đó.
+5. Hoàn nước khi đánh nhầm — lùi **một** nước, tức trả lại đúng nước vừa đánh.
+6. Đánh tới khi một bên đủ năm quân theo luật đã chọn.
+
+**Kết quả mong đợi:** Ở bất kỳ thời điểm nào, cả hai người **nhìn một lần là biết đang
+tới lượt ai** — không phải đếm quân trên bàn, không phải nhớ ai vừa đánh. Kết thúc thì
+màn kết ván gọi đúng tên ghế thắng ("Người 1 thắng"), không gọi "Bạn thắng".
+
+**Điều gì có thể sai:**
+
+- Chỉ dấu lượt quá nhẹ nên cả hai cùng tưởng tới lượt mình, hoặc cùng tưởng không phải —
+  đây là lỗi đặc trưng và duy nhất của chế độ này, và là lý do ADR-0028 tồn tại.
+- **Hoàn nước lùi hai nước** theo quán tính của chế độ đấu máy, làm mất luôn nước của
+  người kia.
+- Người chơi đổi chế độ **giữa ván** — phải hỏi xác nhận, giống cách đổi mức khó ở US-04.
+- Gợi ý được bấm ở chế độ hai người: nó dùng engine mức Khó (ADR-0016), nên người bấm
+  được lợi thế mà người kia không biết là có.
+- Ván hot-seat bị ghi vào thống kê của một mức khó nào đó — không mức nào đúng, vì không
+  có máy nào tham gia.
+- Mở lại tab: ván hot-seat đang dở phải tiếp tục ở đúng chế độ, đúng luật, đúng lượt —
+  và **không** được gọi engine cho ghế thứ hai.
+- Điện thoại đặt giữa bàn nên Người 2 ngồi đối diện đọc chữ ngược. Đã cân nhắc và **không**
+  xoay nhãn (ADR-0028) — cảnh dùng được thiết kế cho là chuyền tay, không phải đặt giữa.
+
+**Chức năng liên quan:** FR-17 · FR-18 · FR-02 · FR-03 · FR-07 · FR-11 · FR-13
+
+---
+
+## US-06 · Chỉnh giao diện cho hợp mắt
+
+**Bối cảnh:** Người chơi buổi tối, đèn đã tắt, màn hình sáng quá. Hoặc: máy để chế độ
+sáng nhưng muốn xem bản tối. Hoặc chỉ là muốn quân cờ trông khác đi.
+
+**Các bước:**
+
+1. Mở cài đặt.
+2. Chọn giao diện: Sáng, Tối, hoặc Theo máy.
+3. Chọn bộ quân trong bốn bộ — mỗi ô xem trước vẽ đúng hai hình của bộ đó, không phải
+   một cái tên.
+4. Đóng cài đặt. Bàn đã đổi, ván đang chơi không bị ảnh hưởng.
+
+**Kết quả mong đợi:** Lựa chọn sống qua lần tải lại. Mở lại trang thì **không có cú nháy
+màu nào** — trang hiện ra đã đúng chế độ đã chọn. Đổi bộ quân không đổi kết quả ván nào,
+kể cả ván đang lưu.
+
+**Điều gì có thể sai:**
+
+- **Nháy sáng khi tải** với người chọn chế độ tối. Đây là lỗi dễ xảy ra nhất và khó thấy
+  nhất trên máy dev nhanh — ADR-0026 tồn tại vì nó.
+- Canvas không vẽ lại sau khi đổi theme: bảng màu của DOM đã đổi, quân trên bàn thì chưa.
+- Chọn "Theo máy" rồi người dùng đổi thiết lập của hệ điều hành trong lúc trang đang mở.
+- Trình duyệt chặn lưu trữ — lựa chọn không lưu được, và điều đó phải im lặng, mỗi lần
+  mở lại về mặc định.
+- Dữ liệu cài đặt hỏng, hoặc tên bộ quân không tồn tại (bản cũ, hoặc sửa tay trong
+  DevTools) — phải rơi về mặc định, không được vẽ ra ô trống.
+- Bộ quân mới không đọc được ở ô nhỏ nhất, hoặc hai hình của một bộ nhìn giống nhau khi
+  ảnh bị xám hoá.
+
+**Chức năng liên quan:** FR-19 · FR-20 · FR-16
