@@ -173,13 +173,13 @@ The board has no edges, so moving around it is part of playing it.
 ## Commands
 
 ```bash
-yarn install
-yarn dev          # http://localhost:3000
-yarn test         # unit tests
-yarn e2e          # end-to-end, against the static build
-yarn typecheck
-yarn lint
-yarn build        # static export into out/
+pnpm install
+pnpm dev          # http://localhost:3000
+pnpm test         # unit tests
+pnpm e2e          # end-to-end, against the static build
+pnpm typecheck
+pnpm lint
+pnpm build        # static export into out/
 ```
 
 No environment variables are needed — see [`.env.example`](.env.example), which says so

@@ -15,17 +15,17 @@ file that talks about the other files.
 ## Commands
 
 ```bash
-yarn install
-yarn dev          # http://localhost:3000
-yarn test         # vitest, 253 unit tests
-yarn test:watch
-yarn e2e          # playwright, 19 tests against the STATIC BUILD (ADR-0022)
-yarn typecheck
-yarn lint
-yarn build        # static export into out/
+pnpm install
+pnpm dev          # http://localhost:3000
+pnpm test         # vitest, 253 unit tests
+pnpm test:watch
+pnpm e2e          # playwright, 19 tests against the STATIC BUILD (ADR-0022)
+pnpm typecheck
+pnpm lint
+pnpm build        # static export into out/
 ```
 
-`yarn build` locally produces a build with **no** `basePath`, so `out/` opens
+`pnpm build` locally produces a build with **no** `basePath`, so `out/` opens
 correctly from the filesystem. Only `.github/workflows/deploy.yml` sets
 `GITHUB_PAGES=true`, which is what turns on `basePath: '/web-game-duck-caro'`
 (ADR-0010). Do not set that variable by hand — see [`.env.example`](.env.example).
@@ -105,7 +105,7 @@ that command is the fix, not a change to the workflow.
 | `deploy.yml` | push to `main` | typecheck · test, then build and publish |
 | `release.yml` | push to `main` | typecheck · test, then compute the version and tag |
 
-`yarn e2e` builds first and serves `out/` — never the dev server. Next's dev overlay is a
+`pnpm e2e` builds first and serves `out/` — never the dev server. Next's dev overlay is a
 real element in the tab order, so an a11y test on `next dev` measures a focus tree that
 does not exist in production (ADR-0022, learned by pressing Tab and landing on
 `NEXTJS-PORTAL`).

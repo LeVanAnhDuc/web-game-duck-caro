@@ -20,24 +20,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: yarn
+          cache: pnpm
 
-      - run: yarn install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
       # Lint chay o day chu khong chi trong ci.yml: `build` bat duoc loi kieu
       # nhung khong bat vi pham lint, va mot push thang vao `main` khong di
       # qua pull request.
-      - run: yarn lint
-      - run: yarn typecheck
-      - run: yarn test
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
 
       # GITHUB_PAGES là thứ bật basePath `/web-game-duck-caro`. Không dùng NODE_ENV,
       # vì `next build` chạy ở máy nào cũng là production và khi đó `out/index.html`
       # mở bằng file:// sẽ hỏng hết đường dẫn asset.
-      - run: yarn build
+      - run: pnpm build
         env:
           GITHUB_PAGES: 'true'
 
