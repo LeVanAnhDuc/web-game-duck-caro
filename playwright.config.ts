@@ -36,12 +36,12 @@ export default defineConfig({
   ],
 
   webServer: {
-    // `npx serve` sẽ là một dependency nữa; `http-server` cũng vậy. Node tự phục vụ
+    // `pnpm dlx serve` sẽ là một dependency nữa; `http-server` cũng vậy. Node tự phục vụ
     // được `out/` bằng vài dòng, và một script trong repo là thứ đọc được, không phải
     // một hộp đen tải từ mạng lúc chạy test.
     // Cổng truyền qua ARGV: dự án này không đọc biến môi trường nào, và `.env.example`
     // nói đúng như thế — `docs-regen.sh` đối chiếu hai bên.
-    command: `yarn build && node e2e/serve-out.mjs ${PORT}`,
+    command: `pnpm build && node e2e/serve-out.mjs ${PORT}`,
     url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

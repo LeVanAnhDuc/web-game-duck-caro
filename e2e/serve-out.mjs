@@ -30,7 +30,7 @@ const TYPES = {
 };
 
 if (!existsSync(ROOT)) {
-  console.error(`khong thay ${ROOT} — chay \`yarn build\` truoc`);
+  console.error(`khong thay ${ROOT} — chay \`pnpm build\` truoc`);
   process.exit(1);
 }
 
