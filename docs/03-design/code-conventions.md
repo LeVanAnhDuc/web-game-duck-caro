@@ -432,7 +432,7 @@ file staged. Nên lint-staged vẫn còn chỗ trống thật.
 Nhưng **không thêm husky**: `.githooks/` đã là cơ chế hook của dự án (bật bằng
 `git config core.hooksPath .githooks`), và husky ghi đè đúng `core.hooksPath` đó — hai
 cái cùng lúc thì `commit-msg` im lặng ngừng chạy. Nếu muốn lint trước khi commit thì
-thêm một file `.githooks/pre-commit` gọi `yarn lint --fix` trên file staged, giữ nguyên
+thêm một file `.githooks/pre-commit` gọi `pnpm lint --fix` trên file staged, giữ nguyên
 một cơ chế.
 
 Lưu ý cả hai hook chỉ là phản hồi nhanh, không phải rào chắn — `core.hooksPath` không

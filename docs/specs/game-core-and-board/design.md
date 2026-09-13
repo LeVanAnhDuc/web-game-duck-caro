@@ -10,7 +10,7 @@ NFR-A11Y-03 · NFR-REL-02 · ADR-0001 · ADR-0002 · ADR-0003 · ADR-0007 · ADR
 
 ## 1. Lát này giao được cái gì
 
-Mở `yarn dev` là **đánh caro được với máy trong browser**: bàn vô hạn kéo và thu phóng
+Mở `pnpm dev` là **đánh caro được với máy trong browser**: bàn vô hạn kéo và thu phóng
 được, đánh quân theo đúng luật con trỏ của ADR-0007, máy đáp lại, và ván kết thúc đúng
 luật chặn hai đầu với nét gạch qua năm quân.
 

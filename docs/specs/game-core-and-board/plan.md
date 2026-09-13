@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Mở `yarn dev` là đánh được caro với máy trong browser: bàn vô hạn kéo và thu phóng được, đánh quân đúng luật con trỏ, máy đáp lại, ván kết thúc đúng luật chặn hai đầu.
+**Goal:** Mở `pnpm dev` là đánh được caro với máy trong browser: bàn vô hạn kéo và thu phóng được, đánh quân đúng luật con trỏ, máy đáp lại, ván kết thúc đúng luật chặn hai đầu.
 
 **Architecture:** `game/core` là TypeScript thuần không biết gì về DOM — luật chơi và máy trạng thái ván, `moves` là nguồn đúng, bàn là `Map` thưa dẫn xuất. `game/render` vẽ một khung lên canvas 2D qua một camera duy nhất. `game/ai` nằm sau interface `Engine` trả `Promise` ngay từ mốc này, để mốc 3 thay bằng Worker mà không sửa chỗ gọi. React chỉ xuất hiện ở `hooks/` và `views/`.
 
@@ -71,7 +71,7 @@ Test đặt cạnh nguồn, đúng như `web-game-flappy-bird`: `src/game/core/r
 
 **Interfaces:**
 - Consumes: không gì.
-- Produces: `strings` (object chuỗi tiếng Việt); các script `yarn dev` · `yarn build` · `yarn test` · `yarn typecheck` · `yarn lint`.
+- Produces: `strings` (object chuỗi tiếng Việt); các script `pnpm dev` · `pnpm build` · `pnpm test` · `pnpm typecheck` · `pnpm lint`.
 
 - [ ] **Step 1: Viết `package.json`**
 
@@ -113,7 +113,7 @@ Test đặt cạnh nguồn, đúng như `web-game-flappy-bird`: `src/game/core/r
 }
 ```
 
-Rồi `yarn install`. **Ghi lại version thật đã resolve** vào commit body — plan này viết khoảng caret, không khẳng định một patch nào tồn tại.
+Rồi `pnpm install`. **Ghi lại version thật đã resolve** vào commit body — plan này viết khoảng caret, không khẳng định một patch nào tồn tại.
 
 - [ ] **Step 2: Cấu hình Next cho static export**
 
@@ -370,12 +370,12 @@ describe('strings', () => {
 
 - [ ] **Step 10: Chạy để thấy nó fail**
 
-Run: `yarn test`
+Run: `pnpm test`
 Expected: FAIL — `Cannot find module './strings'` nếu Step 7 chưa xong; nếu đã xong thì PASS. Chạy trước khi hoàn tất Step 7 để thấy nhánh đỏ một lần.
 
 - [ ] **Step 11: Chạy đủ bốn cửa**
 
-Run: `yarn typecheck && yarn lint && yarn test && yarn build`
+Run: `pnpm typecheck && pnpm lint && pnpm test && pnpm build`
 Expected: cả bốn PASS, và `out/index.html` tồn tại sau `build`.
 
 - [ ] **Step 12: Commit**
@@ -476,7 +476,7 @@ describe('boundsOf', () => {
 
 - [ ] **Step 2: Chạy để thấy fail**
 
-Run: `yarn vitest run src/game/core/board.test.ts`
+Run: `pnpm exec vitest run src/game/core/board.test.ts`
 Expected: FAIL — `Failed to resolve import "./board"`.
 
 - [ ] **Step 3: Viết `types.ts`**
@@ -568,7 +568,7 @@ export function boundsOf(
 
 - [ ] **Step 5: Chạy để thấy pass**
 
-Run: `yarn vitest run src/game/core/board.test.ts && yarn typecheck`
+Run: `pnpm exec vitest run src/game/core/board.test.ts && pnpm typecheck`
 Expected: PASS, 6 test.
 
 - [ ] **Step 6: Commit**
@@ -709,7 +709,7 @@ describe('winningLine — luật caro Việt (ADR-0003)', () => {
 
 - [ ] **Step 2: Chạy để thấy fail**
 
-Run: `yarn vitest run src/game/core/rules.test.ts`
+Run: `pnpm exec vitest run src/game/core/rules.test.ts`
 Expected: FAIL — `Failed to resolve import "./rules"`.
 
 - [ ] **Step 3: Viết `rules.ts`**
@@ -777,7 +777,7 @@ export function winningLine(board: Board, at: Point): readonly Point[] | null {
 
 - [ ] **Step 4: Chạy để thấy pass**
 
-Run: `yarn vitest run src/game/core/rules.test.ts && yarn typecheck`
+Run: `pnpm exec vitest run src/game/core/rules.test.ts && pnpm typecheck`
 Expected: PASS, 12 test. Nếu ca "sáu quân bị chặn cả hai đầu" đỏ, hiện thực đang quét cửa sổ chứ không lấy đoạn cực đại.
 
 - [ ] **Step 5: Commit**
@@ -935,7 +935,7 @@ describe('resign', () => {
 
 - [ ] **Step 2: Chạy để thấy fail**
 
-Run: `yarn vitest run src/game/core/game.test.ts`
+Run: `pnpm exec vitest run src/game/core/game.test.ts`
 Expected: FAIL — `Failed to resolve import "./game"`.
 
 - [ ] **Step 3: Viết `game.ts`**
@@ -1001,7 +1001,7 @@ export function resign(state: GameState, by: Side): GameState {
 
 - [ ] **Step 4: Chạy để thấy pass**
 
-Run: `yarn vitest run src/game/core/game.test.ts && yarn typecheck`
+Run: `pnpm exec vitest run src/game/core/game.test.ts && pnpm typecheck`
 Expected: PASS, 11 test.
 
 - [ ] **Step 5: Commit**
@@ -1157,7 +1157,7 @@ describe('fitToMoves', () => {
 
 - [ ] **Step 2: Chạy để thấy fail**
 
-Run: `yarn vitest run src/game/render/camera.test.ts`
+Run: `pnpm exec vitest run src/game/render/camera.test.ts`
 Expected: FAIL — `Failed to resolve import "./camera"`.
 
 - [ ] **Step 3: Viết `camera.ts`**
@@ -1249,7 +1249,7 @@ export function fitToMoves(
 
 - [ ] **Step 4: Chạy để thấy pass**
 
-Run: `yarn vitest run src/game/render/camera.test.ts && yarn typecheck`
+Run: `pnpm exec vitest run src/game/render/camera.test.ts && pnpm typecheck`
 Expected: PASS, 10 test. Test đi qua lại chạy 4 mức phóng × 3 gốc × 4 ô = 48 lần khẳng định.
 
 - [ ] **Step 5: Commit**
@@ -1335,7 +1335,7 @@ describe('visibleCellRange — chỉ cửa sổ đang thấy, không phải mọ
 
 - [ ] **Step 2: Chạy để thấy fail**
 
-Run: `yarn vitest run src/game/render/palette.test.ts`
+Run: `pnpm exec vitest run src/game/render/palette.test.ts`
 Expected: FAIL — `Failed to resolve import "./palette"`.
 
 - [ ] **Step 3: Viết `palette.ts`**
@@ -1537,7 +1537,7 @@ Lớp phủ (quân xem trước, vòng nước cuối, nét gạch thắng) là 
 
 - [ ] **Step 7: Chạy để thấy pass**
 
-Run: `yarn vitest run src/game/render/palette.test.ts && yarn typecheck && yarn lint`
+Run: `pnpm exec vitest run src/game/render/palette.test.ts && pnpm typecheck && pnpm lint`
 Expected: PASS, 4 test.
 
 - [ ] **Step 8: Commit**
@@ -1635,7 +1635,7 @@ export function makeRng(seed: number): Rng {
 
 - [ ] **Step 3: Chạy**
 
-Run: `yarn vitest run src/game/ai/rng.test.ts`
+Run: `pnpm exec vitest run src/game/ai/rng.test.ts`
 Expected: PASS, 3 test.
 
 - [ ] **Step 4: Viết test cho `greedy` — hai hành vi bắt buộc**
@@ -1707,7 +1707,7 @@ describe('greedy engine', () => {
 
 - [ ] **Step 5: Chạy để thấy fail**
 
-Run: `yarn vitest run src/game/ai/greedy.test.ts`
+Run: `pnpm exec vitest run src/game/ai/greedy.test.ts`
 Expected: FAIL — `Failed to resolve import "./greedy"`.
 
 - [ ] **Step 6: Viết `Engine.ts`**
@@ -1817,7 +1817,7 @@ export function createGreedyEngine(rng: Rng): Engine {
 
 - [ ] **Step 8: Chạy để thấy pass**
 
-Run: `yarn vitest run src/game/ai/ && yarn typecheck`
+Run: `pnpm exec vitest run src/game/ai/ && pnpm typecheck`
 Expected: PASS, 7 test.
 
 - [ ] **Step 9: Commit**
@@ -1972,7 +1972,7 @@ describe('useGame', () => {
 
 - [ ] **Step 2: Chạy để thấy fail**
 
-Run: `yarn vitest run src/hooks/useGame.test.tsx`
+Run: `pnpm exec vitest run src/hooks/useGame.test.tsx`
 Expected: FAIL — `Failed to resolve import "./useGame"`.
 
 - [ ] **Step 3: Viết `useGame.ts`**
@@ -2096,7 +2096,7 @@ export function useGame(engine: Engine, opts: { first: Side; level: Level }): Us
 
 - [ ] **Step 5: Chạy để thấy pass**
 
-Run: `yarn vitest run src/hooks/ && yarn typecheck`
+Run: `pnpm exec vitest run src/hooks/ && pnpm typecheck`
 Expected: PASS, 6 test.
 
 - [ ] **Step 6: Commit**
@@ -2175,7 +2175,7 @@ describe('nhận dạng tap so với kéo', () => {
 
 - [ ] **Step 2: Chạy để thấy fail**
 
-Run: `yarn vitest run src/hooks/pointerGesture.test.ts`
+Run: `pnpm exec vitest run src/hooks/pointerGesture.test.ts`
 Expected: FAIL — `Failed to resolve import "./pointerGesture"`.
 
 - [ ] **Step 3: Viết `pointerGesture.ts`**
@@ -2211,7 +2211,7 @@ export const isDrag = (g: Gesture): boolean => g.travelled > DRAG_THRESHOLD_PX;
 
 - [ ] **Step 4: Chạy để thấy pass**
 
-Run: `yarn vitest run src/hooks/pointerGesture.test.ts`
+Run: `pnpm exec vitest run src/hooks/pointerGesture.test.ts`
 Expected: PASS, 4 test.
 
 - [ ] **Step 5: Viết `useBoardCanvas.ts`**
@@ -2390,7 +2390,7 @@ export function useBoardCanvas(args: {
 
 - [ ] **Step 6: Chạy các cửa**
 
-Run: `yarn typecheck && yarn lint && yarn test`
+Run: `pnpm typecheck && pnpm lint && pnpm test`
 Expected: tất cả PASS.
 
 - [ ] **Step 7: Commit**
@@ -2683,7 +2683,7 @@ export default function Page() {
 
 - [ ] **Step 8: Chạy các cửa và mở app**
 
-Run: `yarn typecheck && yarn lint && yarn test && yarn dev`
+Run: `pnpm typecheck && pnpm lint && pnpm test && pnpm dev`
 Expected: mở `http://localhost:3000`, chọn mức, bấm Bắt đầu, đánh được quân, máy đáp lại, kéo và lăn chuột được.
 
 - [ ] **Step 9: Commit**
@@ -2762,7 +2762,7 @@ describe('winStrokePath', () => {
 
 - [ ] **Step 2: Chạy để thấy fail**
 
-Run: `yarn vitest run src/game/render/layers/overlay.test.ts`
+Run: `pnpm exec vitest run src/game/render/layers/overlay.test.ts`
 Expected: FAIL — `Failed to resolve import "./overlay"`.
 
 - [ ] **Step 3: Viết `overlay.ts`**
@@ -2889,7 +2889,7 @@ Trong `useBoardCanvas.ts`, effect vẽ thêm hai trường và thêm `preview` v
 
 - [ ] **Step 6: Chạy để thấy pass**
 
-Run: `yarn vitest run src/game/render/ && yarn typecheck && yarn lint`
+Run: `pnpm exec vitest run src/game/render/ && pnpm typecheck && pnpm lint`
 Expected: PASS, 7 test.
 
 - [ ] **Step 7: Commit**
@@ -2924,7 +2924,7 @@ Task này không viết code trừ khi tìm ra lỗi. Nó là bước 5 của `f
 
 - [ ] **Step 1: Chạy app và chụp bốn khổ**
 
-Run: `yarn dev`, rồi lái bằng Playwright hoặc chrome-devtools MCP: chụp ở **375 · 768 · 1024 · 1440**.
+Run: `pnpm dev`, rồi lái bằng Playwright hoặc chrome-devtools MCP: chụp ở **375 · 768 · 1024 · 1440**.
 Expected: bố cục khớp mockup đã duyệt; không cuộn ngang ở 375; sheet kết ván không che chuỗi thắng.
 
 - [ ] **Step 2: Đi hết một ván thật**

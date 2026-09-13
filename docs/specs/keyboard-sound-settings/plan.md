@@ -171,7 +171,7 @@ tạo `src/views/Home/mains/CursorLive/index.tsx` + test
       thắng, thua. Mức khó mặc định lấy từ cài đặt. `CursorLive` đặt cạnh `StatusLine`.
 - [ ] **B5.** `StartOverlay`: bỏ nút xoá dữ liệu (đã chuyển sang cài đặt), mức khó khởi
       tạo từ `settings.defaultLevel`.
-- [ ] **B6.** `yarn typecheck && yarn lint && yarn test && yarn build` → xanh hết.
+- [ ] **B6.** `pnpm typecheck && pnpm lint && pnpm test && pnpm build` → xanh hết.
 - [ ] **B7.** Commit: `feat(views): keyboard play, sound and settings wired in`
 
 ---

@@ -28,7 +28,7 @@ dev-tools của Next là **một phần tử trong thứ tự Tab**. Đo a11y tr
 một cây focus không tồn tại ở production — lần đầu thử, `Tab` từ canvas nhảy vào
 `NEXTJS-PORTAL`.
 
-Nên: `yarn build` → phục vụ `out/` → chạy test. Đúng cái sẽ lên GitHub Pages (ADR-0001).
+Nên: `pnpm build` → phục vụ `out/` → chạy test. Đúng cái sẽ lên GitHub Pages (ADR-0001).
 
 Giá phải trả: mỗi lần chạy E2E kèm một lần build (~35s). Chấp nhận, vì cái rẻ hơn là
 cái đo sai.

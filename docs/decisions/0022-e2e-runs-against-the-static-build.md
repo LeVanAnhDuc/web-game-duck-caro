@@ -19,7 +19,7 @@ khác, và không có `basePath` của GitHub Pages.
 
 ## 2. Quyết định
 
-`playwright.config.ts` dùng `webServer` chạy `yarn build` rồi phục vụ `out/` tĩnh. E2E
+`playwright.config.ts` dùng `webServer` chạy `pnpm build` rồi phục vụ `out/` tĩnh. E2E
 luôn kiểm **đúng những byte sẽ lên GitHub Pages** (ADR-0001 · ADR-0010).
 
 ## 3. Phương án đã loại
