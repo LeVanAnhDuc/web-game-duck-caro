@@ -16,7 +16,7 @@ task mấy trên mấy.
 Không phụ thuộc gì. Mọi nhóm sau phụ thuộc nhóm này.
 
 - [x] **1.1** `core/types.ts`: `Side = 'one' | 'two'`, thêm `Controller`, `Mode`, `Rule`,
-      hằng `VS_AI` · `HOTSEAT`. Sửa `opponentOf`. Chưa sửa file nào khác — `yarn typecheck`
+      hằng `VS_AI` · `HOTSEAT`. Sửa `opponentOf`. Chưa sửa file nào khác — `pnpm typecheck`
       sẽ đỏ ở ~7 file, đó là danh sách việc của nhóm 2–4.
 - [x] **1.2** `core/rules.ts`: `winningLine(board, at, rule)`. Test **trước**: đoạn 5 bị
       chặn hai đầu → `null` ở `blocked`, → thắng ở `free`; đoạn 6 bị chặn hai đầu → cùng
@@ -25,7 +25,7 @@ Không phụ thuộc gì. Mọi nhóm sau phụ thuộc nhóm này.
       `winningLine`, `replay` giữ `rule`.
 - [x] **1.4** `core/game.ts`: `undo(state, mode)` lùi **1** nước khi cả hai ghế là
       `human`, **2** nước khi có `engine`. Test cả hai.
-- [x] **1.5** Chạy `yarn test` — 253 test cũ phải xanh lại sau khi đổi tên giá trị `Side`.
+- [x] **1.5** Chạy `pnpm test` — 253 test cũ phải xanh lại sau khi đổi tên giá trị `Side`.
       Test nào phải sửa nội dung (không chỉ đổi tên) thì **ghi lại vì sao** ở commit body.
 
 ## Nhóm 2 · Engine biết luật — 4 task
@@ -105,7 +105,7 @@ Phụ thuộc nhóm 4 · 5. Bố cục theo mockup đã duyệt (canvas Artifact
 
 - [x] **7.1** `lib/strings.ts`: rà `grep` mọi chuỗi còn giả định đối thủ là máy. Sửa
       `appTagline`. `NFR-I18N-01` — không chuỗi nào rơi ra ngoài file này.
-- [x] **7.2** `yarn typecheck` · `yarn lint` · `yarn test` xanh. Cập nhật số test trong
+- [x] **7.2** `pnpm typecheck` · `pnpm lint` · `pnpm test` xanh. Cập nhật số test trong
       `README.md` §Tech Stack.
 - [x] **7.3** E2E mới: chơi trọn một ván hot-seat; engine **không** được gọi.
 - [x] **7.4** E2E mới cho `NFR-PERF-10`: đặt theme `dark`, tải bản build tĩnh, đọc

@@ -24,14 +24,14 @@
 
 ### Task 1 · Hạ tầng E2E ✅
 
-- [x] `yarn add -D @playwright/test`, `npx playwright install chromium`
+- [x] `pnpm add -D @playwright/test`, `pnpm exec playwright install chromium`
 - [x] `e2e/serve-out.mjs` — phục vụ `out/` tĩnh, viết tay thay vì thêm dependency.
       Cổng lấy từ **argv**, không từ biến môi trường.
-- [x] `playwright.config.ts` — `webServer` = `yarn build && node e2e/serve-out.mjs`
+- [x] `playwright.config.ts` — `webServer` = `pnpm build && node e2e/serve-out.mjs`
       (ADR-0022). Chỉ Chromium.
 - [x] `e2e/helpers.ts` — `cellPosition`, `playAt`, `expectMoves`, `tabToCanvas`,
       `startGame`, `panelButton`
-- [x] Script `yarn e2e`; `.gitignore` thêm `test-results/`, `playwright-report/`
+- [x] Script `pnpm e2e`; `.gitignore` thêm `test-results/`, `playwright-report/`
 
 ### Task 2 · Các spec ✅
 
@@ -66,7 +66,7 @@
 - [x] `nfr.md` — `NFR-PERF-09` điền số và ngưỡng; `NFR-A11Y-02` trỏ tới file test thật;
       header đổi vì ô "chưa đo" cuối cùng đã được điền
 - [x] `README.md` — Commands, Tech Stack, Status "all 7 milestones"
-- [x] `CLAUDE.md` — `yarn e2e`, bảng cổng workflow, và vì sao không chạy trên dev server
+- [x] `CLAUDE.md` — `pnpm e2e`, bảng cổng workflow, và vì sao không chạy trên dev server
 - [x] `backlog.md` — mốc 7 xong; còn lại là những việc **cần người hoặc thiết bị**
 - [x] ADR-0022
 

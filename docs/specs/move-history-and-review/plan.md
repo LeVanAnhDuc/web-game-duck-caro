@@ -17,7 +17,7 @@ một trạng thái song song. Gợi ý tái dùng cơ chế quân xem trước 
 - Không hex mới; màu lấy từ biến CSS đã có (`MASTER.md` §9).
 - Test viết bằng `describe`/`it` tiếng Việt, `.ts` không JSX, hook test dùng
   `mountHook` kiểu `useGame.test.ts`.
-- Lệnh: `yarn test` · `yarn typecheck` · `yarn lint` · `yarn build`.
+- Lệnh: `pnpm test` · `pnpm typecheck` · `pnpm lint` · `pnpm build`.
 
 ---
 
@@ -41,7 +41,7 @@ export function placeConfirmButton(
   - ba cạnh kín → nút lên trên
   - cạnh phải trống nhưng tràn khung nhìn → bỏ qua, sang trái
   - bốn cạnh đều không dùng được → về mặc định bên phải (không ném)
-- [ ] **B2.** Chạy `yarn test src/game/render/layers/overlay.test.ts` → FAIL, chưa có hàm.
+- [ ] **B2.** Chạy `pnpm test src/game/render/layers/overlay.test.ts` → FAIL, chưa có hàm.
 - [ ] **B3.** Hiện thực. Dùng `cellToScreen` cho mọi phép đổi toạ độ (bất biến 11);
       tra quân bằng `Set` của `` `${x},${y}` `` dựng từ `moves`.
 - [ ] **B4.** Chạy lại → PASS.
@@ -58,7 +58,7 @@ export function placeConfirmButton(
 - [ ] **B1.** Bỏ phép tính `previewCorner.x + board.cam.cell + 8` inline; gọi
       `placeConfirmButton`. Kích thước khung lấy từ `canvasRef.current` (clientWidth/Height),
       `btn` là hằng số `{ w: 72, h: 44 }` khớp `min-h-11` + padding.
-- [ ] **B2.** `yarn typecheck` → sạch.
+- [ ] **B2.** `pnpm typecheck` → sạch.
 - [ ] **B3.** Commit: `refactor(views): board stage places the confirm button by rule`
 
 ---
@@ -73,7 +73,7 @@ export function placeConfirmButton(
 
 - [ ] **B1.** Thêm, giữ nguyên phong cách hiện có (hàm cho chuỗi có tham số).
       Tiếng Việt. `reviewPosition` trả `${n} / ${total}`.
-- [ ] **B2.** `yarn typecheck` → sạch. Commit: `feat(strings): strings for move list, review and hint`
+- [ ] **B2.** `pnpm typecheck` → sạch. Commit: `feat(strings): strings for move list, review and hint`
 
 ---
 
@@ -186,7 +186,7 @@ không `aria-current`. Có `onPick` → hàng cao 44px, `aria-current="true"` �
   - mobile: khi `reviewAt !== null` hiện sheet neo đáy chứa `MoveList` + `ReviewBar`
 - [ ] **B4.** `useBoardCanvas`: thêm `setPreview` vào giao diện trả về (hiện chỉ có
       `clearPreview`).
-- [ ] **B5.** `yarn typecheck && yarn lint && yarn test` → tất cả xanh.
+- [ ] **B5.** `pnpm typecheck && pnpm lint && pnpm test` → tất cả xanh.
 - [ ] **B6.** Commit: `feat(views): wire move list, review mode and hint into the screen`
 
 ---
@@ -201,7 +201,7 @@ không `aria-current`. Có `onPick` → hàng cao 44px, `aria-current="true"` �
 - [ ] **B3.** `decisions/README.md`: thêm ba dòng ADR-0016/0017/0018 vào bảng.
 - [ ] **B4.** `README.md` §Features: ba bullet tiếng Anh. Cập nhật số test trong Tech Stack
       bằng **con số vừa chạy ra**, và dòng milestone "1 to 5 of 7".
-- [ ] **B5.** `CLAUDE.md`: sửa `yarn test # vitest, 89 tests` thành số thật.
+- [ ] **B5.** `CLAUDE.md`: sửa `pnpm test # vitest, 89 tests` thành số thật.
 - [ ] **B6.** `backlog.md` §Đang làm: viết lại cho mốc 5.
 - [ ] **B7.** Commit: `docs: milestone 5 — move list, review, hint`
 
