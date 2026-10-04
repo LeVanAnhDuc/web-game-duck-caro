@@ -44,6 +44,8 @@ test.describe('cờ bật', () => {
     await page.getByRole('button', { name: 'Đăng nhập' }).click();
     const account = page.getByRole('button', { name: 'Tài khoản Ducker ID' });
     await expect(account).toBeVisible();
+    // Sau hydrate Next có thể ghi lại ?code&state — chờ ổn định rồi mới kiểm.
+    await page.waitForTimeout(500);
     expect(new URL(page.url()).search).not.toMatch(/code=|state=/);
     await account.click();
     await expect(page.getByText('Lê Văn Anh Đức')).toBeVisible();

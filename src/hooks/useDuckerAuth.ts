@@ -1,6 +1,7 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
+import { settleCallbackUrl } from '@/lib/ducker/auth';
 import { DUCKER_CONFIG } from '@/lib/ducker/config';
 import {
   getServerSnapshot,
@@ -25,6 +26,7 @@ export type UseDuckerAuth = AuthSnapshot & {
  */
 export function useDuckerAuth(): UseDuckerAuth {
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  useEffect(() => settleCallbackUrl(), []);
   return {
     ...snapshot,
     enabled: DUCKER_CONFIG !== null,

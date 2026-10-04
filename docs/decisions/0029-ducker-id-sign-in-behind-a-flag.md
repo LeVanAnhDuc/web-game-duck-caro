@@ -22,7 +22,7 @@ giữa chip mức khó và nút âm thanh trong `Header`. Cấu hình chỉ qua 
 tải lại là chưa đăng nhập. `OWNER_LOCAL` của ADR-0006 giữ nguyên (ngoài phạm vi).
 
 **Ngoại lệ NFR-SEC-07 (có giới hạn):** sessionStorage khoá `ducker.pkce` và nó bị xoá khi
-quay về; mạng chỉ tới issuer đã cấu hình, chỉ sau khi người chơi bấm "Đăng nhập"; cờ tắt
+quay về; mạng chỉ tới issuer đã cấu hình, và tới URL ảnh đại diện mà issuer trả về (có thể là host khác; không giới hạn ảnh), chỉ sau khi đăng nhập; cờ tắt
 thì không có gì. E2E `review-and-network.spec.ts` và `ducker-id-flag-off.spec.ts` giữ ngưỡng
 gốc trên bản cờ tắt.
 

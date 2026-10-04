@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   captureCallback,
   consumeCallback,
+  settleCallbackUrl,
   resetCaptureForTests,
   startLogin,
 } from '@/lib/ducker/auth';
@@ -79,6 +80,41 @@ describe('captureCallback', () => {
     resetCaptureForTests();
   });
 
+  it('settleCallbackUrl restores the clean URL after it was re-polluted', () => {
+    sessionStorage.setItem(
+      'ducker.pkce',
+      JSON.stringify({ state: 's1', verifier: 'v1', returnTo: '/?level=3' }),
+    );
+    window.history.replaceState(null, '', '/?code=c1&state=s1');
+    captureCallback();
+    window.history.replaceState(null, '', '/?level=3&code=c1&state=s1');
+    settleCallbackUrl();
+    expect(window.location.search).toBe('?level=3');
+  });
+
+  it('settleCallbackUrl is a no-op when there was no callback', () => {
+    window.history.replaceState(null, '', '/?level=2');
+    captureCallback();
+    window.history.replaceState(null, '', '/?other=1');
+    settleCallbackUrl();
+    expect(window.location.search).toBe('?other=1');
+  });
+
+  it('settleCallbackUrl is one-shot', () => {
+    sessionStorage.setItem(
+      'ducker.pkce',
+      JSON.stringify({ state: 's1', verifier: 'v1', returnTo: '/?level=3' }),
+    );
+    window.history.replaceState(null, '', '/?code=c1&state=s1');
+    captureCallback();
+    window.history.replaceState(null, '', '/?level=3&code=c1');
+    settleCallbackUrl();
+    expect(window.location.search).toBe('?level=3');
+    window.history.replaceState(null, '', '/?moved=1');
+    settleCallbackUrl();
+    expect(window.location.search).toBe('?moved=1');
+  });
+
   it('restores returnTo once and a second call is a no-op', () => {
     sessionStorage.setItem(
       'ducker.pkce',
@@ -140,6 +176,15 @@ describe('startLogin', () => {
     window.dispatchEvent(event);
     await startLogin(config);
     expect(assign).toHaveBeenCalledTimes(2);
+  });
+
+  it('removes the pending entry and re-arms the guard when the start fails', async () => {
+    const digest = vi.spyOn(crypto.subtle, 'digest').mockRejectedValueOnce(new Error('boom'));
+    await expect(startLogin(config)).rejects.toThrow('boom');
+    expect(sessionStorage.getItem('ducker.pkce')).toBeNull();
+    digest.mockRestore();
+    await startLogin(config);
+    expect(assign).toHaveBeenCalledTimes(1);
   });
 
   it('does not redirect when sessionStorage throws', async () => {

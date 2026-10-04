@@ -27,7 +27,7 @@ từ 768px. Chỉ biến CSS và Lucide, không màu mới.
 ## Ngoại lệ NFR
 
 NFR-SEC-07: sessionStorage khoá `ducker.pkce` (xoá khi quay về); mạng chỉ tới issuer đã
-cấu hình, chỉ sau khi bấm "Đăng nhập"; cờ tắt thì không có gì. Test mạng của game giữ
+cấu hình và tới URL ảnh đại diện nó trả về, chỉ sau khi đăng nhập; cờ tắt thì không có gì. Test mạng của game giữ
 nguyên trên bản cờ tắt.
 
 ## Hành vi
