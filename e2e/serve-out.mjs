@@ -6,7 +6,8 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve } from 'node:path';
 
-const ROOT = resolve(process.cwd(), 'out');
+// Thư mục phục vụ: argv[3], mặc định `out` (bản cờ tắt). `out-auth` là bản cờ bật cho E2E đăng nhập.
+const ROOT = resolve(process.cwd(), process.argv[3] ?? 'out');
 /*
  * CỔNG LẤY TỪ ARGV, không từ biến môi trường.
  *
