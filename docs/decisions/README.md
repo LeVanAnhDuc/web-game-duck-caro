@@ -36,6 +36,7 @@
 | [ADR-0026](0026-theme-is-three-states-resolved-before-first-paint.md) | Giao diện có ba trạng thái, và được quyết TRƯỚC lần vẽ đầu tiên | 2026-09-11 | accepted |
 | [ADR-0027](0027-a-piece-set-is-a-pair-of-shapes-never-a-pair-of-colours.md) | Một bộ quân là một cặp HÌNH; màu quân không đổi theo bộ | 2026-09-11 | accepted |
 | [ADR-0028](0028-a-two-seat-bar-replaces-the-status-line.md) | Thanh hai ghế thay `StatusLine`, dùng chung cho cả hai chế độ | 2026-09-11 | accepted |
+| [ADR-0029](0029-ducker-id-sign-in-behind-a-flag.md) | Đăng nhập Ducker ID tuỳ chọn, chỉ định danh, sau cờ và tắt ở bản deploy | 2026-10-04 | accepted |
 <!-- END:auto -->
 
 Trạng thái: `accepted` · `superseded by ADR-00xx` · `deprecated`

@@ -139,11 +139,11 @@ test canh thứ tự khởi động, phải chạy lặp.
 | --- | --- | --- |
 | NFR-SEC-01 | ~~(bỏ)~~ mutation kiểm quyền ở server — không có server | — |
 | NFR-SEC-02 | ~~(bỏ)~~ không log PII — không có log tập trung, và không có PII (xem NFR-DATA-01) | — |
-| NFR-SEC-03 | ~~(bỏ)~~ rate limit đăng nhập — không có đăng nhập | — |
+| NFR-SEC-03 | ~~(bỏ)~~ rate limit đăng nhập — game không có backend đăng nhập; đăng nhập Ducker ID tuỳ chọn (ADR-0029) do Ducker ID chịu | — |
 | NFR-SEC-04 | Không có secret nào trong repo hay trong bundle. Không hardcode, không commit | `grep` + review `.env.example` so với code |
 | NFR-SEC-05 | Dependency không có lỗ hổng mức high trở lên | Job `dependencies` trong `ci.yml` — `actions/dependency-review-action` với `fail-on-severity: high`. Ở máy: `pnpm audit --audit-level high` |
 | NFR-SEC-06 | ~~(bỏ)~~ lỗi trả client không chứa stack trace — không có lỗi từ server | — |
-| NFR-SEC-07 | Sau khi tải xong, trang không gửi request nào **ra ngoài origin của chính nó**. Không analytics, không telemetry, không font ngoài. Đo 2026-09-08 trên bản build tĩnh: **0 host ngoài**; font là woff2 tự phục vụ. Một chunk cùng origin (`953.js`) tải **sau** lần đầu, khi Worker khởi động — đó là code của chính app, không phải dữ liệu gửi đi | Network panel: mở game, chơi một ván, kiểm danh sách host |
+| NFR-SEC-07 | Sau khi tải xong, trang không gửi request nào **ra ngoài origin của chính nó**. Không analytics, không telemetry, không font ngoài. Đo 2026-09-08 trên bản build tĩnh: **0 host ngoài**; font là woff2 tự phục vụ. Một chunk cùng origin (`953.js`) tải **sau** lần đầu, khi Worker khởi động — đó là code của chính app, không phải dữ liệu gửi đi. **Ngoại lệ có giới hạn (ADR-0029):** khi cờ đăng nhập Ducker ID bật, sessionStorage khoá `ducker.pkce` (xoá khi quay về) và mạng CHỈ tới issuer đã cấu hình và tới URL ảnh đại diện mà issuer trả về (có thể là host khác), CHỈ sau khi người chơi bấm "Đăng nhập" và đăng nhập xong; cờ tắt (bản deploy) thì không có gì, và ngưỡng gốc giữ nguyên | Network panel: mở game, chơi một ván, kiểm danh sách host |
 
 ## Accessibility
 
@@ -187,8 +187,9 @@ test canh thứ tự khởi động, phải chạy lặp.
 
 | Trường | Nằm ở | Giữ bao lâu |
 | --- | --- | --- |
-| **Không có** — v1 không đăng nhập, không tên người dùng, không gửi gì ra ngoài (NFR-SEC-07) | — | — |
+| **Không có** trong bản deploy — không đăng nhập, không tên người dùng, không gửi gì ra ngoài (NFR-SEC-07) | — | — |
+| Tên, email, ảnh, `sub` từ Ducker ID — chỉ khi cờ đăng nhập bật (ADR-0029) | Bộ nhớ trang (một biến), không storage | Tới khi tải lại trang hoặc đăng xuất; không ghi đĩa, không gửi đi đâu |
 
-Bảng này **đã được rà**, không phải chưa điền. Điều kiện thay đổi: khi ghép Ducker ID
-(ADR-0006) sẽ xuất hiện `displayName` và một id người dùng — lúc đó bảng này phải được
-điền lại trước khi tính năng đăng nhập lên production.
+Bảng này **đã được rà**, không phải chưa điền. Điều kiện thay đổi: đăng nhập Ducker ID
+(ADR-0029) đang ở trạng thái shipped dark; hàng thứ hai phải được rà lại trước khi
+deploy truyền cờ.

@@ -26,9 +26,11 @@ pnpm build        # static export into out/
 ```
 
 `pnpm build` locally produces a build with **no** `basePath`, so `out/` opens
-correctly from the filesystem. Only `.github/workflows/deploy.yml` sets
-`GITHUB_PAGES=true`, which is what turns on `basePath: '/web-game-duck-caro'`
-(ADR-0010). Do not set that variable by hand — see [`.env.example`](.env.example).
+correctly from the filesystem. Only `.github/workflows/deploy.yml` (and the CI build)
+sets `NEXT_PUBLIC_BASE_PATH=/<repo>`, which is what turns on
+`basePath: '/web-game-duck-caro'` (ADR-0010, ADR-0029). Leave it empty locally — see
+[`.env.example`](.env.example), which also documents the optional Ducker ID sign-in
+flag (shipped dark, ADR-0029).
 
 ## Commit convention (REQUIRED — releases depend on it)
 

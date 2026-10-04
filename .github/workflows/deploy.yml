@@ -36,12 +36,15 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
 
-      # GITHUB_PAGES là thứ bật basePath `/web-game-duck-caro`. Không dùng NODE_ENV,
-      # vì `next build` chạy ở máy nào cũng là production và khi đó `out/index.html`
-      # mở bằng file:// sẽ hỏng hết đường dẫn asset.
+      # NEXT_PUBLIC_BASE_PATH là thứ bật basePath `/web-game-duck-caro`. Không dùng
+      # NODE_ENV, vì `next build` chạy ở máy nào cũng là production và khi đó
+      # `out/index.html` mở bằng file:// sẽ hỏng hết đường dẫn asset.
+      #
+      # Ducker ID sign-in is shipped dark: the flag and DUCKER_* vars are deliberately
+      # not passed (ADR-0029).
       - run: pnpm build
         env:
-          GITHUB_PAGES: 'true'
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
 
       # KHÔNG dùng `enablement: true`. Đã thử: GITHUB_TOKEN mặc định deploy được lên
       # một Pages site đã có, nhưng TẠO site thì "Resource not accessible by

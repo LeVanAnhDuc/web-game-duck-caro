@@ -110,6 +110,13 @@ export const strings = {
   settingsSound: 'Âm thanh',
   settingsDefaultLevel: 'Mức khó mặc định',
   settingsClose: 'Đóng',
+
+  /* --- Đăng nhập Ducker ID (tuỳ chọn, bật bằng cờ — ADR-0029) --- */
+  accountSignIn: 'Đăng nhập',
+  accountSigningIn: 'Đang đăng nhập…',
+  accountMenuLabel: 'Tài khoản Ducker ID',
+  accountOpenProfile: 'Mở hồ sơ Ducker ID',
+  accountSignOut: 'Đăng xuất',
   /* Bàn phím phải được DẠY ở đâu đó: Shift + mũi tên là quy ước không ai tự đoán ra
      (ADR-0020), và màn cài đặt là chỗ duy nhất còn trống để nói. */
   keyboardTitle: 'Bàn phím',

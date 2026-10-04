@@ -197,3 +197,32 @@ kể cả ván đang lưu.
   ảnh bị xám hoá.
 
 **Chức năng liên quan:** FR-19 · FR-20 · FR-16
+
+---
+
+## US-07 · Đăng nhập bằng Ducker ID (tuỳ chọn)
+
+**Bối cảnh:** Người chơi đã có tài khoản Ducker ID và muốn game nhận ra mình. Không ai bị
+buộc đăng nhập, và game chơi y như cũ dù có đăng nhập hay không. Tính năng chỉ hiện khi
+cờ bật — bản deploy hiện tại chưa bật.
+
+**Các bước:**
+
+1. Ở header bấm **Đăng nhập** — cả trang chuyển sang Ducker ID.
+2. Đăng nhập (hoặc chấp nhận) ở đó rồi quay lại đúng màn cũ, URL sạch.
+3. Header hiện avatar (chữ cái đầu nếu không có ảnh). Bấm vào để thấy tên, email, "Mở hồ
+   sơ Ducker ID" và "Đăng xuất".
+4. Esc, bấm ra ngoài hoặc Tab đóng menu. Đăng xuất đưa nút Đăng nhập về.
+
+**Kết quả mong đợi:** Chỉ có tên và avatar — không đồng bộ ván, không lưu gì. Tải lại
+trang là về trạng thái chưa đăng nhập.
+
+**Điều gì có thể sai:**
+
+- Từ chối hoặc huỷ ở Ducker ID: về lại chưa đăng nhập, không báo lỗi, URL sạch.
+- `state` bị sửa hoặc mở ở tab khác: bỏ qua mã, về chưa đăng nhập.
+- Ducker ID treo hoặc trả dữ liệu hỏng: quá 15 giây hoặc sai hình dạng thì về chưa đăng nhập.
+- Màn hình 375px: nút không đè lên chip mức khó, âm thanh, cài đặt.
+
+**Chức năng liên quan:** FR-21
+
