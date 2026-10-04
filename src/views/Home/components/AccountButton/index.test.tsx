@@ -158,6 +158,19 @@ describe('AccountButton', () => {
     expect(container.querySelectorAll('[role="menu"] p')).toHaveLength(1);
   });
 
+  it('a focusout with a null relatedTarget keeps the menu open (Safari)', () => {
+    auth.value = { ...base, status: 'signed-in', profile: { sub: 'u1', name: 'An' } };
+    mount();
+    const trigger = byName('button', 'Tài khoản Ducker ID')!;
+    act(() => trigger.click());
+    act(() => {
+      byName('a', 'Mở hồ sơ Ducker ID')!.dispatchEvent(
+        new FocusEvent('focusout', { bubbles: true, relatedTarget: null }),
+      );
+    });
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('closes on an outside pointer press', () => {
     auth.value = { ...base, status: 'signed-in', profile: { sub: 'u1', name: 'An' } };
     mount();

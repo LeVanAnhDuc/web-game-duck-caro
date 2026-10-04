@@ -46,7 +46,9 @@ export function useAccountMenu() {
     };
     const onFocusOut = (event: FocusEvent) => {
       const to = event.relatedTarget as Node | null;
-      if (!to) return; // bấm vào chỗ trống: onPointer lo
+      // Safari không focus nút khi bấm, nên relatedTarget có thể null ngay khi bấm nút mở:
+      // chỉ đóng khi focus đã sang một phần tử CÓ THẬT nằm ngoài. Bấm ra ngoài do onPointer lo.
+      if (!to) return;
       if (!menuRef.current?.contains(to) && !triggerRef.current?.contains(to)) close(false);
     };
     const menu = menuRef.current;

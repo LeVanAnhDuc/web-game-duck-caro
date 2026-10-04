@@ -57,7 +57,11 @@ export function startSession(
 }
 
 export function signIn(): void {
-  if (DUCKER_CONFIG) void startLogin(DUCKER_CONFIG);
+  if (DUCKER_CONFIG) {
+    void startLogin(DUCKER_CONFIG).catch(() => {
+      // im lặng: đăng nhập là tuỳ chọn, và cổng chống bấm đúp đã được mở lại trong startLogin
+    });
+  }
 }
 
 /** Quên profile trong bộ nhớ. Phiên ở Ducker ID vẫn còn — đúng nghĩa SSO. */

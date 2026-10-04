@@ -29,6 +29,13 @@ function clearPending(): void {
 
 let starting = false;
 
+// Quay lại bằng nút Back thì trang được khôi phục từ bfcache với `starting` vẫn true.
+if (typeof window !== 'undefined') {
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) starting = false;
+  });
+}
+
 /** Dựng URL authorize rồi chuyển cả trang sang Ducker ID. Bấm đúp chỉ đi một lần. */
 export async function startLogin(config: DuckerConfig): Promise<void> {
   if (starting) return;
@@ -46,15 +53,20 @@ export async function startLogin(config: DuckerConfig): Promise<void> {
     starting = false;
     return; // không cất được verifier thì đừng đi, sẽ kẹt ở callback
   }
-  const url = new URL('/oauth/authorize', config.issuer);
-  url.searchParams.set('response_type', 'code');
-  url.searchParams.set('client_id', config.clientId);
-  url.searchParams.set('redirect_uri', redirectUri());
-  url.searchParams.set('scope', config.scope);
-  url.searchParams.set('state', state);
-  url.searchParams.set('code_challenge', await challengeOf(verifier));
-  url.searchParams.set('code_challenge_method', 'S256');
-  window.location.assign(url.toString());
+  try {
+    const url = new URL('/oauth/authorize', config.issuer);
+    url.searchParams.set('response_type', 'code');
+    url.searchParams.set('client_id', config.clientId);
+    url.searchParams.set('redirect_uri', redirectUri());
+    url.searchParams.set('scope', config.scope);
+    url.searchParams.set('state', state);
+    url.searchParams.set('code_challenge', await challengeOf(verifier));
+    url.searchParams.set('code_challenge_method', 'S256');
+    window.location.assign(url.toString());
+  } catch (error) {
+    starting = false; // lỗi trước khi rời trang: cho phép bấm lại
+    throw error;
+  }
 }
 
 /**
