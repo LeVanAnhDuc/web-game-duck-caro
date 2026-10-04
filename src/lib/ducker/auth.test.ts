@@ -63,7 +63,7 @@ describe('consumeCallback', () => {
     expect(consumeCallback()).toEqual({ error: 'access_denied', returnTo: '/?level=3' });
   });
 
-  it.each(['//evil.example/x', 'https://evil.example', 'javascript:alert(1)', 42])(
+  it.each(['//evil.example/x', '/\\evil', 'https://evil.example', 'javascript:alert(1)', 42])(
     'unsafe returnTo dropped (%s)',
     (returnTo) => {
       sessionStorage.setItem('ducker.pkce', JSON.stringify({ state: 's1', verifier: 'v1', returnTo }));

@@ -49,6 +49,19 @@ describe('requests', () => {
     await expect(exchangeCode(config, 'c', 'v')).rejects.toThrow();
   });
 
+  it.each([null, { sub: '' }, { sub: 'u1', name: 5 }, { sub: 'u1', email_verified: 'yes' }])(
+    'rejects a malformed userinfo body (%o)',
+    async (body) => {
+      fetchMock.mockResolvedValue(json(body));
+      await expect(fetchProfile(config, 'at')).rejects.toThrow('userinfo_invalid');
+    },
+  );
+
+  it('accepts a minimal valid userinfo', async () => {
+    fetchMock.mockResolvedValue(json({ sub: 'u1' }));
+    await expect(fetchProfile(config, 'at')).resolves.toEqual({ sub: 'u1' });
+  });
+
   it('fetches userinfo with the bearer token and a timeout signal; non-ok throws', async () => {
     fetchMock.mockResolvedValue(json({ sub: 'u1' }));
     await expect(fetchProfile(config, 'at')).resolves.toEqual({ sub: 'u1' });

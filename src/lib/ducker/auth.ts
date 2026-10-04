@@ -100,7 +100,12 @@ export function consumeCallback(): CallbackResult | null {
 
 /** Chỉ đường dẫn cùng origin mới được đưa vào replaceState ("//evil" sẽ ném lỗi lúc nạp). */
 function isSafeReturnTo(value: unknown): value is string {
-  return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//');
+  return (
+    typeof value === 'string' &&
+    value.startsWith('/') &&
+    !value.startsWith('//') &&
+    !value.includes('\\')
+  );
 }
 
 let captured: CallbackResult | null = null;

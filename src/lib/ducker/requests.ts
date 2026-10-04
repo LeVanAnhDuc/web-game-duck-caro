@@ -40,5 +40,24 @@ export async function fetchProfile(
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   if (!response.ok) throw new Error(`userinfo_failed_${response.status}`);
-  return (await response.json()) as DuckerProfile;
+  return parseProfile(await response.json());
+}
+
+const optionalString = (value: unknown): boolean =>
+  value === undefined || value === null || typeof value === 'string';
+
+/** userinfo hỏng không được làm hỏng render: sai hình dạng thì coi như đăng nhập thất bại. */
+function parseProfile(data: unknown): DuckerProfile {
+  const profile = data as Record<string, unknown> | null;
+  const valid =
+    typeof profile === 'object' &&
+    profile !== null &&
+    typeof profile.sub === 'string' &&
+    profile.sub !== '' &&
+    optionalString(profile.name) &&
+    optionalString(profile.email) &&
+    optionalString(profile.picture) &&
+    (profile.email_verified === undefined || typeof profile.email_verified === 'boolean');
+  if (!valid) throw new Error('userinfo_invalid');
+  return profile as unknown as DuckerProfile;
 }
