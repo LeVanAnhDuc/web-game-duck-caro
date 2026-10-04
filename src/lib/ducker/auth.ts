@@ -27,8 +27,12 @@ function clearPending(): void {
   }
 }
 
-/** Dựng URL authorize rồi chuyển cả trang sang Ducker ID. */
+let starting = false;
+
+/** Dựng URL authorize rồi chuyển cả trang sang Ducker ID. Bấm đúp chỉ đi một lần. */
 export async function startLogin(config: DuckerConfig): Promise<void> {
+  if (starting) return;
+  starting = true;
   const verifier = randomUrlSafeToken();
   const state = randomUrlSafeToken();
   const pending: PendingAuth = {
@@ -39,6 +43,7 @@ export async function startLogin(config: DuckerConfig): Promise<void> {
   try {
     sessionStorage.setItem(DUCKER_PKCE_KEY, JSON.stringify(pending));
   } catch {
+    starting = false;
     return; // không cất được verifier thì đừng đi, sẽ kẹt ở callback
   }
   const url = new URL('/oauth/authorize', config.issuer);
@@ -73,9 +78,17 @@ export function consumeCallback(): CallbackResult | null {
     window.location.pathname + (query ? `?${query}` : '') + window.location.hash,
   );
 
-  if (error) return { error };
+  // returnTo được khôi phục cả khi thành công LẪN khi lỗi: redirect_uri là gốc app trần,
+  // nên huỷ đăng nhập mà không có nó thì mất tham số của game.
+  const returnTo = pending && isSafeReturnTo(pending.returnTo) ? pending.returnTo : undefined;
+  if (error) return { error, returnTo };
   if (!pending || pending.state !== state) return { error: 'state_mismatch' };
-  return { code: code ?? undefined, verifier: pending.verifier, returnTo: pending.returnTo };
+  return { code: code ?? undefined, verifier: pending.verifier, returnTo };
+}
+
+/** Chỉ đường dẫn cùng origin mới được đưa vào replaceState ("//evil" sẽ ném lỗi lúc nạp). */
+function isSafeReturnTo(value: unknown): value is string {
+  return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//');
 }
 
 let captured: CallbackResult | null = null;
@@ -86,7 +99,13 @@ export function captureCallback(): void {
   if (didCapture) return;
   didCapture = true;
   captured = consumeCallback();
-  if (captured?.returnTo) window.history.replaceState(window.history.state, '', captured.returnTo);
+  if (captured?.returnTo) {
+    try {
+      window.history.replaceState(window.history.state, '', captured.returnTo);
+    } catch {
+      // returnTo xấu không bao giờ được làm trắng game lúc nạp
+    }
+  }
 }
 
 export function capturedCallback(): CallbackResult | null {
@@ -95,6 +114,7 @@ export function capturedCallback(): CallbackResult | null {
 
 /** Chỉ dành cho test. */
 export function resetCaptureForTests(): void {
+  starting = false;
   captured = null;
   didCapture = false;
 }

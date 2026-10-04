@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { consumeCallback, startLogin } from '@/lib/ducker/auth';
+import {
+  captureCallback,
+  consumeCallback,
+  resetCaptureForTests,
+  startLogin,
+} from '@/lib/ducker/auth';
 
 const config = {
   issuer: 'http://localhost:3000',
@@ -45,8 +50,46 @@ describe('consumeCallback', () => {
 
   it('passes the IdP error through and cleans the URL', () => {
     window.history.replaceState(null, '', '/?error=access_denied&error_description=no&state=s1');
-    expect(consumeCallback()).toEqual({ error: 'access_denied' });
+    expect(consumeCallback()).toEqual({ error: 'access_denied', returnTo: undefined });
     expect(window.location.search).toBe('');
+  });
+
+  it('IdP error returns returnTo', () => {
+    sessionStorage.setItem(
+      'ducker.pkce',
+      JSON.stringify({ state: 's1', verifier: 'v1', returnTo: '/?level=3' }),
+    );
+    window.history.replaceState(null, '', '/?error=access_denied&state=s1');
+    expect(consumeCallback()).toEqual({ error: 'access_denied', returnTo: '/?level=3' });
+  });
+
+  it.each(['//evil.example/x', 'https://evil.example', 'javascript:alert(1)', 42])(
+    'unsafe returnTo dropped (%s)',
+    (returnTo) => {
+      sessionStorage.setItem('ducker.pkce', JSON.stringify({ state: 's1', verifier: 'v1', returnTo }));
+      window.history.replaceState(null, '', '/?code=c1&state=s1');
+      expect(consumeCallback()).toEqual({ code: 'c1', verifier: 'v1', returnTo: undefined });
+    },
+  );
+});
+
+describe('captureCallback', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    resetCaptureForTests();
+  });
+
+  it('restores returnTo once and a second call is a no-op', () => {
+    sessionStorage.setItem(
+      'ducker.pkce',
+      JSON.stringify({ state: 's1', verifier: 'v1', returnTo: '/?level=3' }),
+    );
+    window.history.replaceState(null, '', '/?code=c1&state=s1');
+    captureCallback();
+    expect(window.location.search).toBe('?level=3');
+    window.history.replaceState(null, '', '/?other=1');
+    captureCallback();
+    expect(window.location.search).toBe('?other=1');
   });
 });
 
@@ -63,6 +106,7 @@ describe('startLogin', () => {
       search: '?level=2',
     });
   });
+  beforeEach(() => resetCaptureForTests());
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
@@ -81,6 +125,11 @@ describe('startLogin', () => {
     expect(url.searchParams.get('response_type')).toBe('code');
     expect(url.searchParams.get('code_challenge_method')).toBe('S256');
     expect(url.searchParams.get('code_challenge')).toMatch(/^[A-Za-z0-9_-]{43}$/);
+  });
+
+  it('ignores a second call while one is in flight (double click)', async () => {
+    await Promise.all([startLogin(config), startLogin(config)]);
+    expect(assign).toHaveBeenCalledTimes(1);
   });
 
   it('does not redirect when sessionStorage throws', async () => {
