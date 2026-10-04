@@ -18,9 +18,6 @@ export function useAccountMenu() {
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') close(true);
-    };
     const onPointer = (event: Event) => {
       const target = event.target as Node;
       if (!menuRef.current?.contains(target) && !triggerRef.current?.contains(target)) {
@@ -29,20 +26,37 @@ export function useAccountMenu() {
     };
     const items = () =>
       Array.from(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
-    const onMenuKey = (event: KeyboardEvent) => {
+    // Pha capture trên window + stopPropagation: phím của menu không được lọt tới
+    // handler phím toàn cục của game. Chỉ đăng ký khi menu đang mở (effect này).
+    const onKey = (event: KeyboardEvent) => {
       const list = items();
-      if (list.length === 0) return;
       const index = list.indexOf(document.activeElement as HTMLElement);
       let next: number | null = null;
-      if (event.key === 'ArrowDown') next = (index + 1) % list.length;
-      else if (event.key === 'ArrowUp') next = (index - 1 + list.length) % list.length;
-      else if (event.key === 'Home') next = 0;
-      else if (event.key === 'End') next = list.length - 1;
-      else if (event.key === 'Tab') close(false); // Tab đi tiếp, không kéo focus lại
-      if (next !== null) {
-        event.preventDefault();
-        list[next]?.focus();
+      switch (event.key) {
+        case 'Escape':
+          close(true);
+          break;
+        case 'Tab':
+          close(false); // Tab đi tiếp, không kéo focus lại
+          break;
+        case 'ArrowDown':
+          next = list.length ? (index + 1) % list.length : null;
+          break;
+        case 'ArrowUp':
+          next = list.length ? (index - 1 + list.length) % list.length : null;
+          break;
+        case 'Home':
+          next = list.length ? 0 : null;
+          break;
+        case 'End':
+          next = list.length ? list.length - 1 : null;
+          break;
+        default:
+          return;
       }
+      event.stopPropagation();
+      if (event.key !== 'Escape' && event.key !== 'Tab') event.preventDefault();
+      if (next !== null) list[next]?.focus();
     };
     const onFocusOut = (event: FocusEvent) => {
       const to = event.relatedTarget as Node | null;
@@ -52,15 +66,13 @@ export function useAccountMenu() {
       if (!menuRef.current?.contains(to) && !triggerRef.current?.contains(to)) close(false);
     };
     const menu = menuRef.current;
-    document.addEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
     document.addEventListener('pointerdown', onPointer);
-    menu?.addEventListener('keydown', onMenuKey);
     menu?.addEventListener('focusout', onFocusOut);
     menu?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
     return () => {
-      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('keydown', onKey, true);
       document.removeEventListener('pointerdown', onPointer);
-      menu?.removeEventListener('keydown', onMenuKey);
       menu?.removeEventListener('focusout', onFocusOut);
     };
   }, [open, close]);

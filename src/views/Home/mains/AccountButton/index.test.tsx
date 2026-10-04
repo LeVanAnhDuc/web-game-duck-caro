@@ -44,10 +44,11 @@ describe('AccountButton', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  it('renders nothing while idle (server snapshot) so hydration matches', () => {
+  it('reserves an inert, hidden slot while idle so the header does not jump', () => {
     auth.value = { ...base, status: 'idle', profile: null };
     mount();
-    expect(container.innerHTML).toBe('');
+    expect(container.querySelector('button, a')).toBeNull();
+    expect(container.firstElementChild!.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('shows the sign-in button when signed out and starts login on click', () => {
@@ -171,6 +172,28 @@ describe('AccountButton', () => {
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
   });
 
+  it('keeps menu keys away from a game-style window listener while open', () => {
+    auth.value = { ...base, status: 'signed-in', profile: { sub: 'u1', name: 'An' } };
+    mount();
+    const seen: string[] = [];
+    const game = (e: KeyboardEvent) => seen.push(e.key);
+    window.addEventListener('keydown', game);
+    const press = (key: string) =>
+      act(() => {
+        (document.activeElement as HTMLElement).dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+        );
+      });
+    const trigger = byName('button', 'Tài khoản Ducker ID')!;
+    act(() => trigger.click());
+    press('ArrowUp');
+    press('Escape');
+    expect(seen).toEqual([]);
+    press('ArrowUp');
+    expect(seen).toEqual(['ArrowUp']);
+    window.removeEventListener('keydown', game);
+  });
+
   it('closes on an outside pointer press', () => {
     auth.value = { ...base, status: 'signed-in', profile: { sub: 'u1', name: 'An' } };
     mount();
@@ -192,6 +215,8 @@ describe('AccountButton', () => {
       profile: { sub: 'u1', name: 'đức', picture: 'http://localhost:3000/a.png' },
     };
     mount();
-    expect(container.querySelector('img')!.getAttribute('src')).toBe('http://localhost:3000/a.png');
+    expect(container.querySelector('img')!.getAttribute('src')).toBe(
+      'http://localhost:3000/a.png',
+    );
   });
 });
