@@ -1,5 +1,7 @@
 // libs
 import { Settings2, Volume2, VolumeX } from 'lucide-react';
+// components
+import { AccountButton } from '../../components/AccountButton';
 // others
 import { strings } from '@/lib/strings';
 
@@ -45,6 +47,8 @@ export function Header({
         <span className="mr-1 rounded-full border border-edge px-2.5 py-1 font-mono text-xs font-medium">
           {badge}
         </span>
+        {/* Đăng nhập Ducker ID: tuỳ chọn, tự ẩn khi cờ tắt (ADR-0029). */}
+        <AccountButton />
         {/*
           Nhãn nói HÀNH ĐỘNG sẽ xảy ra khi bấm, không nói trạng thái hiện tại. Và icon
           đổi theo trạng thái: một cái loa không gạch chéo trong lúc đang tắt tiếng là

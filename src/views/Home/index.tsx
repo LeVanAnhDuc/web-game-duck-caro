@@ -2,6 +2,8 @@
 
 // libs
 import { useEffect, useMemo, useState } from 'react';
+// ducker — nạp đầu tiên để bắt ?code/?state trước mọi code khác đọc URL (ADR-0029)
+import '@/lib/ducker/session';
 // types
 import {
   DEFAULT_RULE,
