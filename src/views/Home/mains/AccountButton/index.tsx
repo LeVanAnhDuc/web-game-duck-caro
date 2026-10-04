@@ -1,7 +1,7 @@
 'use client';
 
 // libs
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LogIn, LogOut, UserRound } from 'lucide-react';
 // hooks
 import { useAccountMenu, useDuckerAuth } from '@/hooks';
@@ -18,14 +18,17 @@ const MENU_ITEM =
 
 /**
  * Nút đăng nhập Ducker ID (tuỳ chọn, bật bằng cờ — ADR-0029). Chỉ định danh: tên và
- * email, không đồng bộ ván. Cờ tắt hoặc chưa khởi động xong (`idle`) thì không vẽ gì,
- * nên HTML tĩnh và lần render đầu ở client luôn khớp nhau.
+ * email, không đồng bộ ván. Cờ tắt thì không vẽ gì; khi chưa khởi động xong (`idle`) vẽ một
+ * chỗ giữ trơ, đúng cỡ nút đăng nhập, nên HTML tĩnh và lần render đầu ở client luôn khớp
+ * nhau mà header không nhảy.
  */
 export function AccountButton() {
   const auth = useDuckerAuth();
   const menu = useAccountMenu();
   const signInRef = useRef<HTMLButtonElement>(null);
   const refocusSignIn = useRef(false);
+  // Ảnh từ host ngoài có thể hỏng: rơi về chữ cái đầu thay vì để ô trống.
+  const [pictureFailed, setPictureFailed] = useState(false);
 
   // Menu đã biến mất cùng nút mở, nên focus sẽ rơi về <body> nếu không đặt lại.
   useEffect(() => {
@@ -73,12 +76,14 @@ export function AccountButton() {
         aria-label={strings.accountMenuLabel}
         className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-md hover:bg-paper"
       >
-        {profile.picture ? (
+        {profile.picture && !pictureFailed ? (
           // Ảnh từ Ducker ID, kích thước cố định — `next/image` không tối ưu được trên static export.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={profile.picture}
             alt=""
+            referrerPolicy="no-referrer"
+            onError={() => setPictureFailed(true)}
             width={32}
             height={32}
             className="h-8 w-8 rounded-full border border-edge object-cover"

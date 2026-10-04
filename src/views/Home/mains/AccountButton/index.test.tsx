@@ -194,6 +194,22 @@ describe('AccountButton', () => {
     window.removeEventListener('keydown', game);
   });
 
+  it('falls back to the initial when the picture fails to load, and sends no referrer', () => {
+    auth.value = {
+      ...base,
+      status: 'signed-in',
+      profile: { sub: 'u1', name: 'đức', picture: 'http://x.test/a.png' },
+    };
+    mount();
+    const img = container.querySelector('img')!;
+    expect(img.getAttribute('referrerpolicy')).toBe('no-referrer');
+    act(() => {
+      img.dispatchEvent(new Event('error'));
+    });
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.querySelector('button')!.textContent).toBe('Đ');
+  });
+
   it('closes on an outside pointer press', () => {
     auth.value = { ...base, status: 'signed-in', profile: { sub: 'u1', name: 'An' } };
     mount();

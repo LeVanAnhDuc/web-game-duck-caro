@@ -137,4 +137,31 @@ test.describe('cờ bật', () => {
       expect(scrollWidth).toBeLessThanOrEqual(width);
     });
   }
+
+  for (const width of [320, 375, 768, 1440]) {
+    test(`${width}px: menu tài khoản nằm trọn trong khung nhìn và không làm dịch bố cục`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto('/');
+      await page.getByRole('button', { name: 'Đăng nhập' }).click();
+      const trigger = page.getByRole('button', { name: 'Tài khoản Ducker ID' });
+      await expect(trigger).toBeVisible();
+      const container = page.locator('header div.relative');
+      const before = (await container.boundingBox())!;
+      const headerBefore = (await page.locator('header').boundingBox())!;
+      await trigger.click();
+      const menu = page.getByRole('menu');
+      await expect(menu).toBeVisible();
+      const box = (await menu.boundingBox())!;
+      const position = await menu.evaluate((el) => getComputedStyle(el).position);
+      expect(position).toBe(width < 768 ? 'fixed' : 'absolute');
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(width);
+      expect(box.y + box.height).toBeLessThanOrEqual(800);
+      expect(await container.boundingBox()).toEqual(before);
+      expect(await page.locator('header').boundingBox()).toEqual(headerBefore);
+    });
+  }
 });

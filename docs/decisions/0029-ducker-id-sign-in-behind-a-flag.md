@@ -7,7 +7,7 @@
 ## 1. Bối cảnh
 
 Yêu cầu của chủ dự án 2026-10-04: mọi game trong workspace có "Đăng nhập bằng Ducker ID"
-tuỳ chọn như `web-app-calculate-badminton`. ADR-0006 đã chừa đường; Ducker ID nay có
+tuỳ chọn như các app khác trong workspace. ADR-0006 đã chừa đường; Ducker ID nay có
 `/oauth/authorize`, `/oauth/token`, `/oauth/userinfo`. Phạm vi chỉ định danh. Spec chung:
 `web-game/docs/superpowers/specs/2026-10-04-ducker-id-sign-in-design.md`.
 
