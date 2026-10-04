@@ -34,7 +34,7 @@ jobs:
       - name: Static export builds
         run: pnpm build
         env:
-          GITHUB_PAGES: 'true'
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
 
       # NFR-SEC-05: dependency không có lỗ hổng mức high trở lên.
 

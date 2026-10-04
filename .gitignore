@@ -8,6 +8,8 @@
 /node_modules/
 /.next/
 /out/
+/out-auth/
+/.worktrees/
 /coverage/
 *.tsbuildinfo
 next-env.d.ts
