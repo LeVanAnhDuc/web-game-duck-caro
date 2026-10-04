@@ -11,11 +11,10 @@ const ROOT = resolve(process.cwd(), process.argv[3] ?? 'out');
 /*
  * CỔNG LẤY TỪ ARGV, không từ biến môi trường.
  *
- * `.env.example` tuyên bố dứt khoát rằng dự án này không đọc biến môi trường nào, và
- * `docs-regen.sh` đối chiếu điều đó với code thật — và nó quét bằng chuỗi, nên kể cả một
- * comment nhắc tên biến cũng bị tính. Đọc biến môi trường ở đây sẽ buộc
- * phải thêm một dòng vào file đó — và làm người đọc tưởng chạy game cần cấu hình,
- * trong khi cái cần cấu hình chỉ là máy chạy test.
+ * `.env.example` chỉ liệt kê biến mà code GAME đọc, và `docs-regen.sh` đối chiếu điều đó
+ * với code thật bằng cách quét chuỗi — nên kể cả một comment nhắc tên biến cũng bị tính.
+ * Đọc biến môi trường ở đây sẽ buộc phải thêm một dòng vào file đó, và làm người đọc
+ * tưởng chạy game cần cấu hình, trong khi cái cần cấu hình chỉ là máy chạy test.
  */
 const PORT = Number(process.argv[2] ?? 3300);
 

@@ -48,8 +48,8 @@ export default defineConfig({
       // `pnpm dlx serve` sẽ là một dependency nữa; `http-server` cũng vậy. Node tự phục vụ
       // được `out/` bằng vài dòng, và một script trong repo là thứ đọc được, không phải
       // một hộp đen tải từ mạng lúc chạy test.
-      // Cổng truyền qua ARGV: dự án này không đọc biến môi trường nào, và `.env.example`
-      // nói đúng như thế — `docs-regen.sh` đối chiếu hai bên.
+      // Cổng truyền qua ARGV, không qua biến môi trường: `.env.example` chỉ liệt kê biến
+      // mà code game đọc, và `docs-regen.sh` đối chiếu hai bên.
       // `e2e/build-all.mjs` dựng cả hai bản (cờ bật → out-auth, cờ tắt → out) tuần tự, vì
       // hai lần `next build` cùng lúc sẽ giẫm lên `.next`. Server thứ hai chỉ phục vụ
       // `out-auth` và Playwright chỉ khởi động nó sau khi server này đã sẵn sàng.

@@ -11,7 +11,7 @@ import { strings } from '@/lib/strings';
 
 /** Dáng `.btn-secondary` của MASTER.md §Component: nền nổi, viền, 44px, bo 6px. */
 const SECONDARY =
-  'inline-flex h-11 min-w-11 flex-none cursor-pointer items-center justify-center gap-1.5 rounded-md border border-edge bg-raised px-3 text-sm text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-45';
+  'inline-flex h-11 min-w-11 flex-none max-[420px]:w-11 max-[420px]:px-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-edge bg-raised px-3 text-sm text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-45';
 
 const MENU_ITEM =
   'flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-md px-3 text-left text-sm text-ink hover:bg-paper';
@@ -35,7 +35,12 @@ export function AccountButton() {
     }
   }, [auth.status]);
 
-  if (!auth.enabled || auth.status === 'idle') return null;
+  if (!auth.enabled) return null;
+  // `enabled` là hằng số lúc build nên server và client cùng chọn nhánh này: giữ chỗ
+  // đúng cỡ nút đăng nhập để header không nhảy khi hydrate, mà không gây lệch hydration.
+  if (auth.status === 'idle') {
+    return <span aria-hidden="true" className="h-11 w-11 flex-none min-[421px]:w-[7.7rem]" />;
+  }
 
   if (auth.status !== 'signed-in' || !auth.profile) {
     const loading = auth.status === 'loading';
@@ -48,8 +53,10 @@ export function AccountButton() {
         aria-busy={loading}
         className={SECONDARY}
       >
-        <LogIn size={16} aria-hidden="true" className="max-[420px]:hidden" />
-        <span>{loading ? strings.accountSigningIn : strings.accountSignIn}</span>
+        <LogIn size={16} aria-hidden="true" />
+        <span className="max-[420px]:sr-only">
+          {loading ? strings.accountSigningIn : strings.accountSignIn}
+        </span>
       </button>
     );
   }
@@ -91,7 +98,7 @@ export function AccountButton() {
           role="menu"
           className="fixed inset-x-0 bottom-0 z-30 rounded-t-[10px] border-t border-edge bg-raised px-4 py-6 shadow-sheet md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-full md:mt-1 md:w-72 md:rounded-[10px] md:border md:p-3 md:shadow-panel"
         >
-          <div className="mb-2 flex items-center gap-3 px-3">
+          <div role="none" className="mb-2 flex items-center gap-3 px-3">
             <UserRound size={20} aria-hidden="true" className="flex-none text-ink-muted" />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-ink-strong">

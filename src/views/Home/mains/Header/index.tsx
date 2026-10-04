@@ -1,14 +1,14 @@
 // libs
 import { Settings2, Volume2, VolumeX } from 'lucide-react';
 // components
-import { AccountButton } from '../../components/AccountButton';
+import { AccountButton } from '../AccountButton';
 // others
 import { strings } from '@/lib/strings';
 
 /** Wordmark: một `X` mực và một `O` mực — cùng hai hình mang thông tin trên bàn. */
 function Wordmark() {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-none items-center gap-2 whitespace-nowrap">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
         <path
           d="M2.5 2.5 L8 8M8 2.5 L2.5 8"
@@ -59,7 +59,7 @@ export function Header({
           onClick={onToggleSound}
           aria-pressed={soundOn}
           aria-label={soundOn ? strings.soundOff : strings.soundOn}
-          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-md text-ink hover:bg-paper"
+          className="flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-md text-ink hover:bg-paper"
         >
           {soundOn ? (
             <Volume2 size={20} aria-hidden="true" />
@@ -71,7 +71,7 @@ export function Header({
           type="button"
           onClick={onOpenSettings}
           aria-label={strings.settings}
-          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-md text-ink hover:bg-paper"
+          className="flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-md text-ink hover:bg-paper"
         >
           <Settings2 size={20} aria-hidden="true" />
         </button>

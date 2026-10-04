@@ -19,6 +19,7 @@ function build(extra) {
 
 rmSync('out-auth', { recursive: true, force: true });
 build({
+  NEXT_PUBLIC_BASE_PATH: '',
   NEXT_PUBLIC_FEATURE_DUCKER_SIGN_IN: 'true',
   NEXT_PUBLIC_DUCKER_ISSUER: AUTH_ISSUER,
   NEXT_PUBLIC_DUCKER_CLIENT_ID: 'e2e-client',
@@ -26,4 +27,4 @@ build({
   NEXT_PUBLIC_DUCKER_PROFILE_PATH: '/profile',
 });
 renameSync('out', 'out-auth');
-build({ NEXT_PUBLIC_FEATURE_DUCKER_SIGN_IN: 'false' });
+build({ NEXT_PUBLIC_BASE_PATH: '', NEXT_PUBLIC_FEATURE_DUCKER_SIGN_IN: 'false' });

@@ -45,8 +45,9 @@ test.describe('cờ bật', () => {
     const account = page.getByRole('button', { name: 'Tài khoản Ducker ID' });
     await expect(account).toBeVisible();
     // Sau hydrate Next có thể ghi lại ?code&state — chờ ổn định rồi mới kiểm.
-    await page.waitForTimeout(500);
-    expect(new URL(page.url()).search).not.toMatch(/code=|state=/);
+    await expect
+      .poll(() => new URL(page.url()).search, { timeout: 3000 })
+      .not.toMatch(/code=|state=/);
     await account.click();
     await expect(page.getByText('Lê Văn Anh Đức')).toBeVisible();
     await expect(page.getByRole('menuitem', { name: 'Mở hồ sơ Ducker ID' })).toHaveAttribute(
@@ -98,31 +99,42 @@ test.describe('cờ bật', () => {
     expect(new URL(page.url()).search).toBe('');
   });
 
-  test('375px: nút đăng nhập >= 44x44 và không đè lên nút khác trong header', async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 375, height: 800 });
-    await page.goto('/');
-    const button = page.getByRole('button', { name: 'Đăng nhập' });
-    await expect(button).toBeVisible();
-    const box = (await button.boundingBox())!;
-    expect(box.width).toBeGreaterThanOrEqual(44);
-    expect(box.height).toBeGreaterThanOrEqual(44);
-    const others = await page
-      .locator('header button')
-      .evaluateAll((els) => els.map((el) => el.getAttribute('aria-label') ?? el.textContent));
-    for (let i = 0; i < others.length; i += 1) {
-      const sibling = page.locator('header button').nth(i);
-      if ((await sibling.textContent()) === 'Đăng nhập') continue;
-      const other = (await sibling.boundingBox())!;
-      const overlap =
-        box.x < other.x + other.width &&
-        other.x < box.x + box.width &&
-        box.y < other.y + other.height &&
-        other.y < box.y + box.height;
-      expect(overlap, `đè lên ${others[i]}`).toBe(false);
-    }
-    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-    expect(scrollWidth).toBeLessThanOrEqual(375);
-  });
+  for (const width of [375, 360, 320]) {
+    test(`${width}px: mọi nút trong header >= 44x44, không đè nhau, tên hiển thị không vỡ`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto('/');
+      await expect(page.getByRole('button', { name: 'Đăng nhập' })).toBeVisible();
+      const buttons = page.locator('header button');
+      const count = await buttons.count();
+      const boxes: { label: string; x: number; y: number; width: number; height: number }[] =
+        [];
+      for (let i = 0; i < count; i += 1) {
+        const el = buttons.nth(i);
+        const box = (await el.boundingBox())!;
+        const label = (await el.getAttribute('aria-label')) ?? (await el.textContent()) ?? '';
+        expect(box.width, `${label} rộng ${box.width}`).toBeGreaterThanOrEqual(44);
+        expect(box.height, `${label} cao ${box.height}`).toBeGreaterThanOrEqual(44);
+        boxes.push({ label, ...box });
+      }
+      console.log(width, JSON.stringify(boxes.map((b) => [b.label, Math.round(b.width)])));
+      for (let i = 0; i < boxes.length; i += 1) {
+        for (let j = i + 1; j < boxes.length; j += 1) {
+          const p = boxes[i]!;
+          const q = boxes[j]!;
+          const overlap =
+            p.x < q.x + q.width &&
+            q.x < p.x + p.width &&
+            p.y < q.y + q.height &&
+            q.y < p.y + p.height;
+          expect(overlap, `${p.label} đè ${q.label}`).toBe(false);
+        }
+      }
+      const word = (await page.locator('header span.font-semibold').boundingBox())!;
+      expect(word.height, 'wordmark không xuống dòng').toBeLessThan(28);
+      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(scrollWidth).toBeLessThanOrEqual(width);
+    });
+  }
 });

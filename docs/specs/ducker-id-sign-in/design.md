@@ -20,7 +20,7 @@ từ 768px. Chỉ biến CSS và Lucide, không màu mới.
 
 - `src/lib/ducker/{types,config,pkce,auth,requests,session,initials}.ts` + test
 - `src/hooks/{useDuckerAuth,useAccountMenu}.ts`
-- `src/views/Home/components/AccountButton/index.tsx` + test
+- `src/views/Home/mains/AccountButton/index.tsx` + test
 - `e2e/{build-all.mjs,ducker-id-sign-in.spec.ts,ducker-id-flag-off.spec.ts}`; Playwright
   có thêm server `out-auth` ở cổng 3301 (cờ bật, issuer giả `http://ducker.test`)
 
