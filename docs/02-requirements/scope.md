@@ -40,3 +40,4 @@ KHÔNG chứa: cách hiện thực, ngưỡng phi chức năng (-> nfr.md), lý 
 | FR-18 | Chọn luật thắng cho từng ván: caro Việt · tự do | US-05 · US-01 | đang |
 | FR-19 | Giao diện sáng · tối · theo máy | US-06 | đang |
 | FR-20 | Đổi bộ quân: Bút chì · Đặc/rỗng · Hình học · Vịt | US-06 | đang |
+| FR-21 | Đăng nhập Ducker ID tuỳ chọn (chỉ định danh, sau cờ, tắt ở bản deploy) | US-07 | đang |

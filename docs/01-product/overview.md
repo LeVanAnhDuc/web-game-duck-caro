@@ -55,8 +55,10 @@ thật, ba thứ đều nằm trong Non-Goals.
   và "Người 2"; không đồng hồ đếm giờ; không thống kê riêng cho hot-seat. Cả ba đều
   nghe hợp lý và cả ba đều kéo theo trạng thái phải lưu, phải hiển thị và phải test,
   đổi lấy một thứ mà hai người ngồi cạnh nhau tự biết.
-- **Không có tài khoản, đăng nhập hay xếp hạng toàn cầu ở v1.** Chỉ chừa sẵn ranh giới
-  lưu trữ để ghép Ducker ID về sau (ADR-0006), không viết code danh tính nào bây giờ.
+- **Không có tài khoản do game sở hữu, không backend, không đồng bộ, không xếp hạng toàn
+  cầu.** Chỉ có đăng nhập Ducker ID **tuỳ chọn**, chỉ để định danh (nút, avatar, tên, menu
+  tài khoản), bật bằng cờ và tắt trong bản deploy (ADR-0029). Ván, thống kê và cài đặt vẫn
+  chỉ nằm ở máy này; ranh giới lưu trữ của ADR-0006 không đổi.
 - **Không có luật thi đấu quốc tế** — không renju, không luật cấm cho quân đi trước,
   không đổi độ dài chuỗi thắng. Có đúng **hai** luật, chọn khi bắt đầu ván: caro Việt
   chặn hai đầu (ADR-0003) và tự do (ADR-0025). Luật thứ ba cần một tầng cấu hình thật,

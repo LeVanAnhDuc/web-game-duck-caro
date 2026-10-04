@@ -6,7 +6,7 @@
 
 A Vietnamese-rules caro (gomoku) game you play against the machine, on a board that
 never ends. Five in a row wins — unless your opponent has blocked both ends. Everything
-is drawn in code on a canvas: no sprite sheet, no image files. No server, no sign-in.
+is drawn in code on a canvas: no sprite sheet, no image files. No server, no game accounts.
 
 **Play**: https://levananhduc.github.io/web-game-duck-caro/
 
@@ -138,6 +138,12 @@ Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
   - With a mouse, a click places directly, because a misclick almost never happens
   - Dragging out and back counts as a drag, not a tap
 
+- **Optional sign-in with Ducker ID** (behind a feature flag, off in the deployed build)
+
+  - Identity only: a sign-in button, avatar and name, and an account menu with your
+    email, a link to your Ducker ID profile and sign out
+  - Saves, stats and settings are untouched and never leave this browser
+
 - **It remembers where you were**
 
   - Close the tab mid-game and the position is waiting when you come back — same moves,
@@ -148,8 +154,8 @@ Conventional Commit prefixes. The contract is in [`CLAUDE.md`](CLAUDE.md).
   - Everything can be erased from inside the game, behind a two-step confirmation that
     says plainly there is no copy anywhere
 
-- **No sign-in, no server, nothing leaves the browser**
-  - No account, no analytics, no telemetry, no external font
+- **No game accounts, no server, nothing leaves the browser**
+  - No account of its own, no analytics, no telemetry, no external font
   - Saved games and stats live in this browser's own storage and nowhere else
   - Infrastructure ceiling for this project is 0đ, and that is what rules out online play
 
@@ -182,8 +188,10 @@ pnpm lint
 pnpm build        # static export into out/
 ```
 
-No environment variables are needed — see [`.env.example`](.env.example), which says so
-explicitly rather than leaving the question open.
+No environment variables are needed to play. The optional Ducker ID sign-in is off unless
+`NEXT_PUBLIC_FEATURE_DUCKER_SIGN_IN=true` **and** the four `NEXT_PUBLIC_DUCKER_*` values
+are set — copy [`.env.example`](.env.example) to `.env`, which also lists the redirect
+URI to register and the origin to add to Ducker ID `CORS_ORIGINS`. Deploy never sets them.
 
 ## How it is put together
 

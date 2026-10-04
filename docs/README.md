@@ -24,8 +24,8 @@
 | [`ux-reviews/2026-09-11-red-routes/p06-quan-blind.md`](ux-reviews/2026-09-11-red-routes/p06-quan-blind.md) | — | — | — |
 | [`ux-reviews/2026-09-11-red-routes/p07-ong-tam-blind.md`](ux-reviews/2026-09-11-red-routes/p07-ong-tam-blind.md) | — | — | — |
 | [`ux-reviews/2026-09-11-red-routes/run-notes.md`](ux-reviews/2026-09-11-red-routes/run-notes.md) | — | — | — |
-| [`decisions/`](decisions/README.md) | Tại sao lại làm thế này? | 28 ADR | mỗi quyết định kỹ thuật |
-| [`../.env.example`](../.env.example) | cần biến nào để chạy được dự án này? | ⚪ chưa áp dụng — dự án không đọc biến môi tr… | code đọc một biến mới (process.env.X / import.meta.env.X /… |
+| [`decisions/`](decisions/README.md) | Tại sao lại làm thế này? | 29 ADR | mỗi quyết định kỹ thuật |
+| [`../.env.example`](../.env.example) | cần biến nào để chạy được dự án này? | 🟢 đủ — sáu biến, tất cả đều TUỲ CHỌN (game … | code đọc một biến mới (process.env.X / import.meta.env.X /… |
 <!-- END:auto -->
 
 🔴 chưa điền · 🟡 một phần · 🟢 đủ · ⚪ chưa áp dụng
