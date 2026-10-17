@@ -178,19 +178,22 @@ The board has no edges, so moving around it is part of playing it.
 
 ## Commands
 
+The game app lives in `client/`; run these from there.
+
 ```bash
+cd client
 pnpm install
 pnpm dev          # http://localhost:3000
 pnpm test         # unit tests
 pnpm e2e          # end-to-end, against the static build
 pnpm typecheck
 pnpm lint
-pnpm build        # static export into out/
+pnpm build        # static export into client/out/
 ```
 
 No environment variables are needed to play. The optional Ducker ID sign-in is off unless
 `NEXT_PUBLIC_FEATURE_DUCKER_SIGN_IN=true` **and** the four `NEXT_PUBLIC_DUCKER_*` values
-are set — copy [`.env.example`](.env.example) to `.env`, which also lists the redirect
+are set — copy [`client/.env.example`](client/.env.example) to `client/.env`, which also lists the redirect
 URI to register and the origin to add to Ducker ID `CORS_ORIGINS`. Deploy never sets them.
 
 ## How it is put together

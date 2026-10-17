@@ -4,6 +4,9 @@
 > **Trạng thái:** 🟢 đủ — đã chốt và đã áp dụng vào `src/` (ADR-0023)
 > **Cập nhật:** 2026-09-11 · commit —
 > **Cập nhật khi:** chốt/bác một rule · thêm một tầng thư mục mới · đổi cấu hình Prettier/ESLint
+>
+> App nằm trong `client/` từ 2026-10-17: mọi đường dẫn `src/`, `tsconfig.json`, `.eslintrc.json`
+> dưới đây tính từ `client/`.
 
 <!-- CÁCH ĐIỀN
 File này trả lời "viết code thế nào", KHÔNG trả lời "hệ thống ghép ra sao"

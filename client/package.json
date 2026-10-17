@@ -12,8 +12,8 @@
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
-    "release:next": "pnpm dlx git-cliff@2.13.1 --bumped-version",
-    "release:notes": "pnpm dlx git-cliff@2.13.1 --unreleased --tag $(pnpm dlx git-cliff@2.13.1 --bumped-version) --strip all"
+    "release:next": "pnpm dlx git-cliff@2.13.1 --workdir .. --bumped-version",
+    "release:notes": "pnpm dlx git-cliff@2.13.1 --workdir .. --unreleased --tag $(pnpm dlx git-cliff@2.13.1 --workdir .. --bumped-version) --strip all"
   },
   "dependencies": {
     "clsx": "^2.1.1",
