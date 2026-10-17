@@ -10,6 +10,9 @@ export type StartOptions = {
   first?: "one" | "two";
 };
 
+/** What spyAudio() recorded: contexts created, oscillators created, frequencies (Hz) started, files decoded. */
+export type AudioLog = { contexts: number; oscillators: number; started: number[]; decoded: number };
+
 /** Desktop cell size (CELL_DEFAULT_DESKTOP), and the one used when the canvas is ≤ 640px wide (CELL_DEFAULT_MOBILE). */
 export const CELL_DESKTOP = 32;
 export const CELL_MOBILE = 28;
@@ -81,6 +84,56 @@ export class GamePage extends BasePage {
       Storage.prototype.setItem = function () {
         throw new DOMException("quota exceeded", "QuotaExceededError");
       };
+    });
+  }
+
+  /**
+   * Wraps the Web Audio API to count what the game does with it (window.__audio): contexts created, oscillators
+   * created, the frequency of every oscillator started, and audio decoded from a file. Before goto().
+   */
+  async spyAudio(): Promise<void> {
+    await this.page.addInitScript(() => {
+      const audio = { contexts: 0, oscillators: 0, started: [] as number[], decoded: 0 };
+      (window as unknown as { __audio: typeof audio }).__audio = audio;
+      const Base = window.AudioContext;
+      class Spy extends Base {
+        constructor(options?: AudioContextOptions) {
+          super(options);
+          audio.contexts += 1;
+        }
+        override createOscillator(): OscillatorNode {
+          audio.oscillators += 1;
+          const osc = super.createOscillator();
+          const start = osc.start.bind(osc);
+          osc.start = (when?: number) => {
+            audio.started.push(osc.frequency.value);
+            start(when);
+          };
+          return osc;
+        }
+        override decodeAudioData(...args: Parameters<AudioContext["decodeAudioData"]>) {
+          audio.decoded += 1;
+          return super.decodeAudioData(...args);
+        }
+      }
+      (window as unknown as { AudioContext: unknown }).AudioContext = Spy;
+    });
+  }
+
+  async audio(): Promise<AudioLog> {
+    return this.page.evaluate(() => (window as unknown as { __audio: AudioLog }).__audio);
+  }
+
+  /** A browser that refuses audio: constructing an AudioContext throws. Before goto(). */
+  async blockAudio(): Promise<void> {
+    await this.page.addInitScript(() => {
+      class Refused {
+        constructor() {
+          throw new DOMException("audio blocked", "NotAllowedError");
+        }
+      }
+      (window as unknown as { AudioContext: unknown; webkitAudioContext: unknown }).AudioContext = Refused;
+      (window as unknown as { webkitAudioContext: unknown }).webkitAudioContext = Refused;
     });
   }
 
