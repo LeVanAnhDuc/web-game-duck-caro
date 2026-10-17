@@ -1,4 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
+import { AccountMenu } from "@/components/account-menu";
 import { copy } from "@/data/copy";
 import { BasePage } from "./base.page";
 
@@ -27,10 +28,12 @@ export const CELL_MOBILE = 28;
  */
 export class GamePage extends BasePage {
   readonly settings: SettingsDialog;
+  readonly account: AccountMenu;
 
   constructor(page: Page) {
     super(page);
     this.settings = new SettingsDialog(page);
+    this.account = new AccountMenu(page);
   }
 
   async goto(): Promise<void> {
@@ -183,6 +186,11 @@ export class GamePage extends BasePage {
   /** The round badge on the right of the header: the level, or "Hai người". */
   badge(): Locator {
     return this.header().locator("span.rounded-full");
+  }
+
+  /** The "Duck Caro" wordmark at the left of the header. */
+  wordmark(): Locator {
+    return this.header().getByText(copy.appName, { exact: true });
   }
 
   /** The sound toggle. Its name says the ACTION a press does: "Tắt âm thanh" while sound is on. */

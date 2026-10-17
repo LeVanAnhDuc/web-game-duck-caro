@@ -77,3 +77,14 @@ export const paper = { light: "#f7f3e8", dark: "#191c20" } as const;
 export function luma([r, g, b]: readonly [number, number, number]): number {
   return 0.299 * r + 0.587 * g + 0.114 * b;
 }
+
+/**
+ * The flag-on export's Ducker ID settings (../client/scripts/build-e2e.mjs) and the profile the fake issuer returns.
+ * The issuer never resolves: every request to it is answered by the fakeIssuer fixture.
+ */
+export const DUCKER = {
+  issuer: "http://ducker.test",
+  profilePath: "/profile",
+  pkceKey: "ducker.pkce",
+  user: { sub: "u1", name: "Lê Văn Anh Đức", email: "duc@ducker.id" },
+} as const;

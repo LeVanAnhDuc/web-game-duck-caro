@@ -25,7 +25,8 @@ const prebuilt = process.env.CLIENT_PREBUILT === "1";
 const build = prebuilt ? "" : "pnpm build:e2e && ";
 
 const TOUCH = /e2e\/touch\/.*\.e2e\.ts$/;
-const SIGN_IN = /e2e\/ducker-id\/sign-in\.e2e\.ts$/;
+// Every ducker-id spec but flag-off needs the flag-on export.
+const SIGN_IN = /e2e\/ducker-id\/(?!flag-off\.).*\.e2e\.ts$/;
 
 // The board keeps its own zoom; a browser zoom on top of it would move the hit-test away from the drawing.
 // 1280 wide is a desktop layout (the right-hand panel shows from 1024).

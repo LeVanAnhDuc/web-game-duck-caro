@@ -20,7 +20,7 @@ Mỗi thư mục trong `src/` có `README.md` nói rõ chứa gì, không chứa
   dùng Dễ trừ khi đang kiểm chính mức khó. Ván cần thế cờ chính xác thì dùng chế độ **Hai người** (không có máy).
 - **Thời gian giả:** chờ "máy không trả lời kịp" (5s) dùng `page.clock`, không `waitForTimeout`.
 - **Project:** `app` (Desktop Chrome 1280×900), `app-touch` (Pixel 5, chỉ `tests/e2e/touch/`), `app-auth` (bản bật cờ,
-  chỉ `tests/e2e/ducker-id/sign-in.e2e.ts`, chỉ có trên dev).
+  mọi spec trong `tests/e2e/ducker-id/` trừ `flag-off.e2e.ts`, chỉ có trên dev).
 
 ## Cấu trúc
 

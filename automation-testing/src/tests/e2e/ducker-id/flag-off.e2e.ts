@@ -1,19 +1,24 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@/fixtures";
+import { DUCKER } from "@/data/test-data";
 
-/** Bản build deploy (cờ tắt): không nút, không storage, không request ra ngoài (ADR-0029). */
-test('cờ tắt: không có nút đăng nhập, không đụng sessionStorage, không request ra ngoài', async ({
-  page,
-}) => {
-  const outside: string[] = [];
-  page.on('request', (request) => {
-    const { hostname } = new URL(request.url());
-    if (hostname !== '127.0.0.1' && hostname !== 'localhost') outside.push(request.url());
-  });
-  await page.goto('./');
-  await expect(page.getByRole('button', { name: 'Cài đặt' })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Đăng nhập|Tài khoản Ducker ID/ })).toHaveCount(
-    0,
-  );
-  expect(await page.evaluate(() => sessionStorage.getItem('ducker.pkce'))).toBeNull();
-  expect(outside).toEqual([]);
-});
+// The deployed build (flag off, ADR-0029): no button, no storage, nothing off the site, and a stray ?code is not
+// read as a sign-in callback.
+test(
+  "cờ tắt: không nút, không sessionStorage, không request ra ngoài, URL có code bị bỏ mặc",
+  { tag: ["@TC-DUCKERID-001", "@smoke"] },
+  async ({ gamePage, page, urls }) => {
+    const own = new URL(urls.webUrl).origin;
+    const outside: string[] = [];
+    page.on("request", (r) => {
+      if (new URL(r.url()).origin !== own) outside.push(r.url());
+    });
+    await page.goto("./?code=x&state=y");
+    await expect(gamePage.settingsButton()).toBeVisible();
+
+    await expect(gamePage.account.anySignIn()).toHaveCount(0);
+    await expect(gamePage.account.trigger()).toHaveCount(0);
+    expect(await page.evaluate((key) => window.sessionStorage.getItem(key), DUCKER.pkceKey)).toBeNull();
+    expect(outside).toEqual([]);
+    expect(new URL(page.url()).searchParams.get("code")).toBe("x");
+  },
+);
