@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { expectMoves, moveCount, panelButton, playAt, startGame } from './helpers';
+import { expectMoves, moveCount, panelButton, playAt, startGame } from '../helpers';
 
 test('ván dở sống qua một lần TẢI LẠI TRANG thật (US-02 · FR-11)', async ({ page }) => {
   // `usePersistence` được unit test với storage giả. Bài này là chỗ duy nhất chứng minh
   // `localStorage` thật + `replay` dựng lại đúng ván sau một lần reload.
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page);
   await playAt(page, 0, 0);
   await expectMoves(page, 2);
@@ -20,7 +20,7 @@ test('ván dở sống qua một lần TẢI LẠI TRANG thật (US-02 · FR-11)
 });
 
 test('ván kết thúc thì không còn gì để tiếp tục sau reload', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page);
   await playAt(page, 0, 0);
   await expectMoves(page, 2);
@@ -36,7 +36,7 @@ test('ván kết thúc thì không còn gì để tiếp tục sau reload', asyn
 test('cài đặt sống qua reload, và nó là seam RIÊNG (US-04 · FR-16 · ADR-0019)', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('./');
   await page.getByRole('button', { name: 'Cài đặt' }).click();
   // Bó vào dialog: màn chọn mức phía sau cũng có một nút "Khó".
   const dialog = page.getByRole('dialog', { name: 'Cài đặt' });
@@ -64,7 +64,7 @@ test('cài đặt sống qua reload, và nó là seam RIÊNG (US-04 · FR-16 · 
 });
 
 test('xoá toàn bộ dữ liệu dọn CẢ hai seam (NFR-DATA-04)', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page);
   await playAt(page, 0, 0);
   await expectMoves(page, 2);
@@ -95,7 +95,7 @@ test('localStorage bị chặn thì app vẫn chơi được (NFR-REL-04)', asyn
     });
   });
   const page = await context.newPage();
-  await page.goto('/');
+  await page.goto('./');
 
   await startGame(page);
   await playAt(page, 0, 0);

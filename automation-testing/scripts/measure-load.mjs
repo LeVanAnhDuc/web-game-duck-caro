@@ -1,8 +1,10 @@
 // Đo lần tải đầu trên mạng 4G mô phỏng — NFR-PERF-09.
 //
-// Chạy:  node e2e/measure-load.mjs            (cần `pnpm build` và server ở :3300)
-//        node e2e/measure-load.mjs --runs 5
-//        node e2e/measure-load.mjs --url http://127.0.0.1:3300/
+// Chạy từ automation-testing/ (cần bản build tĩnh đang phục vụ ở :3300 —
+// `cd ../client && pnpm build && pnpm serve:out 3300`):
+//        node scripts/measure-load.mjs
+//        node scripts/measure-load.mjs --runs 5
+//        node scripts/measure-load.mjs --url http://127.0.0.1:3300/
 //
 // Vì sao là một script trong repo chứ không phải một lần bấm tay trong DevTools: ngưỡng
 // của NFR-PERF-09 được chốt TỪ con số này, nên con số phải đo lại được. Một số đo không
@@ -12,7 +14,7 @@
 // CPU chậm 4 lần — vì `overview.md` §3 nói nhóm người dùng chính chơi trên điện thoại.
 import { chromium } from '@playwright/test';
 
-// Cùng lý do như `serve-out.mjs`: không đọc biến môi trường ở dự án này.
+// Cùng lý do như `client/scripts/serve-out.mjs`: không đọc biến môi trường ở dự án này.
 const urlFlag = process.argv.indexOf('--url');
 const URL = urlFlag === -1 ? 'http://127.0.0.1:3300/' : process.argv[urlFlag + 1];
 const RUNS = Number(process.argv[process.argv.indexOf('--runs') + 1]) || 3;

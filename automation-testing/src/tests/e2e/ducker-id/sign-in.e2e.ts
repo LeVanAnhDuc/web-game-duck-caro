@@ -40,7 +40,7 @@ test.describe('cờ bật', () => {
     page.on('console', (m) => {
       if (m.type() === 'error') errors.push(m.text());
     });
-    await page.goto('/');
+    await page.goto('./');
     await page.getByRole('button', { name: 'Đăng nhập' }).click();
     const account = page.getByRole('button', { name: 'Tài khoản Ducker ID' });
     await expect(account).toBeVisible();
@@ -74,7 +74,7 @@ test.describe('cờ bật', () => {
       back.searchParams.set('state', url.searchParams.get('state')!);
       await route.fulfill({ status: 302, headers: { location: back.toString() } });
     });
-    await page.goto('/');
+    await page.goto('./');
     await page.getByRole('button', { name: 'Đăng nhập' }).click();
     // Nút vẫn hiện ngay trước khi trang đi — chờ tới khi trang quay về và dọn xong phiên chờ.
     await page.waitForFunction(() => sessionStorage.getItem('ducker.pkce') === null);
@@ -91,7 +91,7 @@ test.describe('cờ bật', () => {
       back.searchParams.set('state', 'tampered');
       await route.fulfill({ status: 302, headers: { location: back.toString() } });
     });
-    await page.goto('/');
+    await page.goto('./');
     await page.getByRole('button', { name: 'Đăng nhập' }).click();
     // Nút vẫn hiện ngay trước khi trang đi — chờ tới khi trang quay về và dọn xong phiên chờ.
     await page.waitForFunction(() => sessionStorage.getItem('ducker.pkce') === null);
@@ -104,7 +104,7 @@ test.describe('cờ bật', () => {
       page,
     }) => {
       await page.setViewportSize({ width, height: 800 });
-      await page.goto('/');
+      await page.goto('./');
       await expect(page.getByRole('button', { name: 'Đăng nhập' })).toBeVisible();
       const buttons = page.locator('header button');
       const count = await buttons.count();
@@ -143,7 +143,7 @@ test.describe('cờ bật', () => {
       page,
     }) => {
       await page.setViewportSize({ width, height: 800 });
-      await page.goto('/');
+      await page.goto('./');
       await page.getByRole('button', { name: 'Đăng nhập' }).click();
       const trigger = page.getByRole('button', { name: 'Tài khoản Ducker ID' });
       await expect(trigger).toBeVisible();

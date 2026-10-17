@@ -24,9 +24,6 @@ importers:
         specifier: ^19.1.0
         version: 19.2.8(react@19.2.8)
     devDependencies:
-      '@playwright/test':
-        specifier: ^1.63.0
-        version: 1.63.0
       '@types/node':
         specifier: ^20
         version: 20.19.43
@@ -2647,6 +2644,7 @@ snapshots:
   '@playwright/test@1.63.0':
     dependencies:
       playwright: 1.63.0
+    optional: true
 
   '@rolldown/binding-android-arm-eabi@1.2.7':
     optional: true
@@ -4171,11 +4169,13 @@ snapshots:
 
   pirates@4.0.7: {}
 
-  playwright-core@1.63.0: {}
+  playwright-core@1.63.0:
+    optional: true
 
   playwright@1.63.0:
     dependencies:
       playwright-core: 1.63.0
+    optional: true
 
   possible-typed-array-names@1.1.0: {}
 

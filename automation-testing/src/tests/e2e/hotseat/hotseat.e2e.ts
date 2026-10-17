@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { expectMoves, panelButton, playAt, startGame } from './helpers';
+import { expectMoves, panelButton, playAt, startGame } from '../helpers';
 
 /**
  * Ba thứ ở mốc 8 mà unit test không thể chứng minh, cùng lý do ADR-0022 đưa ra cho E2E:
@@ -16,7 +16,7 @@ import { expectMoves, panelButton, playAt, startGame } from './helpers';
 test('hot-seat: hai người đánh luân phiên, engine KHÔNG đánh nước nào (FR-17 · US-05)', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page, { mode: 'Hai người' });
 
   // Ghế một đánh. Ở chế độ đấu máy, sau nước này bàn sẽ có 2 nước vì máy đáp lại.
@@ -42,7 +42,7 @@ test('hot-seat: hai người đánh luân phiên, engine KHÔNG đánh nước n
 });
 
 test('hot-seat: hoàn nước lùi MỘT nước, không phải hai (US-05)', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page, { mode: 'Hai người' });
   await playAt(page, 0, 0);
   await playAt(page, 1, 0);
@@ -56,7 +56,7 @@ test('hot-seat: hoàn nước lùi MỘT nước, không phải hai (US-05)', as
 test('hot-seat: màn kết ván gọi tên GHẾ, không gọi "Bạn" (US-05 · ADR-0028)', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page, { mode: 'Hai người' });
   // Ghế một ăn năm ở hàng 0; ghế hai đánh xa ra hàng 5 nên không chặn.
   for (let i = 0; i < 4; i += 1) {
@@ -71,7 +71,7 @@ test('hot-seat: màn kết ván gọi tên GHẾ, không gọi "Bạn" (US-05 ·
 test('luật Tự do: năm quân bị chặn hai đầu VẪN thắng (FR-18 · ADR-0025)', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page, { mode: 'Hai người', rule: 'Tự do' });
 
   // Ghế hai chặn trước ô (−1,0); ghế một ăn 0..4; ghế hai chặn nốt ô (5,0).
@@ -90,7 +90,7 @@ test('luật Tự do: năm quân bị chặn hai đầu VẪN thắng (FR-18 · 
 });
 
 test('luật caro Việt: cùng thế đó KHÔNG thắng (FR-18 · bất biến 3)', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page, { mode: 'Hai người', rule: 'Caro Việt' });
 
   await playAt(page, 0, 0);
@@ -110,7 +110,7 @@ test('luật caro Việt: cùng thế đó KHÔNG thắng (FR-18 · bất biến
 test('luật của VÁN sống qua reload, không bị cài đặt đè (bất biến 14)', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page, { mode: 'Hai người', rule: 'Tự do' });
   await playAt(page, 0, 0);
   await expectMoves(page, 1);
@@ -139,7 +139,7 @@ test('luật của VÁN sống qua reload, không bị cài đặt đè (bất b
 test('giao diện tối được đặt TRƯỚC lần vẽ đầu — không nháy (NFR-PERF-10 · ADR-0026)', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('./');
   await page.getByRole('button', { name: 'Cài đặt' }).click();
   const dialog = page.getByRole('dialog', { name: 'Cài đặt' });
   await dialog.getByRole('button', { name: 'Tối', exact: true }).click();
@@ -183,7 +183,7 @@ test('giao diện tối được đặt TRƯỚC lần vẽ đầu — không nh
 });
 
 test('đổi bộ quân vẽ lại bàn ngay, và sống qua reload (FR-20)', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page, { mode: 'Hai người' });
   await playAt(page, 0, 0);
   await expectMoves(page, 1);

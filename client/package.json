@@ -10,8 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "e2e": "playwright test",
-    "e2e:ui": "playwright test --ui",
+    "build:e2e": "node scripts/build-e2e.mjs",
+    "serve:out": "node scripts/serve-out.mjs",
     "release:next": "pnpm dlx git-cliff@2.13.1 --workdir .. --bumped-version",
     "release:notes": "pnpm dlx git-cliff@2.13.1 --workdir .. --unreleased --tag $(pnpm dlx git-cliff@2.13.1 --workdir .. --bumped-version) --strip all"
   },
@@ -23,7 +23,6 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

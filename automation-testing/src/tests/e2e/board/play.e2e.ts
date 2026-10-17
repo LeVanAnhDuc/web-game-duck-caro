@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { expectMoves, moveCount, panelButton, playAt, startGame } from './helpers';
+import { expectMoves, moveCount, panelButton, playAt, startGame } from '../helpers';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
 });
 
 test('máy đáp lại nước của người chơi — Worker chạy thật (US-01 · FR-04)', async ({

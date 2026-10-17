@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { expectMoves, panelButton, playAt, startGame } from './helpers';
+import { expectMoves, panelButton, playAt, startGame } from '../helpers';
 
 test('xem lại ván: bàn lùi theo nước, danh sách bấm được (US-03 · FR-08 · FR-09)', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page);
   await playAt(page, 0, 0);
   await expectMoves(page, 2);
@@ -48,7 +48,7 @@ test('chế độ xem lại có nút Giữa, nên người chơi không mắc k�
   // Nợ đã ghi trong backlog: resize có thể đẩy thế trận ra ngoài khung nhìn, và cách
   // thoát là bấm "Giữa". Chế độ xem lại ẩn `Controls`, nên nếu thanh tua không có nút
   // đó thì món nợ kia mất van an toàn. Tìm ra bằng cách bấm thật ở mốc 5.
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page);
   await playAt(page, 0, 0);
   await expectMoves(page, 2);
@@ -69,7 +69,7 @@ test('sau khi tải xong, không request nào RA NGOÀI origin (NFR-SEC-07)', as
     }
   });
 
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page);
   await playAt(page, 0, 0);
   await expectMoves(page, 2);
@@ -85,7 +85,7 @@ test('sau khi tải xong, không request nào RA NGOÀI origin (NFR-SEC-07)', as
 test('thống kê cộng vào ĐÚNG mức vừa chơi, và chỉ cộng MỘT lần (FR-12 · US-04)', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('./');
   await startGame(page, { level: 'Dễ' });
   await playAt(page, 0, 0);
   await expectMoves(page, 2);

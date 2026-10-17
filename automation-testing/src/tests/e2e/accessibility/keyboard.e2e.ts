@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { expectMoves, moveCount, tabToCanvas } from './helpers';
+import { expectMoves, moveCount, tabToCanvas } from '../helpers';
 
 /**
  * `NFR-A11Y-02` hứa "một test E2E". Đây là nó.
@@ -9,7 +9,7 @@ import { expectMoves, moveCount, tabToCanvas } from './helpers';
  * focus không tồn tại ở production.
  */
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
 });
 
 test('canvas nằm trong thứ tự Tab, không bị bỏ ngoài (NFR-A11Y-02)', async ({ page }) => {

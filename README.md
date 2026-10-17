@@ -185,10 +185,21 @@ cd client
 pnpm install
 pnpm dev          # http://localhost:3000
 pnpm test         # unit tests
-pnpm e2e          # end-to-end, against the static build
 pnpm typecheck
 pnpm lint
 pnpm build        # static export into client/out/
+```
+
+The end-to-end regression suite is its own package in `automation-testing/` (Playwright):
+it builds the static export, serves it the way GitHub Pages does — never the dev server,
+whose overlay sits in the tab order — and runs every feature against it, including a second
+export with Ducker ID sign-in switched on against a fake issuer.
+
+```bash
+cd automation-testing
+pnpm install && pnpm exec playwright install chromium
+pnpm test             # builds ../client, serves it on :3300, runs the suite
+pnpm coverage:check   # requirement ↔ test case ↔ spec ↔ bug traceability
 ```
 
 No environment variables are needed to play. The optional Ducker ID sign-in is off unless
@@ -201,9 +212,10 @@ URI to register and the origin to add to Ducker ID `CORS_ORIGINS`. Deploy never 
 - **Framework**: Next.js 15 (App Router, `output: 'export'`), React 19, TypeScript strict
 - **Rendering**: Canvas 2D, drawn procedurally — no asset files
 - **Styling**: Tailwind CSS v3, lucide-react icons, self-hosted fonts via `next/font`
-- **Testing**: vitest + happy-dom (317 unit tests, including 25 tactical positions for the
-  engine) and Playwright (27 end-to-end tests, run against the static export — not the dev
-  server, whose dev overlay sits in the tab order and would measure the wrong focus tree)
+- **Testing**: vitest + happy-dom in `client/` (unit tests, including 25 tactical positions
+  for the engine) and a Playwright regression suite in `automation-testing/`, run against the
+  static export — not the dev server, whose dev overlay sits in the tab order and would
+  measure the wrong focus tree
 - **Hosting**: static, intended for GitHub Pages
 
 ## Releases and versioning
@@ -213,7 +225,7 @@ step in between:
 
 | Workflow | Runs on | Does |
 | --- | --- | --- |
-| [`ci.yml`](.github/workflows/ci.yml) | pull requests | Lint, typecheck and the unit suite |
+| [`ci.yml`](.github/workflows/ci.yml) | pull requests | Lint, typecheck, the unit suite and the static build; dependency review; the `automation-testing/` regression suite against the static export |
 | [`deploy.yml`](.github/workflows/deploy.yml) | push to `main` | Static export, published to GitHub Pages |
 | [`release.yml`](.github/workflows/release.yml) | push to `main` | Works out the version and publishes the release |
 

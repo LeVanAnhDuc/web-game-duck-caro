@@ -35,7 +35,7 @@ tái dùng một ID cũ cho một ý nghĩa mới, vì `grep` sẽ trả về c�
 | NFR-PERF-06 | AI trả nước trong ngân sách của mức (Dễ 200ms · Thường 600ms · Khó 1500ms) ở ≥ 95% số nước. **KHÔNG ĐẠT ở mức Khó** — xem khối bên dưới | `stats.ms` worker trả về · bench chạy tay trên `search`, hai thế bàn × ba mức × hai luật |
 | NFR-PERF-07 | AI không chiếm main thread quá một frame (16ms) liên tục — mọi việc nặng nằm trong Worker | Performance panel: không có long task nào trên main thread khi AI đang nghĩ |
 | NFR-PERF-08 | First Load JS ≤ **150 kB**. Đo: mốc 4 **114 kB** · mốc 5 **116 kB** · mốc 6 **118 kB** (2026-09-08) | `next build` rồi đọc cột First Load JS |
-| NFR-PERF-09 | Lần tải đầu trên 4G mô phỏng: **LCP ≤ 2.5s** · **load ≤ 4.5s** · **truyền ≤ 700 kB**. Đo 2026-09-08 (5 lần, lấy trung vị): LCP **1.00s** · load **3.17s** · **526 kB**, và lần nào cũng chơi được ngay | `node e2e/measure-load.mjs --runs 5` trên bản build tĩnh (ADR-0022) |
+| NFR-PERF-09 | Lần tải đầu trên 4G mô phỏng: **LCP ≤ 2.5s** · **load ≤ 4.5s** · **truyền ≤ 700 kB**. Đo 2026-09-08 (5 lần, lấy trung vị): LCP **1.00s** · load **3.17s** · **526 kB**, và lần nào cũng chơi được ngay | `node scripts/measure-load.mjs --runs 5` (trong `automation-testing/`) trên bản build tĩnh (ADR-0022) |
 | NFR-PERF-10 | Trang hiện ra **đã đúng giao diện đã chọn**, không có khung nào vẽ bằng bảng màu kia. **ĐẠT 2026-09-11**, sau khi test này bắt được một lỗi thật — xem ghi chú dưới bảng | `e2e`: đặt `localStorage` theme = `dark`, tải bản build tĩnh, đọc `documentElement.dataset.theme` ở `document-start` |
 
 ### NFR-PERF-06 — số đo 2026-09-11, hai luật (ADR-0025)
@@ -150,7 +150,7 @@ test canh thứ tự khởi động, phải chạy lặp.
 | ID | Ngưỡng | Cách kiểm |
 | --- | --- | --- |
 | NFR-A11Y-01 | Tương phản chữ thường ≥ 4.5:1, chữ lớn ≥ 3:1. **Áp cả cho quân với nền bàn** — đây là ràng buộc cho palette, không phải cho chữ | DevTools + kiểm palette trong `MASTER.md` |
-| NFR-A11Y-02 | ✅ có test E2E từ mốc 7. Mọi hành động thao tác được bằng bàn phím — kể cả **đánh quân và di chuyển bàn** — và focus luôn thấy được. **Đạt 2026-09-08** (mốc 6, ADR-0020): canvas có `tabIndex`, mũi tên dịch con trỏ, Shift + mũi tên kéo bàn, Enter đánh. Đã thử trên **bản build tĩnh**, không phải dev server — overlay dev-tools của Next chen vào thứ tự Tab và làm phép đo sai | `e2e/keyboard.spec.ts` — Tab tới canvas, mũi tên, Enter, Shift+mũi tên, `u`, `h`, tất cả trên bản build tĩnh |
+| NFR-A11Y-02 | ✅ có test E2E từ mốc 7. Mọi hành động thao tác được bằng bàn phím — kể cả **đánh quân và di chuyển bàn** — và focus luôn thấy được. **Đạt 2026-09-08** (mốc 6, ADR-0020): canvas có `tabIndex`, mũi tên dịch con trỏ, Shift + mũi tên kéo bàn, Enter đánh. Đã thử trên **bản build tĩnh**, không phải dev server — overlay dev-tools của Next chen vào thứ tự Tab và làm phép đo sai | `automation-testing/src/tests/e2e/accessibility/keyboard.e2e.ts` — Tab tới canvas, mũi tên, Enter, Shift+mũi tên, `u`, `h`, tất cả trên bản build tĩnh |
 | NFR-A11Y-03 | **Sửa cho khớp bàn vô hạn (ADR-0007).** Mọi nút thật ≥ 44×44px. Ô trên bàn nhỏ hơn thế và không thể lớn hơn, nên bù bằng: hit-test bắt tâm ô gần nhất trong một bán kính rộng hơn ô, cộng bước xác nhận trên cảm ứng | Review mockup cho các nút · test hit-test ở nhiều mức phóng |
 | NFR-A11Y-04 | Mọi input trong cài đặt có label liên kết; thông báo đọc được bởi screen reader | Review |
 | NFR-A11Y-05 | Tôn trọng `prefers-reduced-motion` — camera nhảy thẳng thay vì trượt, không có animation thắng | Bật thiết lập rồi thử tay |
