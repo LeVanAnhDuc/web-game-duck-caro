@@ -446,6 +446,11 @@ export class GamePage extends BasePage {
     return this.page.locator("main div.h-16");
   }
 
+  /** Title of the end-of-game sheet shown below 1024px ("Người 1 thắng", "Bạn đã bỏ ván"…). */
+  sheetResultTitle(): Locator {
+    return this.page.locator("main div.lg\\:hidden p.text-2xl");
+  }
+
   /** The status line above the bottom bar below 1024px. */
   noticeBar(): Locator {
     return this.page.locator("main div.lg\\:hidden div[role=status]");
