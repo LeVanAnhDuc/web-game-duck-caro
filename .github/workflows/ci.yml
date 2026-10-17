@@ -6,6 +6,11 @@ name: CI
 on:
   pull_request:
 
+# The game app lives in client/; every `run:` step works from there.
+defaults:
+  run:
+    working-directory: client
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -13,11 +18,15 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
+        with:
+          # No package.json at the root: the app lives in client/.
+          package_json_file: client/package.json
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: client/pnpm-lock.yaml
 
       - name: Install
         run: pnpm install --frozen-lockfile
@@ -38,14 +47,6 @@ jobs:
 
       # NFR-SEC-05: dependency không có lỗ hổng mức high trở lên.
 
-  # E2E tách thành job RIÊNG, chạy song song với `check`.
-  #
-  # Không gộp vào `check`: nó cần tải một trình duyệt (~150MB) và một lần build, nên gộp
-  # lại sẽ làm cả typecheck và lint phải chờ khoản đó trước khi báo lỗi đầu tiên. Tách ra
-  # thì một lỗi cú pháp vẫn đỏ trong một phút.
-  #
-  # `pnpm build` do `playwright.config.ts` gọi trong `webServer` — E2E kiểm bản build
-  # tĩnh, không kiểm dev server (ADR-0022).
   # Trả nợ kỹ thuật đã ghi trong backlog: bước `yarn audit --level high || true`
   # ngày trước không bao giờ đỏ được, vì yarn classic không lọc theo mức. Thay bằng
   # một cổng chặn thật. Nó đọc cơ sở dữ liệu advisory của GitHub chứ không gọi
@@ -61,34 +62,70 @@ jobs:
       - uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
+          # braces <= 3.0.3 (GHSA-vfj7-8cjw-p6xm, high) has no patched release at all.
+          # It only reaches the tree through build tooling - tailwindcss (chokidar,
+          # micromatch) and eslint-config-next (fast-glob) - so it never ships in the
+          # static export. Remove this line once a fixed braces exists.
+          allow-ghsas: GHSA-vfj7-8cjw-p6xm
 
+  # E2E tách thành job RIÊNG, chạy song song với `check`.
+  #
+  # Không gộp vào `check`: nó cần tải một trình duyệt (~150MB) và một lần build, nên gộp
+  # lại sẽ làm cả typecheck và lint phải chờ khoản đó trước khi báo lỗi đầu tiên. Tách ra
+  # thì một lỗi cú pháp vẫn đỏ trong một phút.
+  #
+  # Bộ hồi quy là một package riêng (automation-testing/): job dựng hai bản xuất tĩnh
+  # trong client/ (cờ Ducker ID tắt → out/, bật với issuer giả → out-auth/), rồi
+  # CLIENT_PREBUILT=1 bảo webServer của suite chỉ phục vụ chúng chứ không build lại.
+  # E2E kiểm bản build tĩnh, không kiểm dev server (ADR-0022).
   e2e:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
+        with:
+          # No package.json at the root: the app lives in client/.
+          package_json_file: client/package.json
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: |
+            client/pnpm-lock.yaml
+            automation-testing/pnpm-lock.yaml
 
       - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build both static exports
+        run: pnpm build:e2e
+
+      - name: Install the regression suite
+        working-directory: automation-testing
         run: pnpm install --frozen-lockfile
 
       # Chỉ Chromium. Ba trình duyệt là ba lần thời gian CI cho một sản phẩm chưa có
       # người chơi thật — xem docs/specs/e2e-and-lighthouse/design.md §7.
       - name: Install Chromium for Playwright
+        working-directory: automation-testing
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: E2E
-        run: pnpm e2e
+      - name: Typecheck, unit, traceability
+        working-directory: automation-testing
+        run: pnpm typecheck && pnpm test:unit && pnpm coverage:check
+
+      - name: Regression suite
+        working-directory: automation-testing
+        env:
+          CLIENT_PREBUILT: "1"
+        run: pnpm test
 
       - name: Upload report on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report/
+          path: automation-testing/playwright-report/
           retention-days: 7

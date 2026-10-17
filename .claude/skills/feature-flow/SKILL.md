@@ -67,6 +67,21 @@ Also update, in the same pass:
 - `docs/01-product/journeys.md` — add `US-xx` if the user flow is new
 - any 🔴 file this feature just gave real content to
 
+## 2b. Test cases before code (regression suite: `automation-testing/`, `/write-tests`)
+
+The switch for this step is the line `Regression tests: automation-testing/ (/write-tests)`
+in the root `CLAUDE.md`; this repo has the suite, so the step is on.
+
+Right after `design.md` is approved, run `/write-tests <module>` **phase A** (its steps
+1–4 and 6) inside `automation-testing/`: requirements, decisions and test cases, with the
+design you just got approved as the main source — ask only what the design leaves open
+for testing (edges, errors, states). ⛔ The user approves the test cases before planning;
+P0 cases become acceptance criteria of the plan's tasks.
+
+Phase A writes **documents only**: no page object, locator, e2e spec or API client —
+there is no screen, element or response to look at yet. `Automated:` stays
+`manual — chờ pha B`.
+
 ## 3. Plan, then isolate
 
 `superpowers:writing-plans` → `plan.md`. Then `superpowers:using-git-worktrees`.
@@ -99,10 +114,23 @@ canvas. A stale mockup is worse than no mockup. Nothing about the mockup is writ
 the repo — if a layout choice matters beyond this feature it belongs in `MASTER.md`;
 if a divergence needed a real decision it belongs in an ADR.
 
+## 5b. Automate and run the regression tests (`automation-testing/`)
+
+After you have looked at the running app yourself, run `/write-tests <module>` **phase B**
+(its steps 5 and 7–9): the `playwright-test-planner` observes the app through Playwright
+MCP → page objects + specs → **run the suite** → the healer fixes scripts (never
+expectations, at most 3 rounds). Observing is never a substitute for a green run.
+
+A bug in the feature you are building is fixed in the code, not marked `test.fail()` —
+`test.fail()` is only for bugs in features that already shipped.
+
 ## 6. Finish
 
 `requesting-code-review` → `verification-before-completion` →
 `finishing-a-development-branch`. This skill adds nothing to those steps.
+
+E2e tests live **only** in `automation-testing/` — never a `client/e2e/` folder or an
+`e2e.md` — and `cd automation-testing && pnpm test` is green before finishing.
 
 README `## Features` gets one short English bullet in the same branch as any `feat:`
 that changes user-facing behaviour.

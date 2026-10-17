@@ -173,7 +173,7 @@ mốc này **kiểm** sáu mốc trước và điền con số cuối cùng còn
 
 **`NFR-PERF-09` đã có số, và ngưỡng được chốt SAU khi đo** — đúng thứ tự mà ô đó yêu cầu
 từ đầu. Slow 4G + CPU×4, khung 412×915, 5 lần lấy trung vị: **LCP 1.00s · load 3.17s ·
-526 kB**, lần nào cũng chơi được ngay. Đo lại được bằng `node e2e/measure-load.mjs --runs 5`.
+526 kB**, lần nào cũng chơi được ngay. Đo lại được bằng `node scripts/measure-load.mjs --runs 5` (trong `automation-testing/`).
 
 Hai lần tôi tự đo **sai** trong lát này, ghi ra vì cả hai đều là loại sai âm thầm:
 
