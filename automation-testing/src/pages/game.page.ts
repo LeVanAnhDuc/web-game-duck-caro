@@ -137,6 +137,27 @@ export class GamePage extends BasePage {
     });
   }
 
+  /**
+   * Records data-theme and --paper at the first animation frame of every load (window.__firstFrame), i.e. before
+   * the browser paints anything: what a reader sees in the very first frame. Before goto() / reload().
+   */
+  async recordFirstFrame(): Promise<void> {
+    await this.page.addInitScript(() => {
+      requestAnimationFrame(() => {
+        (window as unknown as { __firstFrame: unknown }).__firstFrame = {
+          attr: document.documentElement.getAttribute("data-theme"),
+          paper: getComputedStyle(document.documentElement).getPropertyValue("--paper").trim(),
+        };
+      });
+    });
+  }
+
+  async firstFrame(): Promise<{ attr: string | null; paper: string }> {
+    return this.page.evaluate(
+      () => (window as unknown as { __firstFrame: { attr: string | null; paper: string } }).__firstFrame,
+    );
+  }
+
   /** Counts every message the page sends to the engine Worker (window.__engineCalls). Must run before goto(). */
   async spyEngine(): Promise<void> {
     await this.page.addInitScript(() => {

@@ -69,3 +69,11 @@ export function settingsBlob(
     ...partial,
   });
 }
+
+/** The page background token in each palette (../client/src/app/globals.css, MASTER.md §1–§2). */
+export const paper = { light: "#f7f3e8", dark: "#191c20" } as const;
+
+/** Relative brightness 0–255 of an RGB pixel (Rec. 601 weights): enough to tell a paper page from a dark one. */
+export function luma([r, g, b]: readonly [number, number, number]): number {
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+}
