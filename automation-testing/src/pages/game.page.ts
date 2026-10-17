@@ -424,6 +424,25 @@ export class GamePage extends BasePage {
     return this.page.locator("main div.lg\\:hidden div[role=status]");
   }
 
+  // ── piece glyphs (SVG drawn from the same shape data as the board) ─────
+  /** The shape of every glyph inside `scope`: one string per <svg>, its path data joined. */
+  async glyphShapes(scope: Locator): Promise<string[]> {
+    return scope
+      .locator("svg")
+      .evaluateAll((svgs) =>
+        svgs.map((svg) =>
+          Array.from(svg.querySelectorAll("path"))
+            .map((p) => p.getAttribute("d"))
+            .join(" "),
+        ),
+      );
+  }
+
+  /** The computed colour of every glyph inside `scope`, in order. */
+  async glyphColours(scope: Locator): Promise<string[]> {
+    return scope.locator("svg").evaluateAll((svgs) => svgs.map((svg) => getComputedStyle(svg).color));
+  }
+
   // ── storage and theme ──────────────────────────────────────────────────
   async storage(): Promise<Record<string, string>> {
     return this.page.evaluate(() => {
