@@ -63,6 +63,27 @@ export class GamePage extends BasePage {
     });
   }
 
+  /** Makes every access to localStorage throw, the way a private window or blocked site data does. Before goto(). */
+  async blockStorage(): Promise<void> {
+    await this.page.addInitScript(() => {
+      Object.defineProperty(window, "localStorage", {
+        configurable: true,
+        get() {
+          throw new DOMException("storage blocked", "SecurityError");
+        },
+      });
+    });
+  }
+
+  /** Storage that reads but refuses every write with QuotaExceededError (a full quota). Before goto(). */
+  async fillStorage(): Promise<void> {
+    await this.page.addInitScript(() => {
+      Storage.prototype.setItem = function () {
+        throw new DOMException("quota exceeded", "QuotaExceededError");
+      };
+    });
+  }
+
   /** Counts every message the page sends to the engine Worker (window.__engineCalls). Must run before goto(). */
   async spyEngine(): Promise<void> {
     await this.page.addInitScript(() => {
