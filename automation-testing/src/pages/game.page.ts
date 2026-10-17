@@ -303,6 +303,33 @@ export class GamePage extends BasePage {
     for (let i = 0; i < Math.abs(notches); i += 1) await this.page.mouse.wheel(0, notches < 0 ? -100 : 100);
   }
 
+  /** Taps cell (dx, dy) with a finger (touch input: pointerType "touch"). */
+  async tapAt(dx: number, dy: number, cell?: number): Promise<void> {
+    await this.canvas().tap({ position: await this.cellPoint(dx, dy, cell) });
+  }
+
+  /**
+   * A real finger stroke through CDP touch events, so the browser itself turns it into touch pointer events:
+   * down at `from` (canvas coordinates), through every point of `path` (offsets from `from`), up at the last one.
+   */
+  async touchStroke(from: { x: number; y: number }, path: readonly (readonly [number, number])[]): Promise<void> {
+    const box = await this.canvasBox();
+    const cdp = await this.page.context().newCDPSession(this.page);
+    const point = (dx: number, dy: number) => [{ x: box.x + from.x + dx, y: box.y + from.y + dy, id: 1 }];
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: point(0, 0) });
+    for (const [dx, dy] of path) {
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: point(dx, dy) });
+    }
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await cdp.detach();
+  }
+
+  /** Move count read from the seat bar's screen-reader text ("nước N"): present in every layout, unlike the list. */
+  async moveCount(): Promise<number> {
+    const text = await this.seatBar().locator("span.sr-only").innerText();
+    return Number(text.replace(/\D+/g, ""));
+  }
+
   /** RGB of the canvas pixel at a canvas point, read from the backing store (accounts for devicePixelRatio). */
   async pixel(at: { x: number; y: number }): Promise<[number, number, number]> {
     return this.canvas().evaluate((c: HTMLCanvasElement, p) => {
