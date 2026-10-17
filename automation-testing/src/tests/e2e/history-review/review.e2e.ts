@@ -1,107 +1,126 @@
-import { expect, test } from '@playwright/test';
-import { expectMoves, panelButton, playAt, startGame } from '../helpers';
+import { expect, test } from "@/fixtures";
+import { copy } from "@/data/copy";
 
-test('xem lại ván: bàn lùi theo nước, danh sách bấm được (US-03 · FR-08 · FR-09)', async ({
-  page,
-}) => {
-  await page.goto('./');
-  await startGame(page);
-  await playAt(page, 0, 0);
-  await expectMoves(page, 2);
-  await playAt(page, 1, 0);
-  await expectMoves(page, 4);
-  await panelButton(page, 'Bỏ ván').click();
-
-  // Trước khi vào xem lại, danh sách KHÔNG bấm được.
-  await expect(page.locator('aside ol button')).toHaveCount(0);
-
-  await page.locator('aside').getByRole('button', { name: 'Xem lại' }).click();
-  await expect(page.locator('aside').getByText('Đang xem lại')).toBeVisible();
-  await expect(page.locator('aside').getByText('4 / 4')).toBeVisible();
-
-  // Giờ mới bấm được, và đúng một hàng mang aria-current.
-  await expect(page.locator('aside ol button')).toHaveCount(4);
-  await expect(page.locator('aside [aria-current="true"]')).toHaveCount(1);
-
-  await page.locator('aside').getByRole('button', { name: 'Nước trước' }).click();
-  await expect(page.locator('aside').getByText('3 / 4')).toBeVisible();
-
-  await page.locator('aside').getByRole('button', { name: 'Về nước đầu' }).click();
-  await expect(page.locator('aside').getByText('0 / 4')).toBeVisible();
-  // Ở nước 0 thì hai nút lùi phải tắt.
-  await expect(
-    page.locator('aside').getByRole('button', { name: 'Nước trước' }),
-  ).toBeDisabled();
-
-  // Nhảy thẳng tới một nước trong danh sách.
-  await page.locator('aside ol button').nth(1).click();
-  await expect(page.locator('aside').getByText('2 / 4')).toBeVisible();
-
-  await page.locator('aside').getByRole('button', { name: 'Thoát xem lại' }).click();
-  await expect(page.locator('aside').getByText('Đang xem lại')).toBeHidden();
-  await expectMoves(page, 4);
+test.beforeEach(async ({ gamePage }) => {
+  await gamePage.goto();
+  await gamePage.startGame({ mode: "hotseat" });
+  await gamePage.playAll([
+    [0, 0],
+    [-1, 0],
+    [1, 1],
+    [-2, -3],
+  ]);
+  await expect(gamePage.moveRows()).toHaveCount(4);
+  await gamePage.resign();
+  await expect(gamePage.resultTitle()).toHaveText(copy.result.resigned(copy.seat.one));
 });
 
-test('chế độ xem lại có nút Giữa, nên người chơi không mắc kẹt với bàn trống', async ({
-  page,
-}) => {
-  // Nợ đã ghi trong backlog: resize có thể đẩy thế trận ra ngoài khung nhìn, và cách
-  // thoát là bấm "Giữa". Chế độ xem lại ẩn `Controls`, nên nếu thanh tua không có nút
-  // đó thì món nợ kia mất van an toàn. Tìm ra bằng cách bấm thật ở mốc 5.
-  await page.goto('./');
-  await startGame(page);
-  await playAt(page, 0, 0);
-  await expectMoves(page, 2);
-  await panelButton(page, 'Bỏ ván').click();
-  await page.locator('aside').getByRole('button', { name: 'Xem lại' }).click();
+test(
+  "Xem lại từ màn kết ván mở ở nước cuối",
+  { tag: ["@TC-HISTORYREVIEW-004", "@smoke"] },
+  async ({ gamePage }) => {
+    await gamePage.enterReview();
+    await expect(gamePage.panel().getByText(copy.review.reviewing, { exact: true })).toBeVisible();
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(4, 4));
+    await expect(gamePage.reviewRows()).toHaveCount(4);
+  },
+);
 
-  await expect(page.locator('aside').getByRole('button', { name: 'Giữa' })).toBeVisible();
-});
+test(
+  "bốn nút điều hướng đi đúng một nước và tắt ở hai biên",
+  { tag: ["@TC-HISTORYREVIEW-005", "@smoke"] },
+  async ({ gamePage }) => {
+    await gamePage.enterReview();
+    await expect(gamePage.reviewNav("next")).toBeDisabled();
+    await expect(gamePage.reviewNav("last")).toBeDisabled();
 
-test('sau khi tải xong, không request nào RA NGOÀI origin (NFR-SEC-07)', async ({
-  page,
-}) => {
-  const outside: string[] = [];
-  page.on('request', (request) => {
-    const url = new URL(request.url());
-    if (url.hostname !== '127.0.0.1' && url.hostname !== 'localhost') {
-      outside.push(request.url());
+    await gamePage.reviewNav("prev").click();
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(3, 4));
+
+    await gamePage.reviewNav("first").click();
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(0, 4));
+    await expect(gamePage.reviewNav("prev")).toBeDisabled();
+    await expect(gamePage.reviewNav("first")).toBeDisabled();
+
+    await gamePage.reviewNav("next").click();
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(1, 4));
+
+    await gamePage.reviewNav("last").click();
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(4, 4));
+  },
+);
+
+test(
+  "bấm một hàng nhảy thẳng tới nước đó và chỉ một hàng được đánh dấu",
+  { tag: ["@TC-HISTORYREVIEW-006"] },
+  async ({ gamePage }) => {
+    await gamePage.enterReview();
+    await expect(gamePage.panel().locator("[aria-current=true]")).toHaveCount(1);
+
+    await gamePage.reviewRows().nth(1).click();
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(2, 4));
+    await expect(gamePage.panel().locator("[aria-current=true]")).toHaveCount(1);
+    await expect(gamePage.reviewRows().nth(1)).toHaveAttribute("aria-current", "true");
+  },
+);
+
+test(
+  "trong xem lại bấm lên bàn không tạo nước",
+  { tag: ["@TC-HISTORYREVIEW-007"] },
+  async ({ gamePage }) => {
+    await gamePage.enterReview();
+    await gamePage.reviewRows().nth(1).click();
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(2, 4));
+
+    for (const [x, y] of [
+      [3, 3],
+      [-4, 2],
+    ] as const) {
+      await gamePage.playAt(x, y);
     }
-  });
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(2, 4));
+    await gamePage.panelButton(copy.review.exit).click();
+    await expect(gamePage.moveRows()).toHaveCount(4);
+  },
+);
 
-  await page.goto('./');
-  await startGame(page);
-  await playAt(page, 0, 0);
-  await expectMoves(page, 2);
-  await panelButton(page, 'Gợi ý').click();
-  await expect(page.locator('aside').getByText(/^Gợi ý: đánh ở /)).toBeVisible({
-    timeout: 15_000,
-  });
+test(
+  "thoát xem lại về thế cuối và kết quả ván còn nguyên",
+  { tag: ["@TC-HISTORYREVIEW-008"] },
+  async ({ gamePage }) => {
+    await gamePage.enterReview();
+    await gamePage.reviewNav("first").click();
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(0, 4));
 
-  // Không analytics, không telemetry, không font ngoài. Đo bằng máy, không bằng mắt.
-  expect(outside).toEqual([]);
+    await gamePage.panelButton(copy.review.exit).click();
+    await expect(gamePage.panel().getByText(copy.review.reviewing, { exact: true })).toHaveCount(0);
+    await expect(gamePage.moveRows()).toHaveCount(4);
+    await expect(gamePage.resultTitle()).toHaveText(copy.result.resigned(copy.seat.one));
+  },
+);
+
+test("chế độ xem lại có nút Giữa", { tag: ["@TC-HISTORYREVIEW-009"] }, async ({ gamePage }) => {
+  // Review hides the play controls; without its own Giữa a resized window could leave an empty board and no way back.
+  await gamePage.enterReview();
+  await expect(gamePage.panelButton(copy.controls.recenter)).toBeVisible();
 });
 
-test('thống kê cộng vào ĐÚNG mức vừa chơi, và chỉ cộng MỘT lần (FR-12 · US-04)', async ({
-  page,
-}) => {
-  await page.goto('./');
-  await startGame(page, { level: 'Dễ' });
-  await playAt(page, 0, 0);
-  await expectMoves(page, 2);
-  await panelButton(page, 'Bỏ ván').click();
+test(
+  "bàn vẽ đúng thế trận tại nước đang xem",
+  { tag: ["@TC-HISTORYREVIEW-010"] },
+  async ({ gamePage }) => {
+    await gamePage.enterReview();
+    const atEnd = await gamePage.canvasHash();
 
-  // Đổi kích thước sau khi kết ván: mỗi lần resize là một render mới với `status` mới,
-  // và không có khoá chống đếm trùng thì một ván bỏ đếm thành nhiều.
-  for (const width of [1100, 1280, 1180]) {
-    await page.setViewportSize({ width, height: 900 });
-  }
+    await gamePage.reviewNav("prev").click();
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(3, 4));
+    await expect.poll(() => gamePage.canvasHash()).not.toBe(atEnd);
+    const atThreeByButton = await gamePage.canvasHash();
 
-  const row = page.locator('aside').getByText(/^Dễ$/).locator('..');
-  await expect(row).toContainText('1 bỏ');
-  await expect(row).not.toContainText('2 bỏ');
-  // Mức khác vẫn trắng — thống kê tách theo mức.
-  await expect(page.locator('aside').getByText(/^Khó$/).locator('..')).toContainText(
-    'chưa chơi',
-  );
-});
+    await gamePage.reviewNav("last").click();
+    await expect.poll(() => gamePage.canvasHash()).toBe(atEnd);
+    await gamePage.reviewRows().nth(2).click();
+    await expect(gamePage.reviewPosition()).toHaveText(copy.review.position(3, 4));
+    await expect.poll(() => gamePage.canvasHash()).toBe(atThreeByButton);
+  },
+);
