@@ -59,7 +59,7 @@ jobs:
       # một Pages site đã có, nhưng TẠO site thì "Resource not accessible by
       # integration" — đó là thao tác quản trị repo. Pages được bật một lần bằng
       # token admin, lệnh nằm trong CLAUDE.md. Xem ADR-0012.
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
 
       - uses: actions/upload-pages-artifact@v3
         with:
