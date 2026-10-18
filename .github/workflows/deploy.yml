@@ -61,7 +61,7 @@ jobs:
       # token admin, lệnh nằm trong CLAUDE.md. Xem ADR-0012.
       - uses: actions/configure-pages@v5
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           # Next.js static export ra `out`, không phải `dist`.
           path: client/out
